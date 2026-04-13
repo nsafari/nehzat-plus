@@ -442,6 +442,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     duration: 0
   };
   private listenRequestInFlight = false;
+  private lastProgressRequestKey = '';
 
   ngOnInit(): void {
     this.loadActiveCourses();
@@ -604,7 +605,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   onInstructionAudioError(): void {
-    this.errorMessage = 'پخش فایل صوتی با خطا مواجه شد. لطفا دوباره تلاش کنید.';
+    this.errorMessage = 'پخش فایل صوتی با خطا مواجه شد. می‌توانید دوباره تلاش کنید.';
   }
 
   async startRecording(): Promise<void> {
@@ -769,8 +770,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (studentId === null) {
       return;
     }
+    const requestKey = `${studentId}:${assignmentId}:${Date.now()}`;
+    this.lastProgressRequestKey = requestKey;
     this.api.getAssignmentProgress(studentId, assignmentId).subscribe({
       next: (progress) => {
+        if (this.lastProgressRequestKey !== requestKey) {
+          return;
+        }
+        if (!this.selectedAssignment || this.selectedAssignment.id !== assignmentId) {
+          return;
+        }
         if (!this.primaryInstructionAudioUrl) {
           this.assignmentProgress = {
             ...progress,
@@ -784,6 +793,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.assignmentProgress = progress;
       },
       error: (error) => {
+        if (this.lastProgressRequestKey !== requestKey) {
+          return;
+        }
         this.errorMessage = error?.error?.message ?? 'دریافت وضعیت تکلیف با خطا مواجه شد.';
       }
     });
