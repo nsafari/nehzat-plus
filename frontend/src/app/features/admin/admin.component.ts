@@ -22,20 +22,20 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <main class="app-shell app-shell--narrow admin-page">
+    <main class="app-shell app-shell--narrow admin-page" aria-labelledby="admin-page-title">
       <header class="shell-header">
         <div>
-          <h1>پنل مدیریت</h1>
+          <h1 id="admin-page-title">پنل مدیریت</h1>
           <p>خوش آمدید {{ username }}</p>
         </div>
         <button type="button" class="btn btn-secondary" (click)="logout()">خروج</button>
       </header>
 
       @if (errorMessage) {
-        <p class="lp-error">{{ errorMessage }}</p>
+        <p class="lp-error" role="alert" aria-live="assertive">{{ errorMessage }}</p>
       }
       @if (successMessage) {
-        <p class="lp-success">{{ successMessage }}</p>
+        <p class="lp-success" role="status" aria-live="polite">{{ successMessage }}</p>
       }
 
       <section class="card stats-grid">
@@ -61,16 +61,16 @@ import { AuthService } from '../../core/services/auth.service';
         </article>
       </section>
 
-      <nav class="section-nav">
+      <nav class="section-nav" aria-label="بخش‌های پنل مدیریت">
         <a class="nav-chip" href="#admin-users">کاربران</a>
         <a class="nav-chip" href="#admin-courses">دوره‌ها</a>
         <a class="nav-chip" href="#admin-assignments">تکالیف</a>
         <a class="nav-chip" href="#admin-attachments">پیوست‌ها</a>
       </nav>
 
-      <section id="admin-users" class="card pending-users-card">
+      <section id="admin-users" class="card pending-users-card" aria-labelledby="admin-users-title">
         <header class="section-header">
-          <h2 class="section-title">
+          <h2 id="admin-users-title" class="section-title">
             دانش‌آموزان در انتظار تایید
             <span class="count-badge">{{ pendingUsers.length }}</span>
           </h2>
@@ -142,9 +142,9 @@ import { AuthService } from '../../core/services/auth.service';
         }
       </section>
 
-      <section id="admin-courses" class="card">
+      <section id="admin-courses" class="card" aria-labelledby="admin-courses-title">
         <header class="section-header">
-          <h2 class="section-title">
+          <h2 id="admin-courses-title" class="section-title">
             مدیریت دوره‌ها
             <span class="count-badge">{{ courses.length }}</span>
           </h2>
@@ -258,9 +258,9 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
       </section>
 
-      <section id="admin-assignments" class="card">
+      <section id="admin-assignments" class="card" aria-labelledby="admin-assignments-title">
         <header class="section-header">
-          <h2 class="section-title">
+          <h2 id="admin-assignments-title" class="section-title">
             مدیریت تکالیف
             <span class="count-badge">{{ assignments.length }}</span>
           </h2>
@@ -401,9 +401,9 @@ import { AuthService } from '../../core/services/auth.service';
         }
       </section>
 
-      <section id="admin-attachments" class="card">
+      <section id="admin-attachments" class="card" aria-labelledby="admin-attachments-title">
         <header class="section-header">
-          <h2 class="section-title">
+          <h2 id="admin-attachments-title" class="section-title">
             مدیریت پیوست‌ها
             <span class="count-badge">{{ attachments.length }}</span>
           </h2>
@@ -568,6 +568,10 @@ import { AuthService } from '../../core/services/auth.service';
         white-space: nowrap;
         flex: 0 0 auto;
       }
+      .nav-chip:focus-visible {
+        outline: 3px solid #2563eb;
+        outline-offset: 2px;
+      }
       .section-title {
         margin: 0;
         display: inline-flex;
@@ -617,6 +621,10 @@ import { AuthService } from '../../core/services/auth.service';
         display: grid;
         gap: 0.2rem;
         cursor: pointer;
+      }
+      .list-item:focus-visible {
+        outline: 3px solid #2563eb;
+        outline-offset: 2px;
       }
       .list-item.is-selected {
         border-color: var(--lp-primary);
@@ -704,6 +712,13 @@ import { AuthService } from '../../core/services/auth.service';
         border-radius: 8px;
         padding: 0.5rem;
         font: inherit;
+      }
+      input:focus-visible,
+      textarea:focus-visible,
+      select:focus-visible,
+      button:focus-visible {
+        outline: 3px solid #2563eb;
+        outline-offset: 2px;
       }
       .row-actions {
         display: flex;
