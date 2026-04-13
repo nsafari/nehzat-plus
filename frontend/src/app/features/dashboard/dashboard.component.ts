@@ -7,29 +7,74 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-dashboard',
   standalone: true,
   template: `
-    <main style="padding: 1.5rem; direction: rtl; max-width: 720px; margin: 0 auto;">
-      <header style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+    <main class="lp-shell lp-page">
+      <header class="lp-topbar">
         <div>
-          <h1 style="margin-bottom: 0.25rem;">داشبورد دانش‌آموز</h1>
-          <p style="margin: 0; color: #666;">خوش آمدید {{ username }}</p>
+          <h1>داشبورد دانش‌آموز</h1>
+          <p class="muted">خوش آمدید {{ username }}</p>
         </div>
-        <button
-          type="button"
-          (click)="logout()"
-          style="padding: 0.5rem 1rem; border: 1px solid #ccc; background: #fff; border-radius: 0.5rem; cursor: pointer;"
-        >
+        <button type="button" class="lp-link-btn" (click)="logout()">
           خروج
         </button>
       </header>
-      <section style="margin-top: 1.5rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem;">
-        <h2 style="margin-top: 0;">حالت دمو با Mock API فعال است</h2>
-        <p style="margin-bottom: 0;">
-          برای تست سریع می‌توانید با حساب <strong>student / student123</strong> یا
-          <strong>admin / admin123</strong> وارد شوید.
-        </p>
+
+      <section class="lp-card">
+        <h2>کلاس‌های فعال شما</h2>
+        <div class="course-grid">
+          <article class="course-card">
+            <h3>ریاضی پایه</h3>
+            <p class="muted">تمرین روزانه مفاهیم ریاضی</p>
+          </article>
+          <article class="course-card">
+            <h3>علوم تجربی</h3>
+            <p class="muted">فعالیت‌های آزمایشگاهی ساده</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="lp-card">
+        <h2>اطلاعات نسخه نمایشی</h2>
+        <p class="muted">این نسخه با Mock API کار می‌کند و بدون اتصال به بک‌اند قابل استفاده است.</p>
       </section>
     </main>
-  `
+  `,
+  styles: [
+    `
+      .lp-page {
+        display: grid;
+        gap: 1rem;
+      }
+      .lp-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      h1 {
+        margin: 0 0 0.25rem;
+      }
+      h2 {
+        margin: 0 0 0.75rem;
+      }
+      .muted {
+        color: var(--lp-muted);
+        margin: 0;
+      }
+      .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem;
+      }
+      .course-card {
+        border: 1px solid var(--lp-border);
+        border-radius: 12px;
+        padding: 0.75rem;
+        background: #fff;
+      }
+      .course-card h3 {
+        margin: 0 0 0.25rem;
+      }
+    `
+  ]
 })
 export class DashboardComponent {
   private readonly authService = inject(AuthService);

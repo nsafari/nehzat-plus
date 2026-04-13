@@ -7,23 +7,35 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-admin',
   standalone: true,
   template: `
-    <main style="padding: 1.5rem; direction: rtl; max-width: 720px; margin: 0 auto;">
-      <header style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+    <main class="app-shell app-shell--narrow">
+      <header class="shell-header">
         <div>
-          <h1 style="margin-bottom: 0.25rem;">پنل مدیریت</h1>
-          <p style="margin: 0; color: #666;">خوش آمدید {{ username }}</p>
+          <h1>پنل مدیریت</h1>
+          <p>خوش آمدید {{ username }}</p>
         </div>
-        <button
-          type="button"
-          (click)="logout()"
-          style="padding: 0.5rem 1rem; border: 1px solid #ccc; background: #fff; border-radius: 0.5rem; cursor: pointer;"
-        >
-          خروج
-        </button>
+        <button type="button" class="btn btn-secondary" (click)="logout()">خروج</button>
       </header>
-      <section style="margin-top: 1.5rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem;">
+      <section class="card" style="margin-top: 1rem;">
         <h2 style="margin-top: 0;">نسخه نمایشی مدیریت</h2>
-        <p style="margin-bottom: 0;">این بیلد با Mock API منتشر می‌شود و برای بررسی مسیرهای ورود و پنل مناسب است.</p>
+        <p>این بیلد با Mock API منتشر می‌شود و برای بررسی مسیرهای ورود و پنل مناسب است.</p>
+      </section>
+      <section class="card-grid" style="margin-top: 1rem;">
+        <article class="card">
+          <h3>مدیریت کاربران</h3>
+          <p>بررسی دانش‌آموزان در انتظار تایید و مدیریت وضعیت ثبت‌نام.</p>
+        </article>
+        <article class="card">
+          <h3>مدیریت دوره‌ها</h3>
+          <p>ایجاد، ویرایش و دسته‌بندی دوره‌های آموزشی فعال و غیرفعال.</p>
+        </article>
+        <article class="card">
+          <h3>مدیریت تکالیف</h3>
+          <p>تعریف تکلیف روزانه، سری زمانی و مدیریت فایل‌های پیوست.</p>
+        </article>
+      </section>
+      <section class="helper-banner" style="margin-top: 1rem;">
+        <strong>حساب دمو مدیر:</strong>
+        <code>admin / admin123</code>
       </section>
     </main>
   `
