@@ -1,3 +1,13 @@
-import { CanActivateFn } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
 
-export const adminGuard: CanActivateFn = () => true;
+import { AuthService } from '../services/auth.service';
+
+export const adminGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  if (authService.getCurrentUser()?.userType === 'admin') {
+    return true;
+  }
+  return router.createUrlTree(['/dashboard']);
+};

@@ -1,0 +1,219 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+
+import {
+  AdminCourseStatistics,
+  AdminSystemStatistics,
+  ApiMessageResponse,
+  ApproveUserPayload,
+  Assignment,
+  AssignmentAttachment,
+  AssignmentSubmission,
+  AuthSigninPayload,
+  AuthSigninResponse,
+  AuthSignupPayload,
+  AuthSignupResponse,
+  CreateAssignmentPayload,
+  CreateCoursePayload,
+  CreateDailySeriesPayload,
+  Course,
+  PendingUser,
+  StudentProgressResponse
+} from '../models/lesson-planner.models';
+import { LessonPlannerApi } from './lesson-planner-api.interface';
+import { resolveApiBaseUrl } from './api-url.util';
+
+@Injectable()
+export class HttpLessonPlannerApi extends LessonPlannerApi {
+  private readonly http = inject(HttpClient);
+
+  signin(payload: AuthSigninPayload): Observable<AuthSigninResponse> {
+    return this.http.post<AuthSigninResponse>(this.url('/auth/signin'), payload);
+  }
+
+  signup(payload: AuthSignupPayload | FormData): Observable<AuthSignupResponse> {
+    return this.http.post<AuthSignupResponse>(this.url('/auth/signup'), this.toSignupBody(payload));
+  }
+
+  seedDatabase(): Observable<ApiMessageResponse> {
+    return this.http.post<ApiMessageResponse>(this.url('/seeder/seed'), {});
+  }
+
+  getActiveCourses(): Observable<Course[]> {
+    return this.http.get<Course[]>(this.url('/courses/active'));
+  }
+
+  getCourses(): Observable<Course[]> {
+    return this.http.get<Course[]>(this.url('/courses'));
+  }
+
+  getCourseById(id: number): Observable<Course> {
+    return this.http.get<Course>(this.url(`/courses/${id}`));
+  }
+
+  createCourse(payload: CreateCoursePayload): Observable<Course> {
+    return this.http.post<Course>(this.url('/courses'), payload);
+  }
+
+  updateCourse(id: number, payload: Partial<CreateCoursePayload>): Observable<Course> {
+    return this.http.put<Course>(this.url(`/courses/${id}`), payload);
+  }
+
+  deleteCourse(id: number): Observable<ApiMessageResponse> {
+    return this.http.delete<ApiMessageResponse>(this.url(`/courses/${id}`));
+  }
+
+  getCourseAssignments(courseId: number): Observable<Assignment[]> {
+    return this.http.get<Assignment[]>(this.url(`/courses/${courseId}/assignments`));
+  }
+
+  createCourseAssignment(courseId: number, payload: CreateAssignmentPayload): Observable<Assignment> {
+    return this.http.post<Assignment>(this.url(`/courses/${courseId}/assignments`), payload);
+  }
+
+  getStudentProgress(studentId: number): Observable<StudentProgressResponse> {
+    return this.http.get<StudentProgressResponse>(this.url(`/students/${studentId}/progress`));
+  }
+
+  getStudentSubmissions(studentId: number, assignmentId?: number): Observable<AssignmentSubmission[]> {
+    let params = new HttpParams();
+    if (assignmentId !== undefined) {
+      params = params.set('assignmentId', String(assignmentId));
+    }
+    return this.http.get<AssignmentSubmission[]>(this.url(`/students/${studentId}/submissions`), { params });
+  }
+
+  getAssignmentProgress(studentId: number, assignmentId: number): Observable<unknown> {
+    return this.http.get<unknown>(this.url(`/students/${studentId}/assignments/${assignmentId}/progress`));
+  }
+
+  submitAssignment(studentId: number, assignmentId: number, payload: FormData): Observable<AssignmentSubmission> {
+    return this.http.post<AssignmentSubmission>(
+      this.url(`/students/${studentId}/assignments/${assignmentId}/submit`),
+      payload
+    );
+  }
+
+  uploadSubmissionFile(studentId: number, submissionId: number, payload: FormData): Observable<AssignmentSubmission> {
+    return this.http.post<AssignmentSubmission>(
+      this.url(`/students/${studentId}/submissions/${submissionId}/upload`),
+      payload
+    );
+  }
+
+  getPendingUsers(): Observable<PendingUser[]> {
+    return this.http.get<PendingUser[]>(this.url('/admin/users/pending'));
+  }
+
+  approveUser(userId: number, payload: ApproveUserPayload): Observable<ApiMessageResponse> {
+    return this.http.post<ApiMessageResponse>(this.url(`/admin/users/${userId}/approve`), payload);
+  }
+
+  rejectUser(userId: number): Observable<ApiMessageResponse> {
+    return this.http.post<ApiMessageResponse>(this.url(`/admin/users/${userId}/reject`), {});
+  }
+
+  getAdminCourses(): Observable<Course[]> {
+    return this.http.get<Course[]>(this.url('/admin/courses'));
+  }
+
+  createAdminCourse(payload: CreateCoursePayload): Observable<Course> {
+    return this.http.post<Course>(this.url('/admin/courses'), payload);
+  }
+
+  updateAdminCourse(id: number, payload: Partial<CreateCoursePayload>): Observable<Course> {
+    return this.http.put<Course>(this.url(`/admin/courses/${id}`), payload);
+  }
+
+  deleteAdminCourse(id: number): Observable<ApiMessageResponse> {
+    return this.http.delete<ApiMessageResponse>(this.url(`/admin/courses/${id}`));
+  }
+
+  searchAdminCourses(query: string): Observable<Course[]> {
+    const params = new HttpParams().set('q', query);
+    return this.http.get<Course[]>(this.url('/admin/courses/search'), { params });
+  }
+
+  filterAdminCourses(status: string): Observable<Course[]> {
+    const params = new HttpParams().set('status', status);
+    return this.http.get<Course[]>(this.url('/admin/courses/filter'), { params });
+  }
+
+  getAdminCourseAssignments(courseId: number): Observable<Assignment[]> {
+    return this.http.get<Assignment[]>(this.url(`/admin/courses/${courseId}/assignments`));
+  }
+
+  getAssignmentById(id: number): Observable<Assignment> {
+    return this.http.get<Assignment>(this.url(`/admin/assignments/${id}`));
+  }
+
+  createAdminAssignment(courseId: number, payload: CreateAssignmentPayload): Observable<Assignment> {
+    return this.http.post<Assignment>(this.url(`/admin/courses/${courseId}/assignments`), payload);
+  }
+
+  updateAdminAssignment(id: number, payload: CreateAssignmentPayload): Observable<Assignment> {
+    return this.http.put<Assignment>(this.url(`/admin/assignments/${id}`), payload);
+  }
+
+  deleteAdminAssignment(id: number): Observable<ApiMessageResponse> {
+    return this.http.delete<ApiMessageResponse>(this.url(`/admin/assignments/${id}`));
+  }
+
+  createDailyAssignments(courseId: number, payload: CreateDailySeriesPayload): Observable<Assignment[]> {
+    return this.http.post<Assignment[]>(this.url(`/admin/courses/${courseId}/assignments/daily-series`), payload);
+  }
+
+  getAssignmentAttachments(assignmentId: number): Observable<AssignmentAttachment[]> {
+    return this.http.get<AssignmentAttachment[]>(this.url(`/admin/assignments/${assignmentId}/attachments`));
+  }
+
+  createAttachment(assignmentId: number, payload: FormData): Observable<AssignmentAttachment> {
+    return this.http.post<AssignmentAttachment>(this.url(`/admin/assignments/${assignmentId}/attachments`), payload);
+  }
+
+  uploadAttachmentFile(attachmentId: number, payload: FormData): Observable<AssignmentAttachment> {
+    return this.http.post<AssignmentAttachment>(this.url(`/admin/attachments/${attachmentId}/upload`), payload);
+  }
+
+  updateAttachment(attachmentId: number, payload: Partial<AssignmentAttachment>): Observable<AssignmentAttachment> {
+    return this.http.put<AssignmentAttachment>(this.url(`/admin/attachments/${attachmentId}`), payload);
+  }
+
+  deleteAttachment(attachmentId: number): Observable<ApiMessageResponse> {
+    return this.http.delete<ApiMessageResponse>(this.url(`/admin/attachments/${attachmentId}`));
+  }
+
+  getSystemStatistics(): Observable<AdminSystemStatistics> {
+    return this.http.get<AdminSystemStatistics>(this.url('/admin/statistics'));
+  }
+
+  getCourseStatistics(courseId: number): Observable<AdminCourseStatistics> {
+    return this.http.get<AdminCourseStatistics>(this.url(`/admin/courses/${courseId}/statistics`));
+  }
+
+  private url(path: string): string {
+    return `${resolveApiBaseUrl()}${path}`;
+  }
+
+  private toSignupBody(payload: AuthSignupPayload | FormData): FormData | Omit<AuthSignupPayload, 'userImage'> {
+    if (payload instanceof FormData) {
+      return payload;
+    }
+
+    if (!payload.userImage) {
+      const { userImage: _unused, ...withoutImage } = payload;
+      return withoutImage;
+    }
+
+    const formData = new FormData();
+    formData.set('firstName', payload.firstName);
+    formData.set('lastName', payload.lastName);
+    formData.set('username', payload.username);
+    formData.set('email', payload.email);
+    formData.set('phoneNumber', payload.phoneNumber);
+    formData.set('password', payload.password);
+    formData.set('userImage', payload.userImage);
+    return formData;
+  }
+}
