@@ -5,12 +5,14 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { loadApiConfig } from './config.loader';
+import { provideLessonPlannerApi } from './core/services/lesson-planner-api.token';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
+    provideLessonPlannerApi(),
     { provide: APP_INITIALIZER, useFactory: loadApiConfig, multi: true }
   ]
 };
