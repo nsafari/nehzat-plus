@@ -61,9 +61,19 @@ import { AuthService } from '../../core/services/auth.service';
         </article>
       </section>
 
-      <section class="card pending-users-card">
+      <nav class="section-nav">
+        <a class="nav-chip" href="#admin-users">کاربران</a>
+        <a class="nav-chip" href="#admin-courses">دوره‌ها</a>
+        <a class="nav-chip" href="#admin-assignments">تکالیف</a>
+        <a class="nav-chip" href="#admin-attachments">پیوست‌ها</a>
+      </nav>
+
+      <section id="admin-users" class="card pending-users-card">
         <header class="section-header">
-          <h2>دانش‌آموزان در انتظار تایید</h2>
+          <h2 class="section-title">
+            دانش‌آموزان در انتظار تایید
+            <span class="count-badge">{{ pendingUsers.length }}</span>
+          </h2>
           <button type="button" class="btn btn-secondary" [disabled]="loadingPendingUsers" (click)="refreshAll()">
             {{ loadingPendingUsers ? 'در حال بروزرسانی...' : 'بروزرسانی' }}
           </button>
@@ -132,9 +142,12 @@ import { AuthService } from '../../core/services/auth.service';
         }
       </section>
 
-      <section class="card">
+      <section id="admin-courses" class="card">
         <header class="section-header">
-          <h2>مدیریت دوره‌ها</h2>
+          <h2 class="section-title">
+            مدیریت دوره‌ها
+            <span class="count-badge">{{ courses.length }}</span>
+          </h2>
           <button type="button" class="btn btn-secondary" (click)="startCreateCourse()">دوره جدید</button>
         </header>
 
@@ -175,9 +188,14 @@ import { AuthService } from '../../core/services/auth.service';
                     [class.is-selected]="selectedCourseId === course.id"
                     (click)="selectCourse(course.id)"
                   >
-                    <strong>{{ course.title }}</strong>
-                    <span>{{ course.courseCode }}</span>
-                    <small>{{ course.instructor }}</small>
+                    <div class="list-item-top">
+                      <strong>{{ course.title }}</strong>
+                      <span class="status-chip" [ngClass]="courseStatusClass(course.status)">
+                        {{ courseStatusLabel(course.status) }}
+                      </span>
+                    </div>
+                    <span class="list-meta">{{ course.courseCode }}</span>
+                    <small class="list-meta">{{ course.instructor }}</small>
                   </button>
                 }
               </div>
@@ -240,14 +258,18 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
       </section>
 
-      <section class="card">
+      <section id="admin-assignments" class="card">
         <header class="section-header">
-          <h2>مدیریت تکالیف</h2>
+          <h2 class="section-title">
+            مدیریت تکالیف
+            <span class="count-badge">{{ assignments.length }}</span>
+          </h2>
           <button type="button" class="btn btn-secondary" [disabled]="selectedCourseId === null" (click)="startCreateAssignment()">
             تکلیف جدید
           </button>
         </header>
 
+        <p class="section-context">دوره انتخاب‌شده: {{ selectedCourseTitle }}</p>
         @if (selectedCourseId === null) {
           <p class="muted">برای مدیریت تکالیف، ابتدا یک دوره انتخاب یا ایجاد کنید.</p>
         } @else {
@@ -266,9 +288,14 @@ import { AuthService } from '../../core/services/auth.service';
                       [class.is-selected]="selectedAssignmentId === assignment.id"
                       (click)="selectAssignment(assignment.id)"
                     >
+                    <div class="list-item-top">
                       <strong>{{ assignment.title }}</strong>
-                      <span>{{ assignment.assignmentDate }}</span>
-                      <small>{{ assignment.type || '-' }}</small>
+                      <span class="status-chip" [ngClass]="assignmentStatusClass(assignment.status)">
+                        {{ assignmentStatusLabel(assignment.status) }}
+                      </span>
+                    </div>
+                    <span class="list-meta">{{ assignment.assignmentDate }}</span>
+                    <small class="list-meta">{{ assignmentTypeLabel(assignment.type) }}</small>
                     </button>
                   }
                 </div>
@@ -374,11 +401,15 @@ import { AuthService } from '../../core/services/auth.service';
         }
       </section>
 
-      <section class="card">
+      <section id="admin-attachments" class="card">
         <header class="section-header">
-          <h2>مدیریت پیوست‌ها</h2>
+          <h2 class="section-title">
+            مدیریت پیوست‌ها
+            <span class="count-badge">{{ attachments.length }}</span>
+          </h2>
         </header>
 
+        <p class="section-context">تکلیف انتخاب‌شده: {{ selectedAssignmentTitle }}</p>
         @if (selectedAssignmentId === null) {
           <p class="muted">برای مدیریت پیوست‌ها، ابتدا یک تکلیف انتخاب کنید.</p>
         } @else {
@@ -516,6 +547,25 @@ import { AuthService } from '../../core/services/auth.service';
         align-items: center;
         gap: 0.75rem;
       }
+      .section-title {
+        margin: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+      .count-badge {
+        background: #e2e8f0;
+        color: #0f172a;
+        border-radius: 999px;
+        padding: 0.15rem 0.55rem;
+        font-size: 0.75rem;
+        line-height: 1.4;
+      }
+      .section-context {
+        margin: 0.2rem 0 0.75rem;
+        color: var(--lp-muted);
+        font-size: 0.86rem;
+      }
       .inline-form {
         display: grid;
         gap: 0.6rem;
@@ -554,6 +604,40 @@ import { AuthService } from '../../core/services/auth.service';
       .list-item span,
       .list-item small {
         color: var(--lp-muted);
+      }
+      .list-item-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.45rem;
+      }
+      .list-meta {
+        color: var(--lp-muted);
+      }
+      .status-chip {
+        border-radius: 999px;
+        padding: 0.15rem 0.5rem;
+        font-size: 0.74rem;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+      .status-chip--active,
+      .status-chip--published {
+        color: #065f46;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+      }
+      .status-chip--inactive,
+      .status-chip--draft {
+        color: #92400e;
+        background: #fffbeb;
+        border-color: #fcd34d;
+      }
+      .status-chip--archived,
+      .status-chip--closed {
+        color: #374151;
+        background: #f3f4f6;
+        border-color: #d1d5db;
       }
       .editor-form {
         border: 1px solid var(--lp-border);
@@ -712,6 +796,64 @@ export class AdminComponent implements OnInit {
 
   isProcessing(userId: number): boolean {
     return this.processingUserIds.has(userId);
+  }
+
+  get selectedCourseTitle(): string {
+    if (this.selectedCourseId === null) {
+      return 'انتخاب نشده';
+    }
+    return this.courses.find((item) => item.id === this.selectedCourseId)?.title ?? `#${this.selectedCourseId}`;
+  }
+
+  get selectedAssignmentTitle(): string {
+    if (this.selectedAssignmentId === null) {
+      return 'انتخاب نشده';
+    }
+    return this.assignments.find((item) => item.id === this.selectedAssignmentId)?.title ?? `#${this.selectedAssignmentId}`;
+  }
+
+  courseStatusLabel(status: CourseStatus | undefined): string {
+    const normalized = this.normalizeCourseStatus(status);
+    if (normalized === 'inactive') {
+      return 'غیرفعال';
+    }
+    if (normalized === 'archived') {
+      return 'آرشیو';
+    }
+    return 'فعال';
+  }
+
+  courseStatusClass(status: CourseStatus | undefined): string {
+    return `status-chip--${this.normalizeCourseStatus(status)}`;
+  }
+
+  assignmentStatusLabel(status: AssignmentStatus | undefined): string {
+    const normalized = this.normalizeAssignmentStatus(status);
+    if (normalized === 'draft') {
+      return 'پیش‌نویس';
+    }
+    if (normalized === 'closed') {
+      return 'بسته';
+    }
+    return 'منتشر';
+  }
+
+  assignmentStatusClass(status: AssignmentStatus | undefined): string {
+    return `status-chip--${this.normalizeAssignmentStatus(status)}`;
+  }
+
+  assignmentTypeLabel(type: AssignmentType | undefined): string {
+    const normalized = this.normalizeAssignmentType(type);
+    if (normalized === 'homework') {
+      return 'تکلیف';
+    }
+    if (normalized === 'project') {
+      return 'پروژه';
+    }
+    if (normalized === 'exam') {
+      return 'آزمون';
+    }
+    return 'روزانه';
   }
 
   approveUser(user: PendingUser): void {
