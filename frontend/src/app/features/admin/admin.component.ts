@@ -194,8 +194,8 @@ import { AuthService } from '../../core/services/auth.service';
                         {{ courseStatusLabel(course.status) }}
                       </span>
                     </div>
-                    <span class="list-meta">{{ course.courseCode }}</span>
-                    <small class="list-meta">{{ course.instructor }}</small>
+                    <span class="list-meta list-meta--truncate">{{ course.courseCode }}</span>
+                    <small class="list-meta list-meta--truncate">{{ course.instructor }}</small>
                   </button>
                 }
               </div>
@@ -455,7 +455,7 @@ import { AuthService } from '../../core/services/auth.service';
               @for (attachment of attachments; track attachment.id) {
                 <article class="pending-item">
                   <p><strong>{{ attachment.title }}</strong></p>
-                  <p class="muted">{{ attachment.url }}</p>
+                  <p class="muted url-text">{{ attachment.url }}</p>
 
                   @if (attachmentMetaForms[attachment.id]; as attachmentForm) {
                     <form [formGroup]="attachmentForm" class="approval-form" (ngSubmit)="updateAttachment(attachment.id)">
@@ -547,6 +547,27 @@ import { AuthService } from '../../core/services/auth.service';
         align-items: center;
         gap: 0.75rem;
       }
+      .section-nav {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        scrollbar-width: thin;
+      }
+      .nav-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--lp-border);
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        color: #0f172a;
+        background: #fff;
+        text-decoration: none;
+        font-size: 0.82rem;
+        white-space: nowrap;
+        flex: 0 0 auto;
+      }
       .section-title {
         margin: 0;
         display: inline-flex;
@@ -613,6 +634,11 @@ import { AuthService } from '../../core/services/auth.service';
       }
       .list-meta {
         color: var(--lp-muted);
+      }
+      .list-meta--truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .status-chip {
         border-radius: 999px;
@@ -686,6 +712,47 @@ import { AuthService } from '../../core/services/auth.service';
       }
       .muted {
         color: var(--lp-muted);
+      }
+      .url-text {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      @media (max-width: 900px) {
+        .split-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 640px) {
+        .admin-page {
+          gap: 0.75rem;
+        }
+        .section-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .section-title {
+          justify-content: space-between;
+          width: 100%;
+        }
+        .inline-form {
+          grid-template-columns: 1fr;
+        }
+        .row-actions {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+        .row-actions .btn {
+          width: 100%;
+        }
+        .list-item-top {
+          align-items: flex-start;
+        }
+        .status-chip {
+          font-size: 0.7rem;
+        }
+        .editor-form {
+          padding: 0.65rem;
+        }
       }
     `
   ]
