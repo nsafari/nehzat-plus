@@ -106,6 +106,11 @@ export interface Assignment {
   status?: AssignmentStatus;
   instructions?: string;
   attachments?: AssignmentAttachment[];
+  requiredListenCount?: number;
+  currentListenCount?: number;
+  isRecordingUnlocked?: boolean;
+  instructionAudioVersion?: string;
+  primaryInstructionAudioUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -152,6 +157,18 @@ export interface AssignmentProgressResponse {
   assignmentId: number;
   hasSubmission: boolean;
   latestSubmission: AssignmentSubmission | null;
+  requiredListenCount: number;
+  currentListenCount: number;
+  isRecordingUnlocked: boolean;
+  instructionAudioVersion?: string;
+  hasPlayableInstructionAudio?: boolean;
+  primaryInstructionAudioUrl?: string;
+}
+
+export type StudentAssignmentGateState = AssignmentProgressResponse;
+
+export interface RegisterListenCompletionPayload {
+  instructionAudioVersion?: string;
 }
 
 export interface PendingUser {
@@ -162,6 +179,7 @@ export interface PendingUser {
   email: string;
   phoneNumber: string;
   status: 'pending';
+  createdAt?: string;
 }
 
 export interface ApproveUserPayload {
@@ -187,6 +205,16 @@ export interface StudentProgressResponse {
 }
 
 export interface AdminSystemStatistics {
+  totalCourses: number;
+  totalAssignments: number;
+  totalAttachments: number;
+  activeCourses: number;
+}
+
+export interface AdminDashboardSummary {
+  totalUsers: number;
+  approvedUsers: number;
+  pendingUsers: number;
   totalCourses: number;
   totalAssignments: number;
   totalAttachments: number;

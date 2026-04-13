@@ -10,33 +10,35 @@ import { AuthService } from '../../../../core/services/auth.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   template: `
-    <main style="padding: 1.5rem; direction: rtl; max-width: 520px; margin: 0 auto;">
-      <h1>ثبت نام دانش آموز</h1>
+    <main class="page-shell">
+      <section class="card auth-card">
+        <h1>ثبت نام دانش آموز</h1>
+        <p class="muted">پس از ثبت‌نام، حساب شما باید توسط مدیر تایید شود.</p>
 
-      <form [formGroup]="form" (ngSubmit)="submit()" style="display: grid; gap: 0.75rem;">
-        <input formControlName="firstName" type="text" placeholder="نام" />
-        <input formControlName="lastName" type="text" placeholder="نام خانوادگی" />
-        <input formControlName="username" type="text" placeholder="نام کاربری" />
-        <input formControlName="email" type="email" placeholder="ایمیل" />
-        <input formControlName="phoneNumber" type="text" placeholder="شماره موبایل" />
-        <input formControlName="password" type="password" placeholder="رمز عبور" />
+        <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+          <input formControlName="firstName" type="text" placeholder="نام" />
+          <input formControlName="lastName" type="text" placeholder="نام خانوادگی" />
+          <input formControlName="username" type="text" placeholder="نام کاربری" />
+          <input formControlName="email" type="email" placeholder="ایمیل" />
+          <input formControlName="phoneNumber" type="text" placeholder="شماره موبایل (09xxxxxxxxx)" />
+          <input formControlName="password" type="password" placeholder="رمز عبور" />
+          <button type="submit" [disabled]="form.invalid || loading">
+            {{ loading ? 'در حال ثبت نام...' : 'ثبت نام' }}
+          </button>
+        </form>
 
-        <button type="submit" [disabled]="form.invalid || loading">
-          {{ loading ? 'در حال ثبت نام...' : 'ثبت نام' }}
-        </button>
-      </form>
+        @if (successMessage) {
+          <p class="ok">{{ successMessage }}</p>
+        }
+        @if (errorMessage) {
+          <p class="error">{{ errorMessage }}</p>
+        }
 
-      @if (successMessage) {
-        <p style="color: #166534; margin-top: 1rem;">{{ successMessage }}</p>
-      }
-      @if (errorMessage) {
-        <p style="color: #b91c1c; margin-top: 1rem;">{{ errorMessage }}</p>
-      }
-
-      <p style="margin-top: 1rem;">
-        حساب کاربری دارید؟
-        <a routerLink="/auth/login">وارد شوید</a>
-      </p>
+        <p class="muted">
+          حساب کاربری دارید؟
+          <a routerLink="/auth/login">وارد شوید</a>
+        </p>
+      </section>
     </main>
   `
 })

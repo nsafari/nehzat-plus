@@ -1,1 +1,170 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  color-scheme: light;
+  font-family: "Vazirmatn", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --primary: #1f6feb;
+  --primary-hover: #1a5ec7;
+  --danger: #b91c1c;
+  --success: #166534;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #eff6ff, var(--bg) 45%);
+  color: var(--text);
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+.lp-page {
+  direction: rtl;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.lp-card {
+  width: min(460px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.08);
+  padding: 1.5rem;
+}
+
+.lp-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.lp-subtitle {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.lp-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.lp-label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 500;
+}
+
+.lp-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.62rem 0.7rem;
+  background: #fff;
+}
+
+.lp-input:focus {
+  outline: 2px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  border-color: var(--primary);
+}
+
+.lp-button {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.72rem 1rem;
+  cursor: pointer;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.lp-button:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.lp-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.lp-note {
+  margin: 0;
+  color: var(--muted);
+}
+
+.lp-error {
+  margin: 0;
+  color: var(--danger);
+}
+
+.lp-success {
+  margin: 0;
+  color: var(--success);
+}
+
+.lp-link {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.lp-link:hover {
+  text-decoration: underline;
+}
+
+.lp-shell {
+  direction: rtl;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+.lp-shell-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.lp-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.lp-shell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lp-chip-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lp-chip {
+  background: #eef2ff;
+  color: #3730a3;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.85rem;
+}

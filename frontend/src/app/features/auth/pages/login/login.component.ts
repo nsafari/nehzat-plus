@@ -10,35 +10,37 @@ import { AuthService } from '../../../../core/services/auth.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   template: `
-    <main style="max-width: 420px; margin: 2rem auto; padding: 1rem; direction: rtl;">
-      <h1 style="margin-bottom: 0.5rem;">ورود</h1>
-      <p style="margin-bottom: 1rem; color: #666;">برای نسخه نمایشی از حساب‌های زیر استفاده کنید:</p>
-      <ul style="margin-top: 0; margin-bottom: 1rem; color: #555;">
-        <li>دانش‌آموز: <code>student / student123</code></li>
-        <li>مدیر: <code>admin / admin123</code></li>
-      </ul>
+    <main class="page-container">
+      <section class="card auth-card">
+        <h1 class="title">ورود به پنل دانش‌آموز</h1>
+        <p class="subtitle">برای نسخه نمایشی از حساب‌های زیر استفاده کنید:</p>
+        <ul class="demo-accounts">
+          <li>دانش‌آموز: <code>student / student123</code></li>
+          <li>مدیر: <code>admin / admin123</code></li>
+        </ul>
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" style="display: grid; gap: 0.75rem;">
-        <label>
-          نام کاربری
-          <input formControlName="username" type="text" style="width: 100%; padding: 0.5rem;" />
-        </label>
-        <label>
-          رمز عبور
-          <input formControlName="password" type="password" style="width: 100%; padding: 0.5rem;" />
-        </label>
-        @if (errorMessage) {
-          <p style="margin: 0; color: #b00020;">{{ errorMessage }}</p>
-        }
-        <button type="submit" [disabled]="form.invalid || isSubmitting" style="padding: 0.6rem;">
-          {{ isSubmitting ? 'در حال ورود...' : 'ورود' }}
-        </button>
-      </form>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+          <label class="field">
+            <span>نام کاربری</span>
+            <input formControlName="username" type="text" />
+          </label>
+          <label class="field">
+            <span>رمز عبور</span>
+            <input formControlName="password" type="password" />
+          </label>
+          @if (errorMessage) {
+            <p class="error-text">{{ errorMessage }}</p>
+          }
+          <button class="btn-primary" type="submit" [disabled]="form.invalid || isSubmitting">
+            {{ isSubmitting ? 'در حال ورود...' : 'ورود' }}
+          </button>
+        </form>
 
-      <p style="margin-top: 1rem;">
-        حساب ندارید؟
-        <a routerLink="/auth/register">ثبت‌نام</a>
-      </p>
+        <p class="helper-text">
+          حساب ندارید؟
+          <a routerLink="/auth/register">ثبت‌نام</a>
+        </p>
+      </section>
     </main>
   `
 })

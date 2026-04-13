@@ -9,6 +9,7 @@ import {
   ApproveUserPayload,
   Assignment,
   AssignmentAttachment,
+  AssignmentProgressResponse,
   AssignmentSubmission,
   AuthSigninPayload,
   AuthSigninResponse,
@@ -84,8 +85,21 @@ export class HttpLessonPlannerApi extends LessonPlannerApi {
     return this.http.get<AssignmentSubmission[]>(this.url(`/students/${studentId}/submissions`), { params });
   }
 
-  getAssignmentProgress(studentId: number, assignmentId: number): Observable<unknown> {
-    return this.http.get<unknown>(this.url(`/students/${studentId}/assignments/${assignmentId}/progress`));
+  getAssignmentProgress(studentId: number, assignmentId: number): Observable<AssignmentProgressResponse> {
+    return this.http.get<AssignmentProgressResponse>(this.url(`/students/${studentId}/assignments/${assignmentId}/progress`));
+  }
+
+  registerAssignmentListenCompletion(
+    studentId: number,
+    assignmentId: number,
+    instructionAudioVersion?: string
+  ): Observable<AssignmentProgressResponse> {
+    return this.http.post<AssignmentProgressResponse>(
+      this.url(`/students/${studentId}/assignments/${assignmentId}/progress/listen`),
+      {
+        instructionAudioVersion
+      }
+    );
   }
 
   submitAssignment(studentId: number, assignmentId: number, payload: FormData): Observable<AssignmentSubmission> {
