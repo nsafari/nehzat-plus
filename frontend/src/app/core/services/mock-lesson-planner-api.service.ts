@@ -8,7 +8,7 @@ import type {
   ApproveUserPayload,
   Assignment,
   AssignmentAttachment,
-  AssignmentProgressResponse,
+  StudentAssignmentGateState,
   AssignmentSubmission,
   AuthSigninPayload,
   AuthSigninResponse,
@@ -40,6 +40,13 @@ type StoredUser = {
   imageUrl?: string;
 };
 
+type ListenState = {
+  requiredListenCount: number;
+  currentListenCount: number;
+  isRecordingUnlocked: boolean;
+  instructionAudioVersion?: string;
+};
+
 type MockStore = {
   users: StoredUser[];
   courses: Course[];
@@ -48,13 +55,24 @@ type MockStore = {
   students: Student[];
   studentCourseMap: Record<number, number[]>;
   submissions: AssignmentSubmission[];
+  listenState: Record<string, ListenState>;
 };
 
 const MOCK_DELAY_MS = 300;
+const DEFAULT_REQUIRED_LISTENS = 3;
+const LISTEN_STATE_STORAGE_KEY = 'mock-listen-gate-state-v1';
+
+type AssignmentListenState = {
+  currentListenCount: number;
+  requiredListenCount: number;
+  isRecordingUnlocked: boolean;
+  instructionAudioVersion?: string;
+};
 
 @Injectable()
 export class MockLessonPlannerApi extends LessonPlannerApi {
   private readonly store: MockStore = this.createInitialStore();
+  private listenStateByKey: Record<string, AssignmentListenState> = this.loadListenState();
 
   signin(payload: AuthSigninPayload): Observable<AuthSigninResponse> {
     const user = this.store.users.find((item) => item.username === payload.username);
@@ -228,7 +246,11 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
     return this.ok(items.map((submission) => ({ ...submission })));
   }
 
-  getAssignmentProgress(studentId: number, assignmentId: number): Observable<AssignmentProgressResponse> {
+  getAssignmentProgress(studentId: number, assignmentId: number): Observable<StudentAssignmentGateState> {
+    const assignment = this.store.assignments.find((item) => item.id === assignmentId);
+    const hasPlayableInstructionAudio = this.hasPlayableInstructionAudio(assignmentId);
+    const requiredListenCount = assignment?.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS;
+    const state = this.getListenState(studentId, assignmentId, assignment?.instructionAudioVersion, requiredListenCount);
     const submissions = this.store.submissions.filter(
       (submission) => submission.studentId === studentId && submission.assignmentId === assignmentId
     );
@@ -236,11 +258,64 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
     return this.ok({
       assignmentId,
       hasSubmission: Boolean(latest),
-      latestSubmission: latest ? { ...latest } : null
+      latestSubmission: latest ? { ...latest } : null,
+      requiredListenCount: state.requiredListenCount,
+      currentListenCount: state.currentListenCount,
+      isRecordingUnlocked: !hasPlayableInstructionAudio || state.isRecordingUnlocked,
+      instructionAudioVersion: assignment?.instructionAudioVersion,
+      hasPlayableInstructionAudio,
+      primaryInstructionAudioUrl: this.getPrimaryInstructionAudioUrl(assignmentId)
+    });
+  }
+
+  registerAssignmentListenCompletion(
+    studentId: number,
+    assignmentId: number,
+    instructionAudioVersion?: string
+  ): Observable<StudentAssignmentGateState> {
+    const assignment = this.store.assignments.find((item) => item.id === assignmentId);
+    const requiredListenCount = assignment?.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS;
+    const state = this.getListenState(studentId, assignmentId, instructionAudioVersion, requiredListenCount);
+    state.currentListenCount = Math.min(state.currentListenCount + 1, state.requiredListenCount);
+    state.isRecordingUnlocked = state.currentListenCount >= state.requiredListenCount;
+    if (instructionAudioVersion !== undefined) {
+      state.instructionAudioVersion = instructionAudioVersion;
+    }
+    this.setListenState(studentId, assignmentId, state);
+
+    const submissions = this.store.submissions.filter(
+      (submission) => submission.studentId === studentId && submission.assignmentId === assignmentId
+    );
+    const latest = submissions.sort((a, b) => Date.parse(b.submissionDate) - Date.parse(a.submissionDate))[0];
+
+    return this.ok({
+      assignmentId,
+      hasSubmission: Boolean(latest),
+      latestSubmission: latest ? { ...latest } : null,
+      requiredListenCount: state.requiredListenCount,
+      currentListenCount: state.currentListenCount,
+      isRecordingUnlocked: state.isRecordingUnlocked,
+      instructionAudioVersion: state.instructionAudioVersion,
+      hasPlayableInstructionAudio: this.hasPlayableInstructionAudio(assignmentId),
+      primaryInstructionAudioUrl: this.getPrimaryInstructionAudioUrl(assignmentId)
     });
   }
 
   submitAssignment(studentId: number, assignmentId: number, payload: FormData): Observable<AssignmentSubmission> {
+    const assignment = this.store.assignments.find((item) => item.id === assignmentId);
+    const hasPlayableInstructionAudio = this.hasPlayableInstructionAudio(assignmentId);
+    if (hasPlayableInstructionAudio) {
+      const gateState = this.getListenState(
+        studentId,
+        assignmentId,
+        assignment?.instructionAudioVersion,
+        assignment?.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS
+      );
+      if (!gateState.isRecordingUnlocked) {
+        return this.fail('برای شروع ضبط باید فایل راهنما را ۳ بار کامل گوش دهید.');
+      }
+    }
+
     const audioFile = payload.get('audioFile');
     const audioName = audioFile instanceof File ? audioFile.name : 'submission-audio.webm';
     const now = new Date().toISOString();
@@ -520,6 +595,10 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
       .map((attachment) => ({ ...attachment }));
     return {
       ...assignment,
+      requiredListenCount: assignment.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS,
+      currentListenCount: assignment.currentListenCount ?? 0,
+      isRecordingUnlocked: assignment.isRecordingUnlocked ?? false,
+      primaryInstructionAudioUrl: this.getPrimaryInstructionAudioUrl(assignment.id),
       attachments
     };
   }
@@ -536,6 +615,10 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
       assignmentDate: payload.assignmentDate ?? now.slice(0, 10),
       status: payload.status ?? 'published',
       instructions: payload.instructions ?? '',
+      requiredListenCount: payload.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS,
+      currentListenCount: payload.currentListenCount ?? 0,
+      isRecordingUnlocked: payload.isRecordingUnlocked ?? false,
+      instructionAudioVersion: payload.instructionAudioVersion ?? 'v1',
       createdAt: now,
       updatedAt: now
     };
@@ -641,6 +724,10 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
         assignmentDate: past.toISOString().slice(0, 10),
         status: 'published',
         instructions: 'ابتدا مثال حل شده را بخوانید.',
+        requiredListenCount: DEFAULT_REQUIRED_LISTENS,
+        currentListenCount: 0,
+        isRecordingUnlocked: false,
+        instructionAudioVersion: 'math-fractions-v1',
         createdAt: now.toISOString(),
         updatedAt: now.toISOString()
       },
@@ -654,6 +741,10 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
         assignmentDate: today,
         status: 'published',
         instructions: 'صدای خود را ضبط کرده و توضیح دهید.',
+        requiredListenCount: DEFAULT_REQUIRED_LISTENS,
+        currentListenCount: 0,
+        isRecordingUnlocked: false,
+        instructionAudioVersion: 'math-daily-v1',
         createdAt: now.toISOString(),
         updatedAt: now.toISOString()
       },
@@ -667,6 +758,10 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
         assignmentDate: future.toISOString().slice(0, 10),
         status: 'draft',
         instructions: 'فایل گزارش را تکمیل کنید.',
+        requiredListenCount: DEFAULT_REQUIRED_LISTENS,
+        currentListenCount: 0,
+        isRecordingUnlocked: true,
+        instructionAudioVersion: 'science-report-v1',
         createdAt: now.toISOString(),
         updatedAt: now.toISOString()
       }
@@ -767,7 +862,91 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
       studentCourseMap: {
         1: [1, 2]
       },
-      submissions
+      submissions,
+      listenState: {}
     };
+  }
+
+  private buildStateKey(studentId: number, assignmentId: number): string {
+    return `${studentId}:${assignmentId}`;
+  }
+
+  private getPrimaryInstructionAudioUrl(assignmentId: number): string | undefined {
+    const audioAttachment = this.store.attachments.find(
+      (attachment) => attachment.assignmentId === assignmentId && attachment.kind === 'audio' && Boolean(attachment.url)
+    );
+    if (!audioAttachment) {
+      return undefined;
+    }
+    return resolveMediaUrl(audioAttachment.url) ?? audioAttachment.url;
+  }
+
+  private hasPlayableInstructionAudio(assignmentId: number): boolean {
+    return Boolean(this.getPrimaryInstructionAudioUrl(assignmentId));
+  }
+
+  private getListenState(
+    studentId: number,
+    assignmentId: number,
+    instructionAudioVersion: string | undefined,
+    requiredListenCount: number
+  ): AssignmentListenState {
+    const key = this.buildStateKey(studentId, assignmentId);
+    const existing = this.listenStateByKey[key];
+    if (
+      existing &&
+      existing.instructionAudioVersion &&
+      instructionAudioVersion &&
+      existing.instructionAudioVersion !== instructionAudioVersion
+    ) {
+      delete this.listenStateByKey[key];
+    }
+
+    const current = this.listenStateByKey[key];
+    if (current) {
+      current.requiredListenCount = requiredListenCount;
+      current.isRecordingUnlocked = current.currentListenCount >= requiredListenCount;
+      if (instructionAudioVersion !== undefined) {
+        current.instructionAudioVersion = instructionAudioVersion;
+      }
+      this.persistListenState();
+      return current;
+    }
+
+    const state: AssignmentListenState = {
+      currentListenCount: 0,
+      requiredListenCount,
+      isRecordingUnlocked: false,
+      instructionAudioVersion
+    };
+    this.listenStateByKey[key] = state;
+    this.persistListenState();
+    return state;
+  }
+
+  private setListenState(studentId: number, assignmentId: number, state: AssignmentListenState): void {
+    const key = this.buildStateKey(studentId, assignmentId);
+    this.listenStateByKey[key] = {
+      ...state,
+      isRecordingUnlocked: state.currentListenCount >= state.requiredListenCount
+    };
+    this.persistListenState();
+  }
+
+  private loadListenState(): Record<string, AssignmentListenState> {
+    try {
+      const raw = localStorage.getItem(LISTEN_STATE_STORAGE_KEY);
+      if (!raw) {
+        return {};
+      }
+      const parsed = JSON.parse(raw) as Record<string, AssignmentListenState>;
+      return parsed ?? {};
+    } catch {
+      return {};
+    }
+  }
+
+  private persistListenState(): void {
+    localStorage.setItem(LISTEN_STATE_STORAGE_KEY, JSON.stringify(this.listenStateByKey));
   }
 }

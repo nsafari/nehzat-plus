@@ -16,6 +16,7 @@ import {
   CreateCoursePayload,
   CreateDailySeriesPayload,
   PendingUser,
+  StudentAssignmentGateState,
   StudentProgressResponse,
   UpdateAttachmentPayload
 } from '../models/lesson-planner.models';
@@ -37,7 +38,12 @@ export abstract class LessonPlannerApi {
 
   abstract getStudentProgress(studentId: number): Observable<StudentProgressResponse>;
   abstract getStudentSubmissions(studentId: number, assignmentId?: number): Observable<AssignmentSubmission[]>;
-  abstract getAssignmentProgress(studentId: number, assignmentId: number): Observable<unknown>;
+  abstract getAssignmentProgress(studentId: number, assignmentId: number): Observable<StudentAssignmentGateState>;
+  abstract registerAssignmentListenCompletion(
+    studentId: number,
+    assignmentId: number,
+    instructionAudioVersion?: string
+  ): Observable<StudentAssignmentGateState>;
   abstract submitAssignment(
     studentId: number,
     assignmentId: number,
