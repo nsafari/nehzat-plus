@@ -179,6 +179,7 @@ export interface PendingUser {
   email: string;
   phoneNumber: string;
   status: 'pending';
+  createdAt?: string;
 }
 
 export interface ApproveUserPayload {
@@ -204,6 +205,16 @@ export interface StudentProgressResponse {
 }
 
 export interface AdminSystemStatistics {
+  totalCourses: number;
+  totalAssignments: number;
+  totalAttachments: number;
+  activeCourses: number;
+}
+
+export interface AdminDashboardSummary {
+  totalUsers: number;
+  approvedUsers: number;
+  pendingUsers: number;
   totalCourses: number;
   totalAssignments: number;
   totalAttachments: number;
