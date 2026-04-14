@@ -40,6 +40,8 @@ type StoredUser = {
   imageUrl?: string;
 };
 
+const DEFAULT_MOCK_COURSE_IDS = [1, 2];
+
 type ListenState = {
   requiredListenCount: number;
   currentListenCount: number;
@@ -95,7 +97,7 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
       });
     }
 
-    const student = this.store.students.find((item) => item.studentId === user.studentId);
+    const student = this.ensureStudentProfileForUser(user);
     return this.ok({
       message: 'ورود با موفقیت انجام شد.',
       username: user.username,
@@ -387,6 +389,41 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
     this.store.students.push(student);
     this.store.studentCourseMap[student.id] = payload.courseIds;
     return this.ok({ message: 'کاربر تایید شد.' });
+  }
+
+  private ensureStudentProfileForUser(user: StoredUser): Student | undefined {
+    if (user.userType !== 'student' || user.status !== 'approved') {
+      return undefined;
+    }
+
+    let student = this.store.students.find((item) => item.studentId === user.studentId);
+    if (student) {
+      // Always ensure approved students are mapped to dummy courses.
+      this.ensureStudentCourseMap(student.id);
+      return student;
+    }
+
+    const derivedStudentId = user.studentId || `S-${1000 + user.id}`;
+    student = {
+      id: this.nextNumericId(this.store.students),
+      studentId: derivedStudentId,
+      firstName: user.firstName || 'دانش‌آموز',
+      lastName: user.lastName || 'نمونه',
+      email: user.email || `${user.username}@example.com`,
+      phoneNumber: user.phoneNumber || '09120000000'
+    };
+    this.store.students.push(student);
+    user.studentId = student.studentId;
+    this.ensureStudentCourseMap(student.id);
+    return student;
+  }
+
+  private ensureStudentCourseMap(studentNumericId: number): void {
+    const existing = this.store.studentCourseMap[studentNumericId];
+    if (existing && existing.length > 0) {
+      return;
+    }
+    this.store.studentCourseMap[studentNumericId] = [...DEFAULT_MOCK_COURSE_IDS];
   }
 
   rejectUser(userId: number): Observable<ApiMessageResponse> {
