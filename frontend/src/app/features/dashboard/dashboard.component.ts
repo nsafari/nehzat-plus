@@ -683,6 +683,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       void this.router.navigateByUrl('/admin');
       return;
     }
+    if (this.getStudentId() === null) {
+      this.errorMessage = 'شناسه دانش‌آموز نامعتبر است. لطفا یک‌بار خروج و ورود مجدد انجام دهید.';
+    }
     this.loadCourses();
     this.loadSubmissions();
   }
@@ -1070,7 +1073,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private getStudentId(): number | null {
-    return this.authService.getCurrentUser()?.studentId ?? null;
+    const session = this.authService.getCurrentUser();
+    return session?.studentId ?? session?.studentInfo?.id ?? null;
   }
 
   private updateChartSummary(): void {
