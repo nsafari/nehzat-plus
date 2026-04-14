@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
@@ -9,28 +8,49 @@ import type {
   AssignmentAttachment,
   AssignmentSubmission,
   Course,
+  CurrentUser,
   StudentAssignmentGateState
 } from '../../core/models/lesson-planner.models';
-import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token';
 import { resolveMediaUrl } from '../../core/services/api-url.util';
 import { AuthService } from '../../core/services/auth.service';
+import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token';
 
-type TimelinePosition = 'past' | 'today' | 'future';
+type TimelineStatus = 'future' | 'today' | 'past';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   template: `
-    <main class="lp-shell lp-page">
-      <header class="lp-topbar">
-        <div>
-          <h1>داشبورد دانش‌آموز</h1>
-          <p class="muted">خوش آمدید {{ username }}</p>
+    <main class="student-page">
+      <header class="site-header">
+        <div class="brand-wrap">
+          @if (!logoHidden) {
+            <img
+              src="assets/nehzat.png"
+              alt="لوگو سایت"
+              class="site-logo"
+              (error)="logoHidden = true"
+            />
+          }
+          <div>
+            <h1>پنل دانش‌آموز</h1>
+            <p class="muted">خوش آمدید {{ displayName }}</p>
+          </div>
         </div>
-        <button type="button" class="lp-link-btn" (click)="logout()">
-          خروج
-        </button>
+
+        <div class="user-menu">
+          <button type="button" class="menu-trigger" (click)="toggleUserMenu()">
+            <i class="bi bi-person-circle"></i>
+            <span>{{ currentUser?.username }}</span>
+          </button>
+          @if (isUserMenuOpen) {
+            <div class="menu-dropdown">
+              <button type="button" (click)="showUserModal()">نمایش جزئیات کاربر</button>
+              <button type="button" (click)="logout()">خروج</button>
+            </div>
+          }
+        </div>
       </header>
 
       @if (errorMessage) {
@@ -40,128 +60,194 @@ type TimelinePosition = 'past' | 'today' | 'future';
         <p class="lp-success">{{ successMessage }}</p>
       }
 
-      <section class="dashboard-grid">
-        <aside class="lp-card">
-          <h2>دروس فعال</h2>
+      <div class="dashboard-container">
+        <aside class="sidebar">
+          <h3>دروس فعال</h3>
           @if (loadingCourses) {
             <p class="muted">در حال دریافت دروس...</p>
-          } @else if (activeCourses.length === 0) {
+          } @else if (courses.length === 0) {
             <p class="muted">درسی برای شما فعال نشده است.</p>
           } @else {
-            <div class="course-list">
-              @for (course of activeCourses; track course.id) {
+            <div class="lesson-menu">
+              @for (course of courses; track course.id) {
                 <button
                   type="button"
-                  class="course-btn"
-                  [class.is-active]="course.id === selectedCourse?.id"
+                  class="lesson-btn"
+                  [class.active]="selectedCourse?.id === course.id"
                   (click)="selectCourse(course)"
                 >
-                  <span>{{ course.title }}</span>
-                  <small class="muted">{{ course.courseCode }}</small>
+                  <i class="bi bi-book"></i> {{ course.title }}
                 </button>
               }
             </div>
           }
         </aside>
 
-        <section class="lp-card">
-          @if (selectedCourse) {
-            <h2>{{ selectedCourse.title }}</h2>
-            <p class="muted">
-              مدرس: {{ selectedCourse.instructor }} |
-              از {{ selectedCourse.startDate }} تا {{ selectedCourse.endDate }}
-            </p>
-            <p>{{ selectedCourse.description }}</p>
-          } @else {
-            <h2>یک درس را انتخاب کنید</h2>
-            <p class="muted">برای مشاهده تایم‌لاین تکالیف، یکی از دروس فعال را انتخاب نمایید.</p>
-          }
+        <section class="main-content">
+          <h2>داشبورد پیشرفت دروس</h2>
 
-          <h3 class="section-title">تایم‌لاین تکالیف</h3>
-          @if (loadingAssignments) {
-            <p class="muted">در حال دریافت تکالیف...</p>
-          } @else if (assignments.length === 0) {
-            <p class="muted">تکلیفی برای این درس ثبت نشده است.</p>
-          } @else {
-            <div class="timeline">
-              @for (assignment of assignments; track assignment.id) {
-                <button
-                  type="button"
-                  class="timeline-item"
-                  [class.is-past]="timelinePosition(assignment) === 'past'"
-                  [class.is-today]="timelinePosition(assignment) === 'today'"
-                  [class.is-future]="timelinePosition(assignment) === 'future'"
-                  (click)="openAssignment(assignment)"
-                >
-                  <span class="timeline-date">{{ assignment.assignmentDate }}</span>
-                  <strong>{{ assignment.title }}</strong>
-                  <small class="muted">{{ assignment.type || 'daily' }}</small>
-                </button>
-              }
+          @if (selectedCourse) {
+            <div class="lesson-info">
+              <h3>{{ selectedCourse.title }}</h3>
+              <p><strong>استاد:</strong> {{ selectedCourse.instructor }}</p>
+              <p><strong>درباره درس:</strong> {{ selectedCourse.description }}</p>
             </div>
           }
-        </section>
-      </section>
 
-      <section class="lp-card">
-        <h2>تحویل‌های من</h2>
-        @if (loadingSubmissions) {
-          <p class="muted">در حال دریافت تحویل‌ها...</p>
-        } @else if (courseSubmissions.length === 0) {
-          <p class="muted">هنوز تحویلی برای این درس ثبت نشده است.</p>
-        } @else {
-          <div class="submission-grid">
-            @for (submission of courseSubmissions; track submission.id) {
-              <article class="submission-card">
-                <h4>{{ assignmentTitleById(submission.assignmentId) }}</h4>
-                <p class="muted">تاریخ: {{ submission.submissionDate }}</p>
-                <p class="muted">وضعیت: {{ submission.status }}</p>
-                @if (submission.dailyScore !== undefined) {
-                  <p class="muted">نمره روزانه: {{ submission.dailyScore }}</p>
+          <div class="timeline-container">
+            <h4>تایم‌لاین تکالیف</h4>
+            @if (loadingAssignments) {
+              <p class="muted">در حال دریافت تکالیف...</p>
+            } @else if (!selectedCourse || assignments.length === 0) {
+              <p class="muted">برای این درس هنوز تکلیفی ثبت نشده است.</p>
+            } @else {
+              <div class="timeline-horizontal">
+                @for (assignment of assignments; track assignment.id; let i = $index) {
+                  <div class="timeline-item">
+                    @if (i > 0) {
+                      <div class="timeline-bar"></div>
+                    }
+                    <button
+                      type="button"
+                      class="timeline-dot"
+                      [class.gray]="getAssignmentStatus(assignment) === 'future'"
+                      [class.blue]="getAssignmentStatus(assignment) === 'today'"
+                      [class.green]="getAssignmentStatus(assignment) === 'past'"
+                      [title]="assignment.title"
+                      (click)="showAssignmentDetails(assignment)"
+                    >
+                      <i class="bi" [class.bi-file-earmark-audio]="hasAudioAttachment(assignment)"></i>
+                      <i class="bi bi-book" [class.hidden]="hasAudioAttachment(assignment)"></i>
+                    </button>
+                    <div class="timeline-label">روز {{ i + 1 }}</div>
+                  </div>
                 }
-                @if (submission.notes) {
-                  <p>{{ submission.notes }}</p>
-                }
-                @if (resolveAudioUrl(submission.audioFileUrl); as audioUrl) {
-                  <audio controls [src]="audioUrl"></audio>
-                }
-              </article>
+              </div>
             }
           </div>
-        }
-      </section>
 
-      @if (selectedAssignment) {
-        <div class="modal-backdrop" (click)="closeAssignment()">
-          <section class="modal-panel" (click)="$event.stopPropagation()">
-            <header class="modal-header">
-              <div>
-                <h3>{{ selectedAssignment.title }}</h3>
-                <p class="muted">{{ selectedAssignment.description }}</p>
+          <div class="chart-container">
+            <h4>نمودار پیشرفت</h4>
+            <div class="chart-placeholder">
+              {{ chartSummary }}
+            </div>
+          </div>
+
+          <div class="audio-recorder">
+            <h4>ضبط صوت</h4>
+            @if (selectedAssignment) {
+              <p class="muted">تکلیف انتخاب‌شده: {{ selectedAssignment.title }}</p>
+            } @else {
+              <p class="muted">برای شروع ضبط، ابتدا یک تکلیف از تایم‌لاین انتخاب کنید.</p>
+            }
+
+            @if (selectedAssignment && primaryInstructionAudioUrl) {
+              <p class="muted">
+                وضعیت پیش‌نیاز گوش‌دادن:
+                {{ assignmentProgress?.currentListenCount ?? 0 }} /
+                {{ assignmentProgress?.requiredListenCount ?? 3 }}
+              </p>
+            }
+
+            <div class="recorder-controls">
+              <button
+                type="button"
+                class="record-btn"
+                [class.recording]="isRecording"
+                (click)="toggleRecording()"
+                [disabled]="!selectedAssignment || (!isRecording && !isRecordingUnlocked)"
+              >
+                <i class="bi" [class.bi-mic]="!isRecording" [class.bi-stop-fill]="isRecording"></i>
+              </button>
+              @if (isRecording) {
+                <span class="text-danger">در حال ضبط...</span>
+              }
+            </div>
+
+            @if (selectedAssignment && !isRecordingUnlocked) {
+              <p class="lp-error">برای شروع ضبط باید فایل راهنما را کامل گوش دهید تا قفل باز شود.</p>
+            }
+
+            @if (audioUrl) {
+              <div class="audio-preview">
+                <audio [src]="audioUrl" controls></audio>
+                <button type="button" class="btn-primary" (click)="submitAudio()" [disabled]="isSubmitting">
+                  {{ isSubmitting ? 'در حال ارسال...' : 'ارسال صوت' }}
+                </button>
               </div>
-              <button type="button" class="lp-link-btn" (click)="closeAssignment()">بستن</button>
+            }
+          </div>
+
+          <div class="submissions-container">
+            <div class="submissions-header">
+              <h4>ارسال‌های من</h4>
+              <button type="button" class="btn-primary" (click)="loadSubmissions()">بروزرسانی</button>
+            </div>
+
+            @if (loadingSubmissions) {
+              <p class="muted">در حال بارگذاری ارسال‌ها...</p>
+            } @else if (filteredSubmissions.length === 0) {
+              <p class="muted">هنوز هیچ ارسالی ثبت نشده است.</p>
+            } @else {
+              <div class="submissions-grid">
+                @for (submission of filteredSubmissions; track submission.id) {
+                  <article class="submission-card">
+                    <h6>{{ assignmentTitleById(submission.assignmentId) }}</h6>
+                    <p class="muted">تاریخ: {{ submission.submissionDate }}</p>
+                    <p class="muted">وضعیت: {{ submission.status }}</p>
+                    <p class="muted">نمره روزانه: {{ submission.dailyScore ?? 0 }}</p>
+                    @if (submission.notes) {
+                      <p>{{ submission.notes }}</p>
+                    }
+                    @if (resolveAudioUrl(submission.audioFileUrl); as submissionAudioUrl) {
+                      <button type="button" class="btn-secondary" (click)="playAudio(submissionAudioUrl)">
+                        پخش صوت
+                      </button>
+                    }
+                  </article>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      @if (isAssignmentModalOpen && selectedAssignment) {
+        <div class="modal-backdrop" (click)="closeAssignmentModal()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <header class="modal-header">
+              <h5>جزئیات تکلیف</h5>
+              <button type="button" class="btn-secondary" (click)="closeAssignmentModal()">بستن</button>
             </header>
 
             <div class="modal-body">
-              <section>
-                <h4>پیوست‌ها</h4>
-                @if (selectedAssignment.attachments?.length) {
-                  <ul class="attachment-list">
-                    @for (attachment of selectedAssignment.attachments; track attachment.id) {
-                      <li>
-                        <strong>{{ attachment.title }}</strong>
-                        <span class="muted">({{ attachment.kind }})</span>
-                      </li>
-                    }
-                  </ul>
-                } @else {
-                  <p class="muted">پیوستی برای این تکلیف ثبت نشده است.</p>
-                }
-              </section>
+              <h5>{{ selectedAssignment.title }}</h5>
+              <p><strong>تاریخ:</strong> {{ selectedAssignment.assignmentDate }}</p>
+              <p><strong>توضیحات:</strong> {{ selectedAssignment.description }}</p>
+              <p><strong>دستورالعمل:</strong> {{ selectedAssignment.instructions || '-' }}</p>
 
-              <section class="gate-box">
-                <h4>پیش‌نیاز ضبط صدا</h4>
-                @if (primaryInstructionAudioUrl) {
+              @if (selectedAssignment.attachments?.length) {
+                <div class="attachment-box">
+                  <h6>فایل‌های ضمیمه:</h6>
+                  <div class="attachment-list">
+                    @for (attachment of selectedAssignment.attachments; track attachment.id) {
+                      <a
+                        [href]="resolveAttachmentUrl(attachment.url) || '#'"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="attachment-item"
+                      >
+                        <i class="bi" [class]="getAttachmentIcon(attachment.kind)"></i>
+                        {{ attachment.title }}
+                      </a>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (primaryInstructionAudioUrl) {
+                <div class="gate-box">
+                  <h6>فایل راهنما (پیش‌نیاز ضبط)</h6>
                   <audio
                     #instructionAudio
                     controls
@@ -172,231 +258,345 @@ type TimelinePosition = 'past' | 'today' | 'future';
                     (error)="onInstructionAudioError()"
                   ></audio>
                   <p class="muted">
-                    دفعات گوش‌دادن:
+                    گوش‌دادن کامل:
                     {{ assignmentProgress?.currentListenCount ?? 0 }}
                     /
                     {{ assignmentProgress?.requiredListenCount ?? 3 }}
                   </p>
-                } @else {
-                  <p class="muted">
-                    فایل صوتی آموزشی موجود نیست؛ ضبط برای این تکلیف بدون پیش‌نیاز گوش‌دادن فعال است.
-                  </p>
-                }
-              </section>
-
-              <section>
-                <h4>ضبط و ارسال پاسخ</h4>
-                <div class="recording-actions">
-                  <button
-                    type="button"
-                    class="lp-btn lp-btn-secondary"
-                    [disabled]="isRecording || !isRecordingUnlocked"
-                    (click)="startRecording()"
-                  >
-                    شروع ضبط
-                  </button>
-                  <button
-                    type="button"
-                    class="lp-btn lp-btn-secondary"
-                    [disabled]="!isRecording"
-                    (click)="stopRecording()"
-                  >
-                    توقف ضبط
-                  </button>
-                  <button
-                    type="button"
-                    class="lp-btn lp-btn-secondary"
-                    [disabled]="!recordedAudioBlob || isSubmittingSubmission"
-                    (click)="clearRecording()"
-                  >
-                    پاک کردن
-                  </button>
                 </div>
+              }
 
-                @if (!isRecordingUnlocked) {
-                  <p class="lp-error">برای فعال شدن ضبط باید فایل آموزشی را 3 بار کامل گوش دهید.</p>
-                }
+              @if (assignmentProgress) {
+                <div class="progress-box">
+                  <p><strong>وضعیت:</strong> {{ assignmentProgress.hasSubmission ? 'تکمیل شده' : 'در انتظار تکمیل' }}</p>
+                  <p><strong>نمره روزانه:</strong> {{ assignmentProgress.latestSubmission?.dailyScore ?? '-' }}</p>
+                  <p><strong>نمره تجمعی:</strong> {{ assignmentProgress.latestSubmission?.cumulativeScore ?? '-' }}</p>
+                  @if (assignmentProgress.latestSubmission?.feedback) {
+                    <p><strong>بازخورد:</strong> {{ assignmentProgress.latestSubmission?.feedback }}</p>
+                  }
+                </div>
+              }
 
-                @if (recordedAudioUrl) {
-                  <audio controls [src]="recordedAudioUrl"></audio>
-                  <label class="notes-field">
-                    توضیحات
-                    <textarea
-                      rows="3"
-                      [value]="submissionNotes"
-                      (input)="submissionNotes = readTextInput($event)"
-                      placeholder="توضیحات اختیاری برای تحویل"
-                    ></textarea>
-                  </label>
-                  <button
-                    type="button"
-                    class="lp-btn"
-                    [disabled]="isSubmittingSubmission || !isRecordingUnlocked"
-                    (click)="submitRecording()"
-                  >
-                    {{ isSubmittingSubmission ? 'در حال ارسال...' : 'ارسال پاسخ' }}
-                  </button>
-                }
-              </section>
+              <button type="button" class="btn-primary" (click)="startRecordingForAssignment(selectedAssignment)">
+                شروع ضبط صوت
+              </button>
             </div>
-          </section>
+          </div>
+        </div>
+      }
+
+      @if (isUserModalOpen && currentUser) {
+        <div class="modal-backdrop" (click)="hideUserModal()">
+          <div class="modal-content user-modal" (click)="$event.stopPropagation()">
+            <header class="modal-header">
+              <h5>اطلاعات کاربر</h5>
+              <button type="button" class="btn-secondary" (click)="hideUserModal()">بستن</button>
+            </header>
+            <div class="modal-body user-grid">
+              <p><strong>نام:</strong> {{ currentUser.studentInfo?.firstName ?? '-' }}</p>
+              <p><strong>نام خانوادگی:</strong> {{ currentUser.studentInfo?.lastName ?? '-' }}</p>
+              <p><strong>ایمیل:</strong> {{ currentUser.studentInfo?.email ?? '-' }}</p>
+              <p><strong>شماره تماس:</strong> {{ currentUser.studentInfo?.phoneNumber ?? '-' }}</p>
+              <p><strong>نام کاربری:</strong> {{ currentUser.username }}</p>
+              <p><strong>نوع کاربر:</strong> {{ currentUser.userType === 'admin' ? 'مدیر' : 'دانش‌آموز' }}</p>
+            </div>
+          </div>
         </div>
       }
     </main>
   `,
   styles: [
     `
-      .lp-page {
+      :host {
+        display: block;
+      }
+      .student-page {
+        direction: rtl;
+        min-height: 100vh;
+        padding: 1rem;
         display: grid;
         gap: 1rem;
       }
-      .lp-topbar {
+      .site-header {
+        background: #fff;
+        border: 1px solid var(--lp-border);
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-      }
-      .dashboard-grid {
-        display: grid;
-        grid-template-columns: 260px 1fr;
         gap: 1rem;
       }
-      .course-list {
-        display: grid;
-        gap: 0.5rem;
+      .brand-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
       }
-      .course-btn {
+      .site-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+      .brand-wrap h1 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+      .user-menu {
+        position: relative;
+      }
+      .menu-trigger {
         border: 1px solid var(--lp-border);
         border-radius: 10px;
         background: #fff;
-        padding: 0.6rem 0.75rem;
-        text-align: right;
-        cursor: pointer;
-        display: grid;
-        gap: 0.25rem;
-      }
-      .course-btn.is-active {
-        border-color: var(--lp-primary);
-        background: #eef2ff;
-      }
-      .timeline {
+        padding: 0.45rem 0.6rem;
         display: flex;
-        gap: 0.75rem;
-        overflow-x: auto;
-        padding-bottom: 0.25rem;
-      }
-      .timeline-item {
-        min-width: 180px;
-        border: 1px solid var(--lp-border);
-        border-radius: 12px;
-        background: #fff;
-        padding: 0.6rem;
-        text-align: right;
-        display: grid;
-        gap: 0.25rem;
+        align-items: center;
+        gap: 0.45rem;
         cursor: pointer;
       }
-      .timeline-item.is-past {
+      .menu-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        min-width: 180px;
+        background: #fff;
+        border: 1px solid var(--lp-border);
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
+        padding: 0.25rem;
+        display: grid;
+        z-index: 5;
+      }
+      .menu-dropdown button {
+        border: 0;
+        background: transparent;
+        padding: 0.5rem;
+        text-align: right;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .menu-dropdown button:hover {
         background: #f8fafc;
       }
-      .timeline-item.is-today {
-        border-color: #f59e0b;
-        background: #fffbeb;
-      }
-      .timeline-item.is-future {
-        border-color: #6366f1;
-      }
-      .timeline-date {
-        font-size: 0.8rem;
-        color: var(--lp-muted);
-      }
-      .section-title {
-        margin-top: 1rem;
-      }
-      .submission-grid {
+      .dashboard-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-columns: 280px 1fr;
+        gap: 1rem;
+      }
+      .sidebar,
+      .main-content {
+        background: #fff;
+        border: 1px solid var(--lp-border);
+        border-radius: 14px;
+        padding: 1rem;
+      }
+      .lesson-menu {
+        display: grid;
+        gap: 0.5rem;
+      }
+      .lesson-btn {
+        border: 1px solid var(--lp-border);
+        background: #fff;
+        border-radius: 10px;
+        padding: 0.55rem 0.65rem;
+        text-align: right;
+        cursor: pointer;
+      }
+      .lesson-btn.active {
+        border-color: var(--lp-primary);
+        background: #eff6ff;
+      }
+      .main-content h2 {
+        margin: 0 0 1rem;
+      }
+      .lesson-info,
+      .chart-container,
+      .audio-recorder,
+      .submissions-container,
+      .timeline-container {
+        border: 1px solid var(--lp-border);
+        border-radius: 12px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+      .timeline-horizontal {
+        display: flex;
+        gap: 0.9rem;
+        overflow-x: auto;
+        padding-bottom: 0.3rem;
+      }
+      .timeline-item {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+      }
+      .timeline-bar {
+        width: 24px;
+        height: 3px;
+        border-radius: 999px;
+        background: #cbd5e1;
+      }
+      .timeline-dot {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        cursor: pointer;
+      }
+      .timeline-dot.gray {
+        background: #94a3b8;
+      }
+      .timeline-dot.blue {
+        background: #2563eb;
+      }
+      .timeline-dot.green {
+        background: #16a34a;
+      }
+      .timeline-label {
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--lp-muted);
+        margin-top: 0.35rem;
+      }
+      .hidden {
+        display: none;
+      }
+      .chart-placeholder {
+        border: 1px dashed #93c5fd;
+        background: #eff6ff;
+        border-radius: 10px;
+        padding: 0.7rem;
+        color: #1e3a8a;
+      }
+      .recorder-controls {
+        display: flex;
+        align-items: center;
         gap: 0.75rem;
+      }
+      .record-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 0;
+        background: #ef4444;
+        color: #fff;
+        cursor: pointer;
+      }
+      .record-btn.recording {
+        background: #0f172a;
+      }
+      .record-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .audio-preview {
+        margin-top: 0.75rem;
+        display: grid;
+        gap: 0.55rem;
+      }
+      .submissions-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.6rem;
+      }
+      .submissions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.65rem;
       }
       .submission-card {
         border: 1px solid var(--lp-border);
         border-radius: 12px;
-        background: #fff;
-        padding: 0.75rem;
+        padding: 0.7rem;
         display: grid;
-        gap: 0.4rem;
+        gap: 0.35rem;
+      }
+      .submission-card h6 {
+        margin: 0;
       }
       .modal-backdrop {
         position: fixed;
         inset: 0;
+        z-index: 20;
         background: rgba(15, 23, 42, 0.5);
         display: flex;
         justify-content: center;
         align-items: center;
         padding: 1rem;
-        z-index: 10;
       }
-      .modal-panel {
+      .modal-content {
         width: min(900px, 100%);
         max-height: 90vh;
-        overflow: auto;
-        background: #fff;
-        border-radius: 16px;
+        overflow-y: auto;
+        border-radius: 14px;
         border: 1px solid var(--lp-border);
+        background: #fff;
         padding: 1rem;
       }
       .modal-header {
         display: flex;
         justify-content: space-between;
-        align-items: start;
-        gap: 1rem;
-        margin-bottom: 0.75rem;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.7rem;
+      }
+      .modal-header h5 {
+        margin: 0;
       }
       .modal-body {
         display: grid;
-        gap: 1rem;
+        gap: 0.65rem;
       }
-      .attachment-list {
-        margin: 0;
-        padding-right: 1.2rem;
-      }
-      .gate-box {
-        border: 1px solid var(--lp-border);
-        border-radius: 12px;
-        padding: 0.75rem;
-        background: #f8fafc;
-      }
-      .recording-actions {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        margin-bottom: 0.75rem;
-      }
-      .notes-field {
-        display: grid;
-        gap: 0.35rem;
-        margin-top: 0.75rem;
-      }
-      .notes-field textarea {
+      .attachment-box,
+      .gate-box,
+      .progress-box {
         border: 1px solid var(--lp-border);
         border-radius: 10px;
-        padding: 0.6rem;
+        padding: 0.65rem;
       }
-      h1,
-      h2,
-      h3,
-      h4 {
-        margin: 0 0 0.35rem;
+      .attachment-list {
+        display: grid;
+        gap: 0.45rem;
+      }
+      .attachment-item {
+        text-decoration: none;
+        color: #1e40af;
+      }
+      .attachment-item:hover {
+        text-decoration: underline;
+      }
+      .user-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       }
       .muted {
         color: var(--lp-muted);
-        margin: 0;
+      }
+      .text-danger {
+        color: #dc2626;
       }
       audio {
         width: 100%;
       }
-      @media (max-width: 900px) {
-        .dashboard-grid {
+      @media (max-width: 920px) {
+        .dashboard-container {
           grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 640px) {
+        .site-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .submissions-header {
+          flex-direction: column;
+          align-items: stretch;
         }
       }
     `
@@ -407,13 +607,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private readonly api = inject(LESSON_PLANNER_API);
   private readonly router = inject(Router);
 
-  readonly username = this.authService.getCurrentUser()?.username ?? 'دانش‌آموز';
-
-  activeCourses: Course[] = [];
+  currentUser: CurrentUser | null = null;
+  courses: Course[] = [];
   selectedCourse: Course | null = null;
   assignments: Assignment[] = [];
   submissions: AssignmentSubmission[] = [];
-
   selectedAssignment: Assignment | null = null;
   assignmentProgress: StudentAssignmentGateState | null = null;
   primaryInstructionAudioUrl: string | null = null;
@@ -421,9 +619,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadingCourses = false;
   loadingAssignments = false;
   loadingSubmissions = false;
-  isSubmittingSubmission = false;
+  isSubmitting = false;
   errorMessage = '';
   successMessage = '';
+  chartSummary = 'پس از انتخاب درس، وضعیت پیشرفت اینجا نمایش داده می‌شود.';
 
   isRecording = false;
   private mediaRecorder: MediaRecorder | null = null;
@@ -431,9 +630,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private recordingChunks: Blob[] = [];
   private recordingStartedAt = 0;
   private recordingDurationSeconds = 0;
-  recordedAudioBlob: Blob | null = null;
-  recordedAudioUrl: string | null = null;
-  submissionNotes = '';
+  audioBlob: Blob | null = null;
+  audioUrl: string | null = null;
+
+  logoHidden = false;
+  isUserMenuOpen = false;
+  isUserModalOpen = false;
+  isAssignmentModalOpen = false;
 
   private listenSession = {
     active: false,
@@ -444,24 +647,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private listenRequestInFlight = false;
   private lastProgressRequestKey = '';
 
-  ngOnInit(): void {
-    this.loadActiveCourses();
-  }
-
-  ngOnDestroy(): void {
-    this.stopStreamTracks();
-    if (this.recordedAudioUrl) {
-      URL.revokeObjectURL(this.recordedAudioUrl);
+  get displayName(): string {
+    const student = this.currentUser?.studentInfo;
+    if (!student) {
+      return this.currentUser?.username ?? 'دانش‌آموز';
     }
+    return `${student.firstName} ${student.lastName}`;
   }
 
-  get courseSubmissions(): AssignmentSubmission[] {
+  get filteredSubmissions(): AssignmentSubmission[] {
     if (!this.selectedCourse) {
-      return [];
+      return this.submissions;
     }
-    const assignmentIds = new Set(
-      this.assignments.filter((assignment) => assignment.courseId === this.selectedCourse?.id).map((assignment) => assignment.id)
-    );
+    const assignmentIds = new Set(this.assignments.map((assignment) => assignment.id));
     return this.submissions.filter((submission) => assignmentIds.has(submission.assignmentId));
   }
 
@@ -475,29 +673,146 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return Boolean(this.assignmentProgress?.isRecordingUnlocked);
   }
 
+  ngOnInit(): void {
+    this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser) {
+      void this.router.navigateByUrl('/auth/login');
+      return;
+    }
+    if (this.currentUser.userType === 'admin') {
+      void this.router.navigateByUrl('/admin');
+      return;
+    }
+    if (this.getStudentId() === null) {
+      this.errorMessage = 'شناسه دانش‌آموز نامعتبر است. لطفا یک‌بار خروج و ورود مجدد انجام دهید.';
+    }
+    this.loadCourses();
+    this.loadSubmissions();
+  }
+
+  ngOnDestroy(): void {
+    this.stopStreamTracks();
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
+    }
+  }
+
+  toggleUserMenu(): void {
+    this.isUserMenuOpen = !this.isUserMenuOpen;
+  }
+
+  showUserModal(): void {
+    this.isUserMenuOpen = false;
+    this.isUserModalOpen = true;
+  }
+
+  hideUserModal(): void {
+    this.isUserModalOpen = false;
+  }
+
   logout(): void {
     this.authService.logout();
-    void this.router.navigate(['/auth/login']);
+    void this.router.navigateByUrl('/auth/login');
+  }
+
+  loadCourses(): void {
+    this.loadingCourses = true;
+    this.api
+      .getActiveCourses()
+      .pipe(finalize(() => (this.loadingCourses = false)))
+      .subscribe({
+        next: (courses) => {
+          this.courses = courses;
+          if (courses.length > 0) {
+            this.selectCourse(courses[0]);
+          } else {
+            this.selectedCourse = null;
+            this.assignments = [];
+            this.chartSummary = 'درسی برای نمایش نمودار وجود ندارد.';
+          }
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message ?? 'خطا در دریافت دروس فعال';
+        }
+      });
   }
 
   selectCourse(course: Course): void {
-    if (this.selectedCourse?.id === course.id) {
-      return;
-    }
     this.selectedCourse = course;
     this.selectedAssignment = null;
     this.assignmentProgress = null;
     this.primaryInstructionAudioUrl = null;
-    this.loadCourseAssignments(course.id);
+    this.audioBlob = null;
+    this.audioUrl = null;
+    this.isAssignmentModalOpen = false;
+    this.loadAssignments(course.id);
     this.loadSubmissions();
   }
 
-  openAssignment(assignment: Assignment): void {
+  loadAssignments(courseId: number): void {
+    this.loadingAssignments = true;
+    this.api
+      .getCourseAssignments(courseId)
+      .pipe(finalize(() => (this.loadingAssignments = false)))
+      .subscribe({
+        next: (assignments) => {
+          this.assignments = [...assignments].sort((a, b) => a.assignmentDate.localeCompare(b.assignmentDate));
+          this.updateChartSummary();
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message ?? 'خطا در دریافت تکالیف';
+          this.assignments = [];
+          this.updateChartSummary();
+        }
+      });
+  }
+
+  loadSubmissions(): void {
+    const studentId = this.getStudentId();
+    if (studentId === null) {
+      return;
+    }
+    this.loadingSubmissions = true;
+    this.api
+      .getStudentSubmissions(studentId)
+      .pipe(finalize(() => (this.loadingSubmissions = false)))
+      .subscribe({
+        next: (submissions) => {
+          this.submissions = submissions;
+          this.updateChartSummary();
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message ?? 'خطا در دریافت ارسال‌ها';
+          this.submissions = [];
+          this.updateChartSummary();
+        }
+      });
+  }
+
+  getAssignmentStatus(assignment: Assignment): TimelineStatus {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const assignmentDate = new Date(assignment.assignmentDate);
+    assignmentDate.setHours(0, 0, 0, 0);
+
+    if (assignmentDate.getTime() > today.getTime()) {
+      return 'future';
+    }
+    if (assignmentDate.getTime() === today.getTime()) {
+      return 'today';
+    }
+    return 'past';
+  }
+
+  hasAudioAttachment(assignment: Assignment): boolean {
+    return Boolean((assignment.attachments ?? []).some((attachment) => attachment.kind === 'audio'));
+  }
+
+  showAssignmentDetails(assignment: Assignment): void {
     this.selectedAssignment = assignment;
-    this.successMessage = '';
     this.errorMessage = '';
+    this.successMessage = '';
     this.resetRecordingPreview();
-    this.submissionNotes = '';
     this.listenSession = {
       active: false,
       lastTime: 0,
@@ -505,44 +820,152 @@ export class DashboardComponent implements OnInit, OnDestroy {
       duration: 0
     };
     this.primaryInstructionAudioUrl = this.resolvePrimaryInstructionAudioUrl(assignment.attachments ?? []);
+    this.isAssignmentModalOpen = true;
     this.loadAssignmentProgress(assignment.id);
   }
 
-  closeAssignment(): void {
+  closeAssignmentModal(): void {
     if (this.isRecording) {
       this.stopRecording();
     }
-    this.selectedAssignment = null;
-    this.assignmentProgress = null;
-    this.primaryInstructionAudioUrl = null;
-    this.submissionNotes = '';
+    this.isAssignmentModalOpen = false;
   }
 
-  timelinePosition(assignment: Assignment): TimelinePosition {
-    const assignmentDate = new Date(assignment.assignmentDate);
-    const today = new Date();
-    assignmentDate.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-    if (assignmentDate.getTime() < today.getTime()) {
-      return 'past';
+  startRecordingForAssignment(assignment: Assignment): void {
+    this.showAssignmentDetails(assignment);
+    void this.startRecording();
+  }
+
+  async toggleRecording(): Promise<void> {
+    if (this.isRecording) {
+      this.stopRecording();
+      return;
     }
-    if (assignmentDate.getTime() > today.getTime()) {
-      return 'future';
+    await this.startRecording();
+  }
+
+  async startRecording(): Promise<void> {
+    if (this.isRecording || !this.selectedAssignment) {
+      return;
     }
-    return 'today';
+    if (!this.isRecordingUnlocked) {
+      this.errorMessage = 'ضبط هنوز فعال نشده است. ابتدا فایل راهنما را کامل گوش دهید.';
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      this.errorMessage = 'مرورگر شما از ضبط صدا پشتیبانی نمی‌کند.';
+      return;
+    }
+
+    try {
+      this.errorMessage = '';
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaStream = stream;
+      this.recordingChunks = [];
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
+        if (event.data.size > 0) {
+          this.recordingChunks.push(event.data);
+        }
+      };
+      this.mediaRecorder.onstop = () => {
+        if (!this.recordingChunks.length) {
+          return;
+        }
+        this.audioBlob = new Blob(this.recordingChunks, { type: this.mediaRecorder?.mimeType || 'audio/webm' });
+        this.audioUrl = URL.createObjectURL(this.audioBlob);
+      };
+      this.mediaRecorder.start();
+      this.recordingStartedAt = Date.now();
+      this.isRecording = true;
+    } catch {
+      this.errorMessage = 'دسترسی به میکروفون امکان‌پذیر نیست.';
+      this.stopStreamTracks();
+    }
+  }
+
+  stopRecording(): void {
+    if (!this.isRecording) {
+      return;
+    }
+    this.isRecording = false;
+    this.recordingDurationSeconds = Math.max(1, Math.round((Date.now() - this.recordingStartedAt) / 1000));
+    this.mediaRecorder?.stop();
+    this.stopStreamTracks();
+  }
+
+  submitAudio(): void {
+    if (!this.selectedAssignment || !this.audioBlob || this.isSubmitting) {
+      return;
+    }
+    const studentId = this.getStudentId();
+    if (studentId === null) {
+      return;
+    }
+    if (!this.isRecordingUnlocked) {
+      this.errorMessage = 'ضبط هنوز فعال نشده است.';
+      return;
+    }
+
+    const audioFile = new File(
+      [this.audioBlob],
+      `submission-${this.selectedAssignment.id}-${Date.now()}.webm`,
+      { type: this.audioBlob.type || 'audio/webm' }
+    );
+    const payload = new FormData();
+    payload.append('audioFile', audioFile);
+    payload.append('notes', 'ارسال از داشبورد دانش‌آموز');
+    payload.append('timeSpent', String(this.recordingDurationSeconds || 1));
+
+    this.isSubmitting = true;
+    this.api
+      .submitAssignment(studentId, this.selectedAssignment.id, payload)
+      .pipe(finalize(() => (this.isSubmitting = false)))
+      .subscribe({
+        next: () => {
+          this.successMessage = 'فایل صوتی با موفقیت ارسال شد.';
+          this.loadSubmissions();
+          this.loadAssignmentProgress(this.selectedAssignment!.id);
+          this.resetRecordingPreview();
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message ?? 'خطا در ارسال فایل صوتی';
+        }
+      });
+  }
+
+  playAudio(audioUrl: string): void {
+    const resolved = resolveMediaUrl(audioUrl);
+    if (!resolved) {
+      return;
+    }
+    const audio = new Audio(resolved);
+    void audio.play();
+  }
+
+  getAttachmentIcon(kind: string): string {
+    switch (kind) {
+      case 'audio':
+        return 'bi-file-earmark-audio';
+      case 'document':
+        return 'bi-file-earmark-text';
+      case 'image':
+        return 'bi-file-earmark-image';
+      default:
+        return 'bi-file-earmark';
+    }
   }
 
   assignmentTitleById(assignmentId: number): string {
-    return this.assignments.find((item) => item.id === assignmentId)?.title ?? `تکلیف #${assignmentId}`;
+    return this.assignments.find((assignment) => assignment.id === assignmentId)?.title ?? `تکلیف ${assignmentId}`;
   }
 
   resolveAudioUrl(url: string | null | undefined): string | null {
     return resolveMediaUrl(url);
   }
 
-  readTextInput(event: Event): string {
-    const target = event.target as HTMLTextAreaElement | null;
-    return target?.value ?? '';
+  resolveAttachmentUrl(url: string | null | undefined): string | null {
+    return resolveMediaUrl(url);
   }
 
   onInstructionAudioPlay(audio: HTMLAudioElement): void {
@@ -581,9 +1004,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.listenSession.listenedSeconds < requiredElapsed) {
       return;
     }
+
     const studentId = this.getStudentId();
     if (studentId === null) {
-      this.errorMessage = 'شناسه دانش‌آموز یافت نشد.';
       return;
     }
     this.listenRequestInFlight = true;
@@ -599,170 +1022,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.assignmentProgress = progress;
         },
         error: (error) => {
-          this.errorMessage = error?.error?.message ?? 'ثبت دفعات گوش‌دادن با خطا مواجه شد.';
+          this.errorMessage = error?.error?.message ?? 'ثبت گوش‌دادن با خطا مواجه شد.';
         }
       });
   }
 
   onInstructionAudioError(): void {
-    this.errorMessage = 'پخش فایل صوتی با خطا مواجه شد. می‌توانید دوباره تلاش کنید.';
-  }
-
-  async startRecording(): Promise<void> {
-    if (this.isRecording || !this.selectedAssignment) {
-      return;
-    }
-    if (!this.isRecordingUnlocked) {
-      this.errorMessage = 'برای ضبط باید ابتدا فایل آموزشی را 3 بار کامل گوش دهید.';
-      return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) {
-      this.errorMessage = 'ضبط صدا در این مرورگر پشتیبانی نمی‌شود.';
-      return;
-    }
-
-    try {
-      this.errorMessage = '';
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.mediaStream = stream;
-      this.recordingChunks = [];
-      this.mediaRecorder = new MediaRecorder(stream);
-      this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
-        if (event.data.size > 0) {
-          this.recordingChunks.push(event.data);
-        }
-      };
-      this.mediaRecorder.onstop = () => {
-        if (!this.recordingChunks.length) {
-          return;
-        }
-        const blob = new Blob(this.recordingChunks, { type: this.mediaRecorder?.mimeType || 'audio/webm' });
-        this.recordedAudioBlob = blob;
-        this.recordedAudioUrl = URL.createObjectURL(blob);
-      };
-      this.mediaRecorder.start();
-      this.recordingStartedAt = Date.now();
-      this.isRecording = true;
-    } catch {
-      this.errorMessage = 'دسترسی به میکروفون امکان‌پذیر نیست.';
-      this.stopStreamTracks();
-    }
-  }
-
-  stopRecording(): void {
-    if (!this.isRecording) {
-      return;
-    }
-    this.isRecording = false;
-    this.recordingDurationSeconds = Math.max(1, Math.round((Date.now() - this.recordingStartedAt) / 1000));
-    this.mediaRecorder?.stop();
-    this.stopStreamTracks();
-  }
-
-  clearRecording(): void {
-    this.resetRecordingPreview();
-    this.submissionNotes = '';
-  }
-
-  submitRecording(): void {
-    if (!this.selectedAssignment || !this.recordedAudioBlob || this.isSubmittingSubmission) {
-      return;
-    }
-    const studentId = this.getStudentId();
-    if (studentId === null) {
-      this.errorMessage = 'شناسه دانش‌آموز یافت نشد.';
-      return;
-    }
-    if (!this.isRecordingUnlocked) {
-      this.errorMessage = 'ضبط هنوز فعال نشده است.';
-      return;
-    }
-
-    const file = new File(
-      [this.recordedAudioBlob],
-      `submission-${this.selectedAssignment.id}-${Date.now()}.webm`,
-      { type: this.recordedAudioBlob.type || 'audio/webm' }
-    );
-    const payload = new FormData();
-    payload.append('audioFile', file);
-    payload.append('notes', this.submissionNotes.trim());
-    payload.append('timeSpent', String(this.recordingDurationSeconds));
-
-    this.isSubmittingSubmission = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.api
-      .submitAssignment(studentId, this.selectedAssignment.id, payload)
-      .pipe(finalize(() => (this.isSubmittingSubmission = false)))
-      .subscribe({
-        next: () => {
-          this.successMessage = 'پاسخ شما با موفقیت ثبت شد.';
-          this.loadAssignmentProgress(this.selectedAssignment!.id);
-          this.loadSubmissions();
-          this.clearRecording();
-        },
-        error: (error) => {
-          this.errorMessage = error?.error?.message ?? 'ارسال پاسخ با خطا مواجه شد.';
-        }
-      });
-  }
-
-  private loadActiveCourses(): void {
-    this.loadingCourses = true;
-    this.errorMessage = '';
-    this.api
-      .getActiveCourses()
-      .pipe(finalize(() => (this.loadingCourses = false)))
-      .subscribe({
-        next: (courses) => {
-          this.activeCourses = courses;
-          const firstCourse = courses[0] ?? null;
-          this.selectedCourse = firstCourse;
-          if (firstCourse) {
-            this.loadCourseAssignments(firstCourse.id);
-            this.loadSubmissions();
-          }
-        },
-        error: (error) => {
-          this.errorMessage = error?.error?.message ?? 'دریافت دروس فعال با خطا مواجه شد.';
-        }
-      });
-  }
-
-  private loadCourseAssignments(courseId: number): void {
-    this.loadingAssignments = true;
-    this.api
-      .getCourseAssignments(courseId)
-      .pipe(finalize(() => (this.loadingAssignments = false)))
-      .subscribe({
-        next: (assignments) => {
-          this.assignments = [...assignments].sort((a, b) => a.assignmentDate.localeCompare(b.assignmentDate));
-        },
-        error: (error) => {
-          this.errorMessage = error?.error?.message ?? 'دریافت تکالیف با خطا مواجه شد.';
-          this.assignments = [];
-        }
-      });
-  }
-
-  private loadSubmissions(): void {
-    const studentId = this.getStudentId();
-    if (studentId === null) {
-      return;
-    }
-    this.loadingSubmissions = true;
-    this.api
-      .getStudentSubmissions(studentId)
-      .pipe(finalize(() => (this.loadingSubmissions = false)))
-      .subscribe({
-        next: (items) => {
-          this.submissions = items;
-        },
-        error: (error) => {
-          this.errorMessage = error?.error?.message ?? 'دریافت تحویل‌ها با خطا مواجه شد.';
-          this.submissions = [];
-        }
-      });
+    this.errorMessage = 'پخش فایل راهنما با خطا مواجه شد.';
   }
 
   private loadAssignmentProgress(assignmentId: number): void {
@@ -802,20 +1068,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private resolvePrimaryInstructionAudioUrl(attachments: AssignmentAttachment[]): string | null {
-    const primary = attachments.find((attachment) => attachment.kind === 'audio' && !!attachment.url);
+    const primary = attachments.find((attachment) => attachment.kind === 'audio' && Boolean(attachment.url));
     return resolveMediaUrl(primary?.url) ?? null;
   }
 
   private getStudentId(): number | null {
-    return this.authService.getCurrentUser()?.studentId ?? null;
+    const session = this.authService.getCurrentUser();
+    return session?.studentId ?? session?.studentInfo?.id ?? null;
+  }
+
+  private updateChartSummary(): void {
+    const total = this.assignments.length;
+    const submitted = this.filteredSubmissions.length;
+    if (total === 0) {
+      this.chartSummary = 'برای این درس هنوز داده‌ای برای نمودار وجود ندارد.';
+      return;
+    }
+    const ratio = Math.round((submitted / total) * 100);
+    this.chartSummary = `تکمیل تکالیف: ${submitted} از ${total} (${ratio}٪)`;
   }
 
   private resetRecordingPreview(): void {
-    if (this.recordedAudioUrl) {
-      URL.revokeObjectURL(this.recordedAudioUrl);
+    if (this.audioUrl) {
+      URL.revokeObjectURL(this.audioUrl);
     }
-    this.recordedAudioUrl = null;
-    this.recordedAudioBlob = null;
+    this.audioUrl = null;
+    this.audioBlob = null;
   }
 
   private stopStreamTracks(): void {
