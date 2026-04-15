@@ -133,6 +133,113 @@ type TimelineStatus = 'future' | 'today' | 'past';
             </div>
           </div>
 
+          <section class="virtual-training-box">
+            <h4>💠💠 مراحل آموزش مجازی 💠💠</h4>
+            <p class="muted">
+              در روند آموزش مجازی، مجموعه‌ای از مراحل به‌صورت گام‌به‌گام اجرا می‌شود تا یادگیری دقیق، مستمر و
+              قابل ارزیابی باشد. والدین محترم توجه داشته باشند هر مرحله با هدف رفع اشکالات و رسیدن متربی به
+              فهم کامل محتوا طراحی شده است.
+            </p>
+
+            <div class="training-step">
+              <h5>💠 مرحله اول: خوانش متن</h5>
+              <p>
+                👈 در این مرحله، متربی متن درس را با دقت (با صوت ارسالی) می‌خواند تا اشکالات احتمالی در خوانش
+                مشخص شود. هر کلمه‌ای که در خواندن یا معنای آن مشکل دارد را با مداد مشخص می‌کند.
+              </p>
+            </div>
+
+            <div class="training-step">
+              <h5>💠 مرحله دوم: رفع اشکال کلمات مشکل</h5>
+              <p>
+                👈 پس از گوش‌دادن به صوت درس و خواندن متن و علامت‌گذاری کلمات دشوار، فایل صوتی شامل کلماتی که
+                معمولاً دشوار هستند ارسال می‌شود تا بخش عمده‌ی مشکلات خوانش برطرف شود.
+              </p>
+            </div>
+
+            <div class="training-step">
+              <h5>💠 مرحله سوم: ارسال اشکالات باقی‌مانده</h5>
+              <p>
+                👈 متربی کلمات یا قسمت‌هایی را که هنوز برایش دشوار است برای مربّی یا کاربر مشخص‌شده ارسال
+                می‌کند. سپس اشکالات تجمیع شده و صوت رفع‌اشکال جدید برای متربی فرستاده می‌شود.
+              </p>
+            </div>
+
+            <div class="training-step">
+              <h5>💠 مرحله چهارم: توضیح محتوایی</h5>
+              <p>
+                👈 در این مرحله هدف، فهم کلی و محتوایی درس است. محدوده مطالعاتی مشخص می‌شود و متربی باید توضیحات
+                را گوش دهد.
+              </p>
+              <p class="training-warning">
+                ⚠️ اگر ابهامی داشت، باید آن را با خط خوش (یا ترجیحاً تایپ شده) مکتوب و برای مربّی ارسال کند.
+              </p>
+            </div>
+
+            <div class="training-step">
+              <h5>💠 مرحله پنجم: پاسخ‌گویی به اشکالات محتوایی</h5>
+              <p>👈 مربّی به پرسش‌ها و ابهامات محتوایی دریافت شده پاسخ می‌دهد.</p>
+            </div>
+
+            <div class="training-step">
+              <h5>💠 مرحله ششم: بازخورد متنی، صوتی و احیانا ویدیویی</h5>
+              <p>
+                👈 پس از دریافت پاسخ‌ها، متربی باید میزان فهم خود را به‌صورت متن، صوت یا در صورت امکان کلیپ
+                ویدیویی ارائه کند و مطالب را خودش توضیح دهد.
+              </p>
+            </div>
+
+            <div class="training-step">
+              <h5>💠 مرحله هفتم: طراحی سؤال و مسئله</h5>
+              <p>
+                👈 بر اساس موضوع مطالعه‌شده، مجموعه‌ای از پرسش‌ها و مسائل برای متربی ارسال می‌شود. متربی باید به
+                این موارد پاسخ دهد و نتیجه را برای مربّی ارسال کند.
+              </p>
+            </div>
+
+            <div class="training-step">
+              <h5>💠 مرحله هشتم: ارزیابی نهایی و تأیید یادگیری</h5>
+              <p>
+                پس از بررسی پاسخ‌ها، اگر یادگیری کامل باشد، اجازه‌ی ورود به مبحث بعدی داده می‌شود.
+              </p>
+              <p class="training-note">
+                ✅ نظم، ارسال به‌موقع تکالیف و همراهی مستمر نقش تعیین‌کننده در کیفیت این فرایند دارد.
+              </p>
+              <p class="training-note">
+                ✅ متناسب با محتوای حلقه‌ها، تغییراتی در شیوه تعامل طبیعی است.
+              </p>
+            </div>
+
+            <div class="training-footer">
+              <h5>نکات پایانی</h5>
+              <ul>
+                <li>رعایت نظم و ارسال منظم تکالیف، اثر مستقیم بر نتیجه آموزشی دارد.</li>
+                <li>پیشنهادها یا تجربه‌های سودمند در زمینه آموزش مجازی با استقبال دریافت می‌شود.</li>
+                <li>
+                  التماس دعا و آرزوی پیروزی جبهه حق بر باطل به برکت صلوات بر محمد و آل محمد.
+                </li>
+              </ul>
+
+              <p class="audio-caption">صوت توضیحی مراحل آموزش مجازی — ۱۸ فروردین ۱۴۰۵</p>
+              <a
+                class="download-link"
+                href="https://my.uupload.ir/dl/VXNJ7ayM"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                👇👇👇 لینک دانلود 👇👇👇
+              </a>
+              <audio controls src="https://my.uupload.ir/dl/VXNJ7ayM"></audio>
+
+              <div class="training-tags">
+                <span>#آموزش_مجازی</span>
+                <span>#مراحل_آموزش_مجازی</span>
+                <span>#فرآیند</span>
+                <span>#نهضت_تربیتی_حضرت_سیدالشهدا علیه‌السلام</span>
+              </div>
+            </div>
+          </section>
+
           <div class="audio-recorder">
             <h4>ضبط صوت</h4>
             @if (selectedAssignment) {
@@ -472,6 +579,75 @@ type TimelineStatus = 'future' | 'today' | 'past';
         border-radius: 10px;
         padding: 0.7rem;
         color: #1e3a8a;
+      }
+      .virtual-training-box {
+        border: 1px solid #c7d2fe;
+        border-radius: 12px;
+        background: #f8faff;
+        padding: 0.85rem;
+        margin-bottom: 0.75rem;
+        display: grid;
+        gap: 0.7rem;
+      }
+      .virtual-training-box h4,
+      .virtual-training-box h5 {
+        margin: 0;
+      }
+      .training-step {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #fff;
+        padding: 0.65rem;
+        display: grid;
+        gap: 0.35rem;
+      }
+      .training-step p {
+        margin: 0;
+        line-height: 1.75;
+      }
+      .training-warning {
+        color: #9a3412;
+      }
+      .training-note {
+        color: #166534;
+      }
+      .training-footer {
+        border-top: 1px dashed #cbd5e1;
+        padding-top: 0.7rem;
+        display: grid;
+        gap: 0.45rem;
+      }
+      .training-footer ul {
+        margin: 0;
+        padding-right: 1.2rem;
+        display: grid;
+        gap: 0.3rem;
+      }
+      .audio-caption {
+        margin: 0;
+        font-weight: 600;
+      }
+      .download-link {
+        color: #1d4ed8;
+        font-weight: 600;
+        text-decoration: none;
+        width: fit-content;
+      }
+      .download-link:hover {
+        text-decoration: underline;
+      }
+      .training-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+      .training-tags span {
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+        padding: 0.15rem 0.55rem;
+        color: #1e40af;
+        font-size: 0.8rem;
+        background: #eff6ff;
       }
       .recorder-controls {
         display: flex;
