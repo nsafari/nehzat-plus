@@ -108,6 +108,8 @@ builder.Services.AddScoped<ISkillProgressService, SkillProgressService>();
 builder.Services.AddScoped<ITeacherService, TeacherService>();
     builder.Services.AddScoped<ISpiritualCatalogService, SpiritualCatalogService>();
     builder.Services.AddScoped<ISpiritualEntryService, SpiritualEntryService>();
+    builder.Services.AddScoped<IDailyActivityService, DailyActivityService>();
+    builder.Services.AddScoped<IArtsService, ArtsService>();
     builder.Services.AddScoped<ISpiritualOccasionService, SpiritualOccasionService>();
     builder.Services.AddScoped<ISpiritualPathService, SpiritualPathService>();
     builder.Services.AddScoped<ICurriculumVersionService, CurriculumVersionService>();
@@ -130,6 +132,10 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
     builder.Services.AddScoped<ExperimentalScienceDataSeeder>();
     builder.Services.AddScoped<IHadithService, HadithService>();
     builder.Services.AddScoped<HadithDataSeeder>();
+    builder.Services.AddScoped<ISrsService, SrsService>();
+    builder.Services.AddScoped<IXpService, XpService>();
+    builder.Services.AddScoped<XpDataSeeder>();
+    builder.Services.AddScoped<ITrainingService, TrainingService>();
 
     builder.Services.AddCors(options =>
 {
@@ -178,7 +184,7 @@ using (var scope = app.Services.CreateScope())
         db.Database.EnsureDeleted();
     }
 
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 
     var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
     // Users are synced from OTUH2 via OidcSyncMiddleware on first request
@@ -215,6 +221,9 @@ using (var scope = app.Services.CreateScope())
 
     var experimentalScienceSeeder = scope.ServiceProvider.GetRequiredService<ExperimentalScienceDataSeeder>();
     await experimentalScienceSeeder.SeedAsync();
+
+    var xpSeeder = scope.ServiceProvider.GetRequiredService<XpDataSeeder>();
+    await xpSeeder.SeedAsync();
 
     var logService = scope.ServiceProvider.GetRequiredService<ILogService>();
 
