@@ -64,7 +64,7 @@ import { NotificationService } from '../../../core/services/notification.service
           } @else {
             <div class="tabs" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid var(--lp-border); padding-bottom: 0.25rem">
               <button type="button" class="tab-btn" [class.active]="detailTab === 'info'" (click)="detailTab = 'info'">اطلاعات حلقه</button>
-              <button type="button" class="tab-btn" [class.active]="detailTab === 'students'" (click)="detailTab = 'students'; loadRingStudents()">دانش‌آموزان</button>
+              <button type="button" class="tab-btn" [class.active]="detailTab === 'students'" (click)="detailTab = 'students'; loadRingStudents()">متربیان</button>
               <button type="button" class="tab-btn" [class.active]="detailTab === 'books-methods'" (click)="detailTab = 'books-methods'">کتاب‌ها و روش‌ها</button>
             </div>
 
@@ -104,24 +104,24 @@ import { NotificationService } from '../../../core/services/notification.service
             @if (detailTab === 'students') {
               <div>
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem">
-                  <input type="number" [(ngModel)]="newStudentId" placeholder="شناسه دانش‌آموز" class="search-input" style="max-width: 150px" />
+                  <input type="number" [(ngModel)]="newStudentId" placeholder="شناسه متربی" class="search-input" style="max-width: 150px" />
                   <button type="button" class="btn btn-secondary" [disabled]="!newStudentId || savingRingStudent" (click)="addStudent()">
-                    {{ savingRingStudent ? '...' : 'افزودن دانش‌آموز' }}
+                    {{ savingRingStudent ? '...' : 'افزودن متربی' }}
                   </button>
                 </div>
 
                 @if (loadingRingStudents) {
                   <p class="muted">در حال دریافت...</p>
                 } @else if (ringStudents.length === 0) {
-                  <p class="muted">دانش‌آموزی در این حلقه ثبت نشده است.</p>
+                  <p class="muted">متربی در این حلقه ثبت نشده است.</p>
                 } @else {
                   <div class="branch-list">
                     @for (rs of ringStudents; track rs.id) {
                       <div class="branch-item">
-                        <span class="branch-name">دانش‌آموز #{{ rs.studentId }}</span>
+                        <span class="branch-name">متربی #{{ rs.studentId }}</span>
                         <span class="list-meta">{{ rs.status === 'active' ? 'فعال' : 'غیرفعال' }}</span>
                         <span class="list-meta" style="font-size: 0.75rem">{{ rs.joinedAt | slice:0:10 }}</span>
-                        <button type="button" class="btn-remove" (click)="removeStudent(rs.studentId)" title="حذف دانش‌آموز">✕</button>
+                        <button type="button" class="btn-remove" (click)="removeStudent(rs.studentId)" title="حذف متربی">✕</button>
                       </div>
                     }
                   </div>
@@ -299,7 +299,7 @@ export class AdminRingsComponent {
     this.loadingRingStudents = true;
     this.api.getRingStudents(this.selectedRingId).pipe(finalize(() => (this.loadingRingStudents = false)), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (items) => { this.ringStudents = items; this.cdr.markForCheck(); },
-      error: () => { this.setError('دریافت دانش‌آموزان با خطا مواجه شد.'); this.cdr.markForCheck(); },
+      error: () => { this.setError('دریافت متربیان با خطا مواجه شد.'); this.cdr.markForCheck(); },
     });
   }
 
@@ -309,8 +309,8 @@ export class AdminRingsComponent {
     this.api.addRingStudent(this.selectedRingId, { ringId: this.selectedRingId, studentId: this.newStudentId })
       .pipe(finalize(() => (this.savingRingStudent = false)), takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => { this.setSuccess('دانش‌آموز اضافه شد.'); this.newStudentId = null; this.loadRingStudents(); },
-        error: () => { this.setError('افزودن دانش‌آموز با خطا مواجه شد.'); },
+        next: () => { this.setSuccess('متربی اضافه شد.'); this.newStudentId = null; this.loadRingStudents(); },
+        error: () => { this.setError('افزودن متربی با خطا مواجه شد.'); },
       });
   }
 
@@ -320,8 +320,8 @@ export class AdminRingsComponent {
     this.api.removeRingStudent(this.selectedRingId, studentId)
       .pipe(finalize(() => (this.savingRingStudent = false)), takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => { this.setSuccess('دانش‌آموز حذف شد.'); this.loadRingStudents(); },
-        error: () => { this.setError('حذف دانش‌آموز با خطا مواجه شد.'); },
+        next: () => { this.setSuccess('متربی حذف شد.'); this.loadRingStudents(); },
+        error: () => { this.setError('حذف متربی با خطا مواجه شد.'); },
       });
   }
 

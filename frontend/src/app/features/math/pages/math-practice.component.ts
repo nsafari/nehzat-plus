@@ -164,5 +164,15 @@ export class MathPracticeComponent implements OnInit {
 
   finishPractice(): void {
     this.finished = true;
+    const score = this.questions.length > 0 ? Math.round((this.correctCount / this.questions.length) * 100) : 0;
+    this.api.recordMathProgress({
+      studentId: 1,
+      mathLessonId: this.lessonId,
+      isCompleted: true,
+      score
+    }).subscribe({
+      next: () => {},
+      error: () => {}
+    });
   }
 }

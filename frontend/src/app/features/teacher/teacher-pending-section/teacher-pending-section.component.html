@@ -1,0 +1,109 @@
+<div class="card-section">
+  <h2>ارسال‌های در انتظار نمره‌دهی</h2>
+  @if (pendingGradings$ | async; as gradings) {
+    @if (gradings.length === 0) {
+      <p class="muted">هیچ ارسالی در انتظار نمره‌دهی نیست.</p>
+    } @else {
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>شناسه ارسال</th>
+              <th>تکلیف</th>
+              <th>وضعیت</th>
+              <th>عملیات</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of gradings; track g.id) {
+              <tr>
+                <td data-label="شناسه ارسال">#{{ g.submissionId }}</td>
+                <td data-label="تکلیف">#{{ g.submission?.assignmentId ?? '-' }}</td>
+                <td data-label="وضعیت">
+                  <span class="status-badge pending">در انتظار</span>
+                </td>
+                <td data-label="عملیات">
+                  <button
+                    type="button"
+                    class="action-btn grade"
+                    (click)="openGradeModal(g)"
+                  >نمره‌دهی</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  } @else {
+    <p class="muted">در حال بارگذاری...</p>
+  }
+</div>
+
+@if (showGradeModal() && selectedGrading()) {
+  <div class="modal-backdrop" (click)="closeGradeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h5>نمره‌دهی به ارسال</h5>
+        <button type="button" class="btn-secondary" (click)="closeGradeModal()">بستن</button>
+      </header>
+      <div class="modal-body">
+        <div class="submission-info">
+          <p><strong>شناسه ارسال:</strong> #{{ selectedGrading()!.submissionId }}</p>
+          <p><strong>تکلیف:</strong> #{{ selectedGrading()!.submission?.assignmentId ?? '-' }}</p>
+          @if (selectedGrading()!.submission?.submissionDate) {
+            <p><strong>تاریخ ارسال:</strong> {{ selectedGrading()!.submission!.submissionDate | date:'yyyy/MM/dd' }}</p>
+          }
+        </div>
+        <form (ngSubmit)="submitGrade()" class="grade-form">
+          <div class="form-group">
+            <label for="dailyScore">نمره روزانه (۰-۱۰۰)</label>
+            <input
+              type="number"
+              id="dailyScore"
+              [(ngModel)]="gradeForm.dailyScore"
+              name="dailyScore"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="form-group">
+            <label for="cumulativeScore">نمره تجمعی (۰-۱۰۰)</label>
+            <input
+              type="number"
+              id="cumulativeScore"
+              [(ngModel)]="gradeForm.cumulativeScore"
+              name="cumulativeScore"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="form-group">
+            <label for="status">وضعیت</label>
+            <select id="status" [(ngModel)]="gradeForm.status" name="status">
+              <option value="graded">نمره‌دهی شده</option>
+              <option value="pending">در انتظار</option>
+              <option value="late">دیرکرد</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="feedback">بازخورد</label>
+            <textarea
+              id="feedback"
+              [(ngModel)]="gradeForm.feedback"
+              name="feedback"
+              rows="4"
+              placeholder="بازخورد استاد..."
+            ></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="savingGrade()">
+              {{ savingGrade() ? 'در حال ثبت...' : 'ثبت نمره' }}
+            </button>
+            <button type="button" class="btn-secondary" (click)="closeGradeModal()">انصراف</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

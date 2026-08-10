@@ -103,7 +103,7 @@ export class CompetitionManagementComponent implements OnInit {
 
   registerParticipant(competitionId: number): void {
     if (!this.studentIdToAdd || this.studentIdToAdd <= 0) {
-      this.showToast('شناسه دانش‌آموز معتبر وارد کنید', 'error');
+      this.showToast('شناسه متربی معتبر وارد کنید', 'error');
       return;
     }
     this.api.registerParticipant(competitionId, { studentId: this.studentIdToAdd }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

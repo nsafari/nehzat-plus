@@ -58,6 +58,7 @@
   display: flex; justify-content: space-between; align-items: center;
   font-weight: 600; font-size: 0.95rem;
   margin-bottom: 0.75rem;
+  gap: 0.5rem;
 }
 .q-counter { font-size: 0.85rem; color: var(--lp-muted); font-weight: 400; }
 .question-card {
@@ -153,3 +154,86 @@
 .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--lp-primary); }
 .stat-label { font-size: 0.8rem; color: var(--lp-muted); }
 .result-feedback { font-size: 0.9rem; color: var(--lp-muted); max-width: 400px; margin: 0 auto; }
+
+.running-score {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--lp-primary);
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+}
+
+.q-option-btn.correct {
+  border-color: #065f46;
+  background: #dcfce7;
+  cursor: default;
+}
+.q-option-btn.correct .opt-label {
+  background: #065f46;
+  color: #fff;
+}
+.q-option-btn.wrong {
+  border-color: #991b1b;
+  background: #fee2e2;
+  cursor: default;
+}
+.q-option-btn.wrong .opt-label {
+  background: #991b1b;
+  color: #fff;
+}
+
+.feedback-panel {
+  border: 1px solid var(--lp-border);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+}
+.feedback-panel.feedback-correct {
+  border-color: #065f46;
+  background: #f0fdf4;
+}
+.feedback-panel.feedback-wrong {
+  border-color: #991b1b;
+  background: #fef2f2;
+}
+.feedback-verdict {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.verdict-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+}
+.verdict-pass { background: #065f46; }
+.verdict-fail { background: #991b1b; }
+.verdict-text { font-weight: 700; font-size: 0.95rem; }
+.feedback-correct-answer {
+  font-size: 0.88rem;
+  color: var(--lp-text);
+  margin: 0.25rem 0 0;
+}
+.feedback-explanation {
+  font-size: 0.85rem;
+  color: var(--lp-muted);
+  margin: 0.4rem 0 0;
+  line-height: 1.6;
+}
+
+.btn-check {
+  background: var(--lp-gold, #b8860b);
+  color: #fff;
+}
+.btn-check:hover:not(:disabled) {
+  background: #9a7209;
+}

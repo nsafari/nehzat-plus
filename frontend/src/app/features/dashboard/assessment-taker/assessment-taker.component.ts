@@ -13,6 +13,13 @@ interface AnswerRecord {
   selectedOption: number;
 }
 
+interface QuestionFeedback {
+  isCorrect: boolean;
+  correctOptionIndex: number;
+  correctOptionText: string;
+  explanation: string | null;
+}
+
 @Component({
   selector: 'app-assessment-taker',
   standalone: true,
@@ -40,6 +47,8 @@ export class AssessmentTakerComponent implements OnInit {
   submitting = false;
   result: AssessmentResult | null = null;
 
+  answerRevealed: Record<number, boolean> = {};
+
   get headerTitle(): string {
     switch (this.state) {
       case 'list': return 'امتحانات من';
@@ -50,6 +59,10 @@ export class AssessmentTakerComponent implements OnInit {
 
   get currentQuestion(): AssessmentQuestion {
     return this.questions[this.currentQuestionIndex];
+  }
+
+  get currentFeedback(): QuestionFeedback | null {
+    return this.currentQuestion ? this.buildFeedback(this.currentQuestion) : null;
   }
 
   ngOnInit(): void {
@@ -82,6 +95,7 @@ export class AssessmentTakerComponent implements OnInit {
           this.questions = [...(assessment.questions ?? [])].sort((a, b) => a.order - b.order);
           this.currentQuestionIndex = 0;
           this.answers = [];
+          this.answerRevealed = {};
           this.state = 'taking';
           this.startingId = null;
         },
@@ -109,12 +123,6 @@ export class AssessmentTakerComponent implements OnInit {
     return this.answers.some((a) => a.questionId === questionId);
   }
 
-  nextQuestion(): void {
-    if (this.currentQuestionIndex < this.questions.length - 1) {
-      this.currentQuestionIndex++;
-    }
-  }
-
   prevQuestion(): void {
     if (this.currentQuestionIndex > 0) {
       this.currentQuestionIndex--;
@@ -129,6 +137,12 @@ export class AssessmentTakerComponent implements OnInit {
 
   submitAssessment(): void {
     if (!this.currentAssessment || !this.studentId || this.submitting) return;
+
+    if (this.hasAnswer(this.currentQuestion.id) && !this.isCurrentAnswerRevealed) {
+      this.revealAnswer();
+      return;
+    }
+
     this.submitting = true;
 
     // Build the answers JSON
@@ -208,5 +222,89 @@ export class AssessmentTakerComponent implements OnInit {
       hard: 'سخت'
     };
     return labels[difficulty] ?? difficulty;
+  }
+
+  get isCurrentAnswerRevealed(): boolean {
+    return this.currentQuestion ? !!this.answerRevealed[this.currentQuestion.id] : false;
+  }
+
+  get isCurrentAnswerCorrect(): boolean {
+    if (!this.currentQuestion) return false;
+    const feedback = this.buildFeedback(this.currentQuestion);
+    return feedback?.isCorrect ?? false;
+  }
+
+  get runningScore(): number {
+    let score = 0;
+    for (const answer of this.answers) {
+      if (!this.answerRevealed[answer.questionId]) continue;
+      const question = this.questions.find((q) => q.id === answer.questionId);
+      if (question) {
+        const feedback = this.buildFeedback(question);
+        if (feedback?.isCorrect) score += question.points;
+      }
+    }
+    return score;
+  }
+
+  get runningMaxScore(): number {
+    let max = 0;
+    for (const answer of this.answers) {
+      if (!this.answerRevealed[answer.questionId]) continue;
+      const question = this.questions.find((q) => q.id === answer.questionId);
+      if (question) max += question.points;
+    }
+    return max;
+  }
+
+  revealAnswer(): void {
+    if (!this.currentQuestion || this.isCurrentAnswerRevealed) return;
+    this.answerRevealed[this.currentQuestion.id] = true;
+  }
+
+  nextQuestion(): void {
+    if (this.currentQuestionIndex < this.questions.length - 1) {
+      if (this.hasAnswer(this.currentQuestion.id) && !this.isCurrentAnswerRevealed) {
+        this.revealAnswer();
+        return;
+      }
+      this.currentQuestionIndex++;
+    }
+  }
+
+  buildFeedback(question: AssessmentQuestion): QuestionFeedback | null {
+    if (!question.correctAnswerJson) return null;
+    try {
+      const correct = JSON.parse(question.correctAnswerJson);
+      const correctIndex: number = correct.correctOption;
+      const options = this.parsedOptions(question);
+      const selected = this.getAnswerFor(question.id);
+      return {
+        isCorrect: selected === correctIndex,
+        correctOptionIndex: correctIndex,
+        correctOptionText: options[correctIndex] ?? '',
+        explanation: question.explanation ?? null,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  isOptionCorrectOption(question: AssessmentQuestion, optionIndex: number): boolean {
+    const feedback = this.buildFeedback(question);
+    return feedback?.correctOptionIndex === optionIndex;
+  }
+
+  isOptionSelectedWrong(question: AssessmentQuestion, optionIndex: number): boolean {
+    const selected = this.getAnswerFor(question.id);
+    const feedback = this.buildFeedback(question);
+    return selected === optionIndex && feedback !== null && !feedback.isCorrect;
+  }
+
+  optionClass(optionIndex: number): string {
+    if (!this.isCurrentAnswerRevealed || !this.currentQuestion) return '';
+    if (this.isOptionCorrectOption(this.currentQuestion, optionIndex)) return 'correct';
+    if (this.isOptionSelectedWrong(this.currentQuestion, optionIndex)) return 'wrong';
+    return '';
   }
 }

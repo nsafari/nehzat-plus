@@ -94,6 +94,54 @@ import {
   SpiritualOccasionDetail,
   DailySpiritualEntry,
   UpsertDailySpiritualEntryPayload,
+  DailyActivity,
+  UpsertDailyActivityPayload,
+  SpacedRepetitionCard,
+  UpsertSrsCardPayload,
+  SrsReviewPayload,
+  SrsStats,
+  UserXp,
+  XpBadge,
+  XpActivity,
+  AwardXpResult,
+  AwardXpPayload,
+  Artwork,
+  CreateArtworkPayload,
+  MusicRecord,
+  CreateMusicRecordPayload,
+  CalligraphySample,
+  CreateCalligraphySamplePayload,
+  CollaborationProject,
+  CreateCollaborationProjectPayload,
+  DiscussionThread,
+  CreateDiscussionThreadPayload,
+  DiscussionPost,
+  CreateDiscussionPostPayload,
+  PeerReview,
+  SubmitPeerReviewPayload,
+  PortfolioItem,
+  UploadPortfolioItemPayload,
+  SkillCertificate,
+  SkillBasket,
+  CreateSkillBasketPayload,
+  CareerPath,
+  CareerPathMilestone,
+  CareerPathProgress,
+  PathwayRecommendation,
+  CreateCareerPathPayload,
+  SaveProgressPayload,
+  SelectPathwayPayload,
+  ProjectDefense,
+  CreateProjectDefensePayload,
+  SubmitProjectDefensePayload,
+  ProjectDefenseEvaluation,
+  ScheduleDefensePayload,
+  DefenseSchedule,
+  CommunityMetrics,
+  PeerActivity,
+  SkillSharingMetrics,
+  CollaborationMetrics,
+  PublicShowcase,
   UserOccasionProgress,
   MarkOccasionPracticePayload,
   SpiritualPath,
@@ -102,6 +150,8 @@ import {
   PathRankingPayload,
   FinalizePathPayload,
   AvailablePath,
+  DailyNudge,
+  NudgeSchedule,
   CreateTeacherPayload,
   UpdateTeacherPayload,
   GradeSubmissionPayload,
@@ -116,6 +166,8 @@ import {
   UpdateCompetitionPayload,
   RegisterParticipantPayload,
   UpdateParticipantScorePayload,
+  DomainProgress,
+  StreakInfo,
   League,
   LeagueDetail,
   LeagueRanking,
@@ -471,6 +523,43 @@ export abstract class LessonPlannerApi {
   abstract switchFinalizedPath(payload: FinalizePathPayload): Observable<StudentPathSelection>;
   abstract getStudentPathSelection(studentId: number): Observable<StudentPathSelection>;
   abstract getStudentPathHistory(studentId: number): Observable<unknown[]>;
+
+  abstract upsertDailyActivity(payload: UpsertDailyActivityPayload): Observable<DailyActivity>;
+  abstract getTodayActivity(): Observable<DailyActivity | null>;
+  abstract getActivityHistory(fromDate?: string, toDate?: string): Observable<DailyActivity[]>;
+  abstract getActivityStreak(): Observable<{ streak: number }>;
+
+  // Spaced Repetition (SRS)
+  abstract getSrsCardsDueToday(): Observable<SpacedRepetitionCard[]>;
+  abstract reviewSrsCard(cardId: number, quality: number): Observable<SpacedRepetitionCard>;
+  abstract getSrsStats(): Observable<SrsStats>;
+  abstract upsertSrsCard(payload: UpsertSrsCardPayload): Observable<SpacedRepetitionCard>;
+
+  // XP System & Badges (Phase 1)
+  abstract getUserXp(): Observable<UserXp>;
+  abstract awardXp(payload: AwardXpPayload): Observable<AwardXpResult>;
+  abstract getBadges(): Observable<XpBadge[]>;
+  abstract getRecentActivity(limit?: number): Observable<XpActivity[]>;
+
+  // Trainee dashboard: 6-domain radar + multi-domain streaks
+  abstract getDomainProgress(): Observable<DomainProgress[]>;
+  abstract getUserStreaks(): Observable<StreakInfo>;
+
+  // Daily Smart Nudges (Phase 2)
+  abstract getDailyNudges(): Observable<DailyNudge[]>;
+  abstract getNudgeSchedules(): Observable<NudgeSchedule[]>;
+  abstract dismissNudge(nudgeId: number): Observable<ApiMessageResponse>;
+
+  // Arts (Aesthetic-Artistic Sahan — Phase 4)
+  abstract getArtworks(): Observable<Artwork[]>;
+  abstract uploadArtwork(payload: CreateArtworkPayload): Observable<Artwork>;
+  abstract getMusicRecords(): Observable<MusicRecord[]>;
+  abstract uploadMusicRecord(payload: CreateMusicRecordPayload): Observable<MusicRecord>;
+  abstract getCalligraphySamples(): Observable<CalligraphySample[]>;
+  abstract uploadCalligraphySample(payload: CreateCalligraphySamplePayload): Observable<CalligraphySample>;
+  abstract likeArtwork(id: number): Observable<{ id: number; likeCount: number }>;
+  abstract likeMusicRecord(id: number): Observable<{ id: number; likeCount: number }>;
+  abstract likeCalligraphySample(id: number): Observable<{ id: number; likeCount: number }>;
 
   // Monthly Booklets (Phase 3.6)
   abstract getMonthlyBooklets(studentId?: number): Observable<MonthlyBooklet[]>;
@@ -857,4 +946,47 @@ export abstract class LessonPlannerApi {
 
   abstract submitQuiz(payload: SubmitQuizRequest): Observable<QuizResultDto>;
   abstract getUserQuizAttempts(enrollmentId: number): Observable<UserQuizAttempt[]>;
+
+  // ===== Career Pathways Module (Phase 7) =====
+  abstract getCareerPaths(): Observable<CareerPath[]>;
+  abstract getCareerPathById(id: number): Observable<CareerPath>;
+  abstract createCareerPath(payload: CreateCareerPathPayload): Observable<CareerPath>;
+  abstract getCareerPathMilestones(pathId: number): Observable<CareerPathMilestone[]>;
+  abstract getCareerPathProgress(pathId: number): Observable<CareerPathProgress>;
+  abstract saveProgress(payload: SaveProgressPayload): Observable<CareerPathProgress>;
+  abstract getPathwayRecommendations(): Observable<PathwayRecommendation[]>;
+  abstract selectPathway(payload: SelectPathwayPayload): Observable<void>;
+
+  // ===== Social/Collaboration Module (Phase 5) =====
+  abstract getCollaborationProjects(): Observable<CollaborationProject[]>;
+  abstract createCollaborationProject(payload: CreateCollaborationProjectPayload): Observable<CollaborationProject>;
+  abstract getDiscussions(projectId: number): Observable<DiscussionThread[]>;
+  abstract createDiscussionThread(payload: CreateDiscussionThreadPayload): Observable<DiscussionThread>;
+  abstract getDiscussionPosts(threadId: number): Observable<DiscussionPost[]>;
+  abstract createDiscussionPost(payload: CreateDiscussionPostPayload): Observable<DiscussionPost>;
+  abstract getPeerReviews(): Observable<PeerReview[]>;
+  abstract submitPeerReview(payload: SubmitPeerReviewPayload): Observable<PeerReview>;
+
+  // ===== Career & Portfolio Module (Phase 6) =====
+  abstract getPortfolioItems(): Observable<PortfolioItem[]>;
+  abstract uploadPortfolioItem(payload: UploadPortfolioItemPayload): Observable<PortfolioItem>;
+  abstract getSkillCertificates(): Observable<SkillCertificate[]>;
+  abstract getSkillBasket(): Observable<SkillBasket | null>;
+  abstract createSkillBasket(payload: CreateSkillBasketPayload): Observable<SkillBasket>;
+
+  // ===== Project Defense Module (Phase 8) =====
+  abstract getProjectDefenses(): Observable<ProjectDefense[]>;
+  abstract getProjectDefenseById(id: number): Observable<ProjectDefense>;
+  abstract createProjectDefense(payload: CreateProjectDefensePayload): Observable<ProjectDefense>;
+  abstract submitProjectDefense(payload: SubmitProjectDefensePayload): Observable<ProjectDefense>;
+  abstract getProjectDefenseEvaluations(defenseId: number): Observable<ProjectDefenseEvaluation[]>;
+  abstract scheduleDefense(payload: ScheduleDefensePayload): Observable<DefenseSchedule>;
+  abstract getDefenseSchedule(studentId: number): Observable<DefenseSchedule | null>;
+
+  // ===== Community Metrics Module (Phase 9) =====
+  abstract getCommunityMetrics(): Observable<CommunityMetrics>;
+  abstract getPeerActivity(limit?: number): Observable<PeerActivity[]>;
+  abstract getSkillSharingMetrics(): Observable<SkillSharingMetrics>;
+  abstract getCollaborationMetrics(): Observable<CollaborationMetrics>;
+  abstract getPublicShowcases(limit?: number): Observable<PublicShowcase[]>;
 }

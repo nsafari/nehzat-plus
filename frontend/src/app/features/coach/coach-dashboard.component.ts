@@ -57,7 +57,7 @@ import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token
                   </header>
                   <div class="ring-meta">
                     <span class="meta-item">
-                      <span class="meta-label">دانش‌آموزان</span>
+                      <span class="meta-label">متربیان</span>
                       <span class="meta-value">{{ getStudentCount(ring.id) }}</span>
                     </span>
                     <span class="meta-item">
@@ -90,7 +90,7 @@ import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token
             <div class="summary-cards">
               <div class="summary-card">
                 <span class="summary-value">{{ dashboard.studentCount }}</span>
-                <span class="summary-label">تعداد دانش‌آموزان</span>
+                <span class="summary-label">تعداد متربیان</span>
               </div>
               <div class="summary-card">
                 <span class="summary-value">{{ dashboard.averageScore | number:'1.0-1' }}%</span>
@@ -114,12 +114,12 @@ import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token
               </div>
             </div>
 
-            <h3>پیشرفت دانش‌آموزان</h3>
+            <h3>پیشرفت متربیان</h3>
             <div class="table-container">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>نام دانش‌آموز</th>
+                    <th>نام متربی</th>
                     <th>نمره</th>
                     <th>سطح مهارت</th>
                     <th>آخرین ارزیابی</th>

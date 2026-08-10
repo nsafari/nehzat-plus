@@ -1,4 +1,4 @@
-<article class="student-card">
+<article class="student-card student-card--clickable" (click)="navigateToDetail()" (keydown.enter)="navigateToDetail()" tabindex="0" role="link" [attr.aria-label]="'مشاهده جزئیات ' + studentName">
   <header class="student-header">
     <div class="student-info">
       <h3>{{ studentName }}</h3>

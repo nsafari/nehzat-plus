@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -12,8 +12,13 @@ import type {
   Course,
   CurrentUser,
   StudentAssignmentGateState,
-  StudentAssessmentHistory
+  StudentAssessmentHistory,
+  UserXp,
+  XpBadge,
+  DailyNudge,
+  NudgeDomain
 } from '../../core/models/lesson-planner.models';
+import { buildXpSummary } from '../../core/utils/xp';
 import { resolveMediaUrl } from '../../core/services/api-url.util';
 import { AuthService } from '../../core/services/auth.service';
 import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token';
@@ -52,6 +57,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   biweeklyProgress: BiweeklyProgressData | null = null;
   assessmentHistory: StudentAssessmentHistory | null = null;
   loadingHistory = false;
+  userXp: UserXp | null = null;
+  badges: XpBadge[] = [];
+  loadingXp = false;
 
   loadingCourses = false;
   loadingAssignments = false;
@@ -75,6 +83,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isUserModalOpen = false;
   isAssignmentModalOpen = false;
   isAssessmentTakerOpen = false;
+
+  nudgesEnabled = signal(false);
+  dailyNudges: DailyNudge[] = [];
+  loadingNudges = false;
 
   private listenSession = {
     active: false,
@@ -130,6 +142,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     this.loadCourses();
     this.loadSubmissions();
+    this.loadDailyNudges();
+    this.restoreNudgeToggle();
   }
 
   ngOnDestroy(): void {
@@ -290,6 +304,82 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.updateChartSummary();
         }
       });
+  }
+
+  private loadDailyNudges(): void {
+    this.loadingNudges = true;
+    this.api
+      .getDailyNudges()
+      .pipe(finalize(() => (this.loadingNudges = false)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (nudges) => {
+          this.dailyNudges = nudges;
+        },
+        error: () => {
+          this.dailyNudges = [];
+        }
+      });
+  }
+
+  private restoreNudgeToggle(): void {
+    const enabled = localStorage.getItem('lp-dashboard-nudges-enabled') === '1';
+    this.nudgesEnabled.set(enabled);
+    if (enabled) {
+      this.scheduleDefaultNudges();
+    }
+  }
+
+  async toggleNudgeNotifications(): Promise<void> {
+    if (this.nudgesEnabled()) {
+      this.nudgesEnabled.set(false);
+      localStorage.removeItem('lp-dashboard-nudges-enabled');
+      this.notify.show('یادآورهای روزانه غیرفعال شد', 'success');
+      return;
+    }
+    const permission = await this.notify.requestPermission();
+    if (permission === 'denied') {
+      this.setError('دسترسی اعلان‌ها مسدود است. در تنظیمات مرورگر اجازه دهید.');
+      return;
+    }
+    this.nudgesEnabled.set(true);
+    localStorage.setItem('lp-dashboard-nudges-enabled', '1');
+    this.notify.show('یادآورهای روزانه فعال شد', 'success');
+    this.scheduleDefaultNudges();
+  }
+
+  dismissDailyNudge(nudgeId: number): void {
+    this.api
+      .dismissNudge(nudgeId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.dailyNudges = this.dailyNudges.filter((nudge) => nudge.id !== nudgeId);
+          this.notify.show('یادآور بسته شد', 'success');
+        },
+        error: () => {
+          this.setError('خطا در بستن یادآور');
+        }
+      });
+  }
+
+  nudgeDomainIcon(domain: NudgeDomain): string {
+    switch (domain) {
+      case 'scientific':
+        return 'bi-journal-bookmark';
+      case 'spiritual':
+        return 'bi-moon-stars';
+      case 'physical':
+        return 'bi-activity';
+      default:
+        return 'bi-bell';
+    }
+  }
+
+  private scheduleDefaultNudges(): void {
+    this.notify.scheduleDailyNudge(8, 0, 'امروز تمرین درسی خود را انجام دادی؟', 'scientific');
+    this.notify.scheduleDailyNudge(7, 30, 'تعهد معنوی امروز را فراموش نکن.', 'spiritual');
+    this.notify.scheduleDailyNudge(17, 0, 'فعالیت بدنی امروز را ثبت کن.', 'physical');
   }
 
   getAssignmentStatus(assignment: Assignment): TimelineStatus {

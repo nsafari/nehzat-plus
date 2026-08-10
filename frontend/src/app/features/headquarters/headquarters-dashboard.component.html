@@ -13,6 +13,7 @@
       </div>
     </div>
     <div class="header-nav">
+      <a class="nav-link" routerLink="/headquarters/management" routerLinkActive="nav-link-active">مدیریت سازمان</a>
       <a class="nav-link" routerLink="/headquarters/spiritual" routerLinkActive="nav-link-active">مسیر معنوی</a>
     </div>
     <div class="user-menu">
@@ -28,7 +29,7 @@
           <div class="stat-icon">👥</div>
           <div class="stat-info">
             <span class="stat-value">{{ summary.totalStudents }}</span>
-            <span class="stat-label">کل دانش‌آموزان</span>
+            <span class="stat-label">کل متربیان</span>
           </div>
         </div>
         <div class="stat-card">
@@ -79,7 +80,7 @@
                   <th>نام شعبه</th>
                   <th>استان</th>
                   <th>مدرسه</th>
-                  <th>دانش‌آموزان</th>
+                  <th>متربیان</th>
                   <th>میانگین نمره</th>
                   <th>نرخ حضور</th>
                   <th>دوره‌های فعال</th>
@@ -94,7 +95,7 @@
                     <td data-label="نام شعبه">{{ branch.branchName }}</td>
                     <td data-label="استان">{{ branch.province }}</td>
                     <td data-label="مدرسه">{{ branch.madrasahName }}</td>
-                    <td data-label="دانش‌آموزان">{{ branch.studentCount }}</td>
+                    <td data-label="متربیان">{{ branch.studentCount }}</td>
                     <td data-label="میانگین نمره">{{ branch.averageScore | number:'1.0-1' }}%</td>
                     <td data-label="نرخ حضور">{{ branch.attendanceRate }}%</td>
                     <td data-label="دوره‌های فعال">{{ branch.activeCourses }}</td>
@@ -124,7 +125,7 @@
                   <th>نام مربی</th>
                   <th>تخصص</th>
                   <th>دوره‌ها</th>
-                  <th>دانش‌آموزان</th>
+                  <th>متربیان</th>
                   <th>میانگین نمره</th>
                   <th>ارزیابی‌ها</th>
                   <th>میانگین ارزیابی</th>
@@ -137,7 +138,7 @@
                     <td data-label="نام مربی">{{ coach.coachName }}</td>
                     <td data-label="تخصص">{{ coach.specialization }}</td>
                     <td data-label="دوره‌ها">{{ coach.assignedCourseCount }}</td>
-                    <td data-label="دانش‌آموزان">{{ coach.studentCount }}</td>
+                    <td data-label="متربیان">{{ coach.studentCount }}</td>
                     <td data-label="میانگین نمره">{{ coach.averageStudentScore | number:'1.0-1' }}%</td>
                     <td data-label="ارزیابی‌ها">{{ coach.evaluationCount }}</td>
                     <td data-label="میانگین ارزیابی">{{ coach.averageEvaluationScore | number:'1.0-1' }}%</td>

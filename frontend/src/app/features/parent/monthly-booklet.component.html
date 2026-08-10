@@ -10,7 +10,7 @@
       />
       <div>
         <h1>دفترچه‌های ماهانه</h1>
-        <p class="muted">مشاهده و مدیریت دفترچه‌های ماهانه دانش‌آموزان</p>
+        <p class="muted">مشاهده و مدیریت دفترچه‌های ماهانه متربیان</p>
       </div>
     </div>
     <div class="user-menu">
@@ -50,7 +50,7 @@
                 <thead>
                   <tr>
                     <th>عنوان</th>
-                    <th>دانش‌آموز</th>
+                    <th>متربی</th>
                     <th>دوره (ماه/سال)</th>
                     <th>وضعیت</th>
                     <th>ایجادکننده</th>
@@ -62,7 +62,7 @@
                   @for (booklet of booklets; track booklet.id) {
                     <tr>
                       <td data-label="عنوان">{{ booklet.title }}</td>
-                      <td data-label="دانش‌آموز">{{ booklet.studentName || '—' }}</td>
+                      <td data-label="متربی">{{ booklet.studentName || '—' }}</td>
                       <td data-label="دوره">{{ getPersianMonthName(booklet.month) }} {{ booklet.year }}</td>
                       <td data-label="وضعیت">
                         <span class="status-badge" [class]="getStatusClass(booklet.status)">
@@ -100,9 +100,9 @@
         <h2>{{ activeTab() === 'create' ? 'ایجاد دفترچه ماهانه جدید' : 'ویرایش دفترچه ماهانه' }}</h2>
         <form (ngSubmit)="onSubmit()" class="booklet-form">
           <div class="form-group">
-            <label for="studentId">دانش‌آموز *</label>
+            <label for="studentId">متربی *</label>
             <select id="studentId" [(ngModel)]="formData.studentId" name="studentId" required>
-              <option [ngValue]="null">انتخاب دانش‌آموز...</option>
+              <option [ngValue]="null">انتخاب متربی...</option>
               @for (student of students(); track student.id) {
                 <option [ngValue]="student.id">{{ student.firstName }} {{ student.lastName }} ({{ student.studentId }})</option>
               }

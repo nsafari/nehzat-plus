@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { inject } from '@angular/core';
 import { LESSON_PLANNER_API } from '../../../../core/services/lesson-planner-api.token';
-import { LearningPath, LearningPathTreeDto } from '../../../../core/models/lesson-planner.models';
+import { LearningPath, LearningPathTreeDto, UserQuizAttempt } from '../../../../core/models/lesson-planner.models';
+import { computeMasteryLevel, getMasteryLabel, getMasteryEmoji, MasteryLevel } from '../../../../core/utils/mastery';
 
 @Component({
   selector: 'app-path-detail',
@@ -56,11 +57,25 @@ import { LearningPath, LearningPathTreeDto } from '../../../../core/models/lesso
             <div class="modules-list" *ngIf="level.modules">
               <h4>دروس:</h4>
               <div class="module-item" *ngFor="let mod of level.modules">
-                <div class="module-info">
-                  <span class="module-title">{{ mod.title }}</span>
-                  <span class="module-lessons">{{ mod.lessons?.length || 0 }} درس</span>
+                <div class="module-row">
+                  <div class="module-info">
+                    <span class="module-title">{{ mod.title }}</span>
+                    <span class="module-lessons">{{ mod.lessons?.length || 0 }} درس</span>
+                  </div>
+                  <a class="module-link" [routerLink]="'/learning/lessons/' + (mod.lessons?.[0]?.id || mod.id)">مشاهده</a>
                 </div>
-                <a class="module-link" [routerLink]="'/learning/lessons/' + (mod.lessons?.[0]?.id || mod.id)">مشاهده</a>
+                <div class="quizzes-box" *ngIf="mod.lessons">
+                  <div class="quiz-row" *ngFor="let lesson of mod.lessons">
+                    <div class="quiz-row-lesson" *ngIf="lesson.quizzes?.length">{{ lesson.title }}</div>
+                    <a class="quiz-row-item" *ngFor="let quiz of lesson.quizzes" [routerLink]="'/learning/quizzes/' + quiz.id">
+                      <span class="quiz-row-title">📝 {{ quiz.title }}</span>
+                      <span class="mastery-badge" *ngIf="getQuizMastery(quiz.id)">
+                        {{ getQuizMastery(quiz.id)?.emoji }} {{ getQuizMastery(quiz.id)?.label }}
+                      </span>
+                      <span class="mastery-badge neutral" *ngIf="!getQuizMastery(quiz.id)">هنوز شروع نشده</span>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -100,12 +115,21 @@ import { LearningPath, LearningPathTreeDto } from '../../../../core/models/lesso
     .level-meta { display: flex; gap: 12px; font-size: 12px; color: var(--lp-text-muted, #888); margin-bottom: 12px; }
     .modules-list { border-top: 1px solid var(--lp-border, #eee); padding-top: 12px; }
     .modules-list h4 { margin: 0 0 8px; font-size: 13px; color: var(--lp-text-muted, #888); }
-    .module-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 6px; transition: background 0.15s; }
+    .module-item { padding: 8px 12px; border-radius: 6px; transition: background 0.15s; }
     .module-item:hover { background: var(--lp-surface-alt, #f5f5f5); }
+    .module-row { display: flex; justify-content: space-between; align-items: center; }
     .module-info { display: flex; gap: 12px; align-items: baseline; }
     .module-title { font-size: 14px; color: var(--lp-text, #333); }
     .module-lessons { font-size: 12px; color: var(--lp-text-muted, #888); }
     .module-link { color: var(--lp-primary, #4a148c); text-decoration: none; font-size: 13px; }
+    .quizzes-box { margin: 8px 0 4px 16px; }
+    .quiz-row { margin-bottom: 8px; }
+    .quiz-row-lesson { font-size: 12px; color: var(--lp-text-muted, #888); margin-bottom: 4px; }
+    .quiz-row-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; background: var(--lp-surface, #fff); border: 1px solid var(--lp-border, #e0e0e0); border-radius: 8px; text-decoration: none; margin-bottom: 4px; }
+    .quiz-row-item:hover { border-color: var(--lp-primary, #4a148c); }
+    .quiz-row-title { font-size: 13px; color: var(--lp-text, #333); }
+    .mastery-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 12px; border-radius: 20px; background: var(--lp-primary-light, #e8eaf6); color: var(--lp-primary, #4a148c); font-size: 12px; font-weight: 500; flex-shrink: 0; }
+    .mastery-badge.neutral { background: var(--lp-surface, #fff); color: var(--lp-text-muted, #888); border: 1px solid var(--lp-border, #e0e0e0); }
     .error-state { text-align: center; padding: 60px 0; color: var(--lp-text-muted, #888); }
   `]
 })
@@ -118,6 +142,7 @@ export class PathDetailComponent implements OnInit {
   enrolling = false;
   enrollmentMsg = 'برای شروع یادگیری در این مسیر ثبت‌نام کنید';
   userProgress = 0;
+  quizAttempts: UserQuizAttempt[] = [];
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.params['id']);
@@ -146,6 +171,7 @@ export class PathDetailComponent implements OnInit {
         const enrollment = enrollments.find(e => e.learningPathId === pathId);
         if (enrollment) {
           this.isEnrolled = true;
+          this.loadQuizAttempts(enrollment.id);
           if (enrollment.lessonProgress && this.path?.levels) {
             const total = this.path.levels.reduce((s, l) => s + (l.modules?.reduce((s2, m) => s2 + (m.lessons?.length || 0), 0) || 0), 0);
             const done = enrollment.lessonProgress.filter(lp => lp.status === 'completed').length;
@@ -155,6 +181,21 @@ export class PathDetailComponent implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  private loadQuizAttempts(enrollmentId: number): void {
+    this.api.getUserQuizAttempts(enrollmentId).subscribe({
+      next: (attempts) => { this.quizAttempts = attempts; },
+      error: () => {}
+    });
+  }
+
+  getQuizMastery(quizId: number): { level: MasteryLevel; label: string; emoji: string } | null {
+    const attempts = this.quizAttempts.filter(a => a.quizId === quizId);
+    if (attempts.length === 0) return null;
+    const bestScore = Math.max(...attempts.map(a => a.score));
+    const level = computeMasteryLevel(attempts.length, bestScore);
+    return { level, label: getMasteryLabel(level), emoji: getMasteryEmoji(level) };
   }
 
   enroll(): void {

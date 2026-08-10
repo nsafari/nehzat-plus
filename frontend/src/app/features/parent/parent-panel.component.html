@@ -8,7 +8,7 @@
         (error)="logoHidden = true"
       />
       <div>
-        <h1>پنل والدین</h1>
+        <h1>داشبورد والدین</h1>
         <p class="muted">خوش آمدید {{ currentUser?.username }}</p>
       </div>
     </div>
@@ -18,11 +18,11 @@
   </header>
 
   <section class="main-content">
-    <h2>دانش‌آموزان شما</h2>
+    <h2>متربیان شما</h2>
 
     @if (students$ | async; as students) {
       @if (students.length === 0) {
-        <p class="muted">هیچ دانش‌آموزی ثبت نشده است.</p>
+        <p class="muted">هیچ متربی ثبت نشده است.</p>
       } @else {
         <div class="students-grid">
           @for (student of students; track student.studentId) {

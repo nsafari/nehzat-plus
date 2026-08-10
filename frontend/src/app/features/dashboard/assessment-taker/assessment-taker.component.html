@@ -32,6 +32,7 @@
       <div class="taker-body">
         <div class="taking-header">
           <span>{{ currentAssessment.title }}</span>
+          <span class="running-score">امتیاز: {{ runningScore }} از {{ runningMaxScore }}</span>
           <span class="q-counter">سوال {{ currentQuestionIndex + 1 }} از {{ questions.length }}</span>
         </div>
 
@@ -51,8 +52,11 @@
               <button
                 type="button"
                 class="q-option-btn"
-                [class.selected]="getAnswerFor(currentQuestion.id) === oi"
+                [class.selected]="getAnswerFor(currentQuestion.id) === oi && !isCurrentAnswerRevealed"
+                [class.correct]="isCurrentAnswerRevealed && isOptionCorrectOption(currentQuestion, oi)"
+                [class.wrong]="isCurrentAnswerRevealed && isOptionSelectedWrong(currentQuestion, oi)"
                 (click)="selectOption(currentQuestion.id, oi)"
+                [disabled]="isCurrentAnswerRevealed"
               >
                 <span class="opt-label">{{ optionLabel(oi) }}</span>
                 <span>{{ opt }}</span>
@@ -60,6 +64,26 @@
             }
           </div>
         </div>
+
+        @if (isCurrentAnswerRevealed && currentFeedback) {
+          <div class="feedback-panel" [class.feedback-correct]="currentFeedback.isCorrect" [class.feedback-wrong]="!currentFeedback.isCorrect">
+            <div class="feedback-verdict">
+              @if (currentFeedback.isCorrect) {
+                <span class="verdict-icon verdict-pass">✓</span>
+                <span class="verdict-text">صحیح!</span>
+              } @else {
+                <span class="verdict-icon verdict-fail">✗</span>
+                <span class="verdict-text">غلط</span>
+              }
+            </div>
+            @if (!currentFeedback.isCorrect) {
+              <p class="feedback-correct-answer">پاسخ صحیح: <strong>{{ optionLabel(currentFeedback.correctOptionIndex) }}) {{ currentFeedback.correctOptionText }}</strong></p>
+            }
+            @if (currentFeedback.explanation) {
+              <p class="feedback-explanation">{{ currentFeedback.explanation }}</p>
+            }
+          </div>
+        }
 
         <div class="taking-footer">
           <button type="button" class="btn-secondary" (click)="prevQuestion()" [disabled]="currentQuestionIndex === 0">
@@ -69,11 +93,19 @@
           <span class="answered-count">{{ answers.length }} از {{ questions.length }} پاسخ داده شده</span>
 
           @if (currentQuestionIndex < questions.length - 1) {
-            <button type="button" class="btn-primary" (click)="nextQuestion()">بعدی</button>
+            @if (hasAnswer(currentQuestion.id) && !isCurrentAnswerRevealed) {
+              <button type="button" class="btn-primary btn-check" (click)="revealAnswer()">بررسی پاسخ</button>
+            } @else {
+              <button type="button" class="btn-primary" (click)="nextQuestion()">بعدی</button>
+            }
           } @else {
-            <button type="button" class="btn-primary btn-submit" (click)="submitAssessment()" [disabled]="submitting">
-              {{ submitting ? 'در حال ارسال...' : 'پایان و ارسال' }}
-            </button>
+            @if (hasAnswer(currentQuestion.id) && !isCurrentAnswerRevealed) {
+              <button type="button" class="btn-primary btn-check" (click)="revealAnswer()">بررسی پاسخ</button>
+            } @else {
+              <button type="button" class="btn-primary btn-submit" (click)="submitAssessment()" [disabled]="submitting">
+                {{ submitting ? 'در حال ارسال...' : 'پایان و ارسال' }}
+              </button>
+            }
           }
         </div>
 

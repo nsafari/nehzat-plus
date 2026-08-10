@@ -202,6 +202,182 @@ h2 {
   white-space: nowrap;
 }
 
+/* ---------- Dashboard Cards ---------- */
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dash-card {
+  background: var(--lp-surface, #fff);
+  border: 1px solid var(--lp-border, #e5e7eb);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dash-card__label {
+  font-size: 0.8rem;
+  color: var(--lp-muted, #6b7280);
+  font-weight: 500;
+}
+
+.dash-card__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--lp-primary, #2563eb);
+}
+
+/* ---------- Section Blocks ---------- */
+
+.section-block {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--lp-text, #1f2937);
+}
+
+/* ---------- Subject Area Grid ---------- */
+
+.subject-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.subject-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--lp-surface, #fff);
+  border: 1px solid var(--lp-border, #e5e7eb);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+}
+
+.subject-chip__name {
+  font-weight: 500;
+  color: var(--lp-text, #1f2937);
+}
+
+.subject-chip__score {
+  color: var(--lp-primary, #2563eb);
+  font-weight: 600;
+}
+
+.subject-chip__count {
+  color: var(--lp-muted, #6b7280);
+  font-size: 0.8rem;
+}
+
+/* ---------- Skills Grid ---------- */
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--lp-surface, #fff);
+  border: 1px solid var(--lp-border, #e5e7eb);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.skill-chip__name {
+  color: var(--lp-text, #1f2937);
+}
+
+.skill-chip__level {
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.skill-chip__level--not_started {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.skill-chip__level--in_progress {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.skill-chip__level--achieved {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.skill-chip__level--mastered {
+  background: #a78bfa;
+  color: #fff;
+}
+
+/* ---------- Chart Wrapper ---------- */
+
+.chart-wrapper {
+  background: var(--lp-surface, #fff);
+  border: 1px solid var(--lp-border, #e5e7eb);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  min-height: 280px;
+}
+
+/* ---------- Coach Feedback ---------- */
+
+.feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.feedback-item {
+  background: var(--lp-surface, #fff);
+  border: 1px solid var(--lp-border, #e5e7eb);
+  border-right: 3px solid var(--lp-primary, #2563eb);
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+}
+
+.feedback-item__date {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--lp-muted, #6b7280);
+  margin-bottom: 0.35rem;
+}
+
+.feedback-item__text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--lp-text, #1f2937);
+  line-height: 1.6;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  background: var(--lp-surface, #fff);
+  border: 1px solid var(--lp-border, #e5e7eb);
+  border-radius: 0.75rem;
+}
+
 /* ---------- Date Filter ---------- */
 
 .date-filter {

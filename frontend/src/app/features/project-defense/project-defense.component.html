@@ -1,0 +1,226 @@
+<div class="project-defense-page">
+  <header class="page-header">
+    <div class="header-content">
+      <a class="back-link" routerLink="/dashboard">← بازگشت</a>
+      <h1>🛡️ دفاع پروژه</h1>
+    </div>
+    <button class="create-btn" (click)="openCreateModal()" [disabled]="loading || saving">
+      {{ activeView === 'create' ? 'انصراف' : '+ دفاع جدید' }}
+    </button>
+  </header>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p class="muted">در حال بارگذاری دفاع‌های پروژه...</p>
+    </div>
+  } @else {
+    <nav class="view-tabs" role="tablist">
+      <button
+        class="view-tab"
+        [class.active]="activeView === 'list'"
+        (click)="switchView('list')"
+        role="tab"
+        [attr.aria-selected]="activeView === 'list'">
+        لیست دفاع‌ها
+      </button>
+      @if (activeView === 'schedule' || defenseSchedule) {
+        <button
+          class="view-tab"
+          [class.active]="activeView === 'schedule'"
+          (click)="switchView('schedule')"
+          role="tab"
+          [attr.aria-selected]="activeView === 'schedule'">
+          زمان‌بندی
+        </button>
+      }
+    </nav>
+
+    @if (activeView === 'list') {
+      <section class="content-area">
+        @if (defenses.length === 0) {
+          <div class="empty-state">
+            <p class="muted">هنوز دفاع پروژه‌ای ثبت نشده است</p>
+            <button class="create-btn inline" (click)="openCreateModal()">ایجاد اولین دفاع</button>
+          </div>
+        } @else {
+          <div class="defense-grid">
+            @for (defense of defenses; track defense.id) {
+              <article class="defense-card">
+                <div class="defense-header">
+                  <h3 class="defense-title">{{ defense.title }}</h3>
+                  <span class="status-badge [getStatusClass(defense.status)]">{{ getStatusLabel(defense.status) }}</span>
+                </div>
+                <p class="defense-desc">{{ defense.description }}</p>
+                <div class="defense-meta">
+                  <span class="meta-item">📅 ثبت: {{ formatDate(defense.createdAt) }}</span>
+                  @if (defense.scheduledDate) {
+                    <span class="meta-item">🗓️ جلسه: {{ formatDate(defense.scheduledDate) }}</span>
+                  }
+                  @if (defense.evaluatorName) {
+                    <span class="meta-item">👥 {{ defense.evaluatorName }}</span>
+                  }
+                </div>
+                <div class="defense-actions">
+                  @if (canSubmit(defense)) {
+                    <button class="btn btn-primary" (click)="onSubmitDefense(defense)" [disabled]="saving">
+                      ارسال برای دفاع
+                    </button>
+                  }
+                  @if (canSchedule(defense)) {
+                    <button class="btn btn-secondary" (click)="openScheduleModal(defense)">
+                      زمان‌بندی جلسه
+                    </button>
+                  }
+                  <button class="btn btn-outline" (click)="onViewEvaluations(defense)">
+                    {{ defense.evaluatorName ? 'مشاهده ارزیابی' : 'بدون ارزیابی' }}
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    @if (activeView === 'create') {
+      <section class="content-area">
+        <div class="create-form">
+          <h2>ایجاد دفاع پروژه جدید</h2>
+          <div class="form-group">
+            <label for="createTitle">عنوان پروژه *</label>
+            <input
+              id="createTitle"
+              type="text"
+              [(ngModel)]="createTitle"
+              placeholder="مثال: سامانه مدیریت یادگیری آنلاین"
+              [disabled]="saving"
+              required>
+          </div>
+          <div class="form-group">
+            <label for="createDescription">توضیحات پروژه</label>
+            <textarea
+              id="createDescription"
+              [(ngModel)]="createDescription"
+              rows="4"
+              placeholder="شرح مختصر پروژه، اهداف، و تکنولوژی‌های استفاده شده..."
+              [disabled]="saving"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-outline" (click)="closeModals()" [disabled]="saving">انصراف</button>
+            <button class="btn btn-primary" (click)="onCreateDefense()" [disabled]="saving || !createTitle.trim()">
+              {{ saving ? 'در حال ایجاد...' : 'ایجاد دفاع' }}
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+
+    @if (activeView === 'schedule') {
+      <section class="content-area">
+        <div class="create-form">
+          <h2>زمان‌بندی جلسه دفاع</h2>
+          <div class="form-group">
+            <label for="scheduleDefenseId">انتخاب دفاع *</label>
+            <select
+              id="scheduleDefenseId"
+              [(ngModel)]="scheduleDefenseId"
+              [disabled]="saving"
+              required>
+              <option value="">دفاع پروژه را انتخاب کنید</option>
+              @for (defense of defenses; track defense.id) {
+                @if (defense.status === 'submitted') {
+                  <option [value]="defense.id">{{ defense.title }}</option>
+                }
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="scheduleDate">تاریخ و زمان جلسه *</label>
+            <input
+              id="scheduleDate"
+              type="datetime-local"
+              [(ngModel)]="scheduleDate"
+              [disabled]="saving"
+              required>
+          </div>
+          <div class="form-group">
+            <label for="scheduleLocation">مکان جلسه *</label>
+            <input
+              id="scheduleLocation"
+              type="text"
+              [(ngModel)]="scheduleLocation"
+              placeholder="مثال: اتاق جلسات ۳، ساختمان اصلی"
+              [disabled]="saving"
+              required>
+          </div>
+          <div class="form-group">
+            <label for="scheduleEvaluatorIds">شناسه‌های ارزیاب‌ها (با کاما جدا شده) *</label>
+            <input
+              id="scheduleEvaluatorIds"
+              type="text"
+              [(ngModel)]="scheduleEvaluatorIds"
+              placeholder="مثال: 101,102"
+              [disabled]="saving"
+              required>
+            <small class="muted">شناسه‌های ارزیاب‌ها را با کاما جدا کنید (مثال: 101,102,103)</small>
+          </div>
+          <div class="form-group">
+            <label for="scheduleDuration">مدت زمان جلسه (دقیقه)</label>
+            <input
+              id="scheduleDuration"
+              type="number"
+              [(ngModel)]="scheduleDuration"
+              min="15"
+              max="120"
+              [disabled]="saving">
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-outline" (click)="closeModals()" [disabled]="saving">انصراف</button>
+            <button class="btn btn-primary" (click)="onScheduleDefense()" [disabled]="saving || !scheduleDefenseId || !scheduleDate || !scheduleLocation.trim()">
+              {{ saving ? 'در حال زمان‌بندی...' : 'زمان‌بندی جلسه' }}
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+  }
+
+  @if (selectedDefense) {
+    <div class="overlay" (click)="selectedDefense = null">
+      <div class="modal evaluations-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>ارزیابی‌های دفاع: {{ selectedDefense.title }}</h2>
+          <button class="close-btn" (click)="selectedDefense = null">&times;</button>
+        </div>
+        <div class="evaluations-list">
+          @if (evaluations.length === 0) {
+            <p class="muted text-center" style="padding: 2rem;">هنوز ارزیابی‌ای ثبت نشده است</p>
+          } @else {
+            @for (eval of evaluations; track eval.id) {
+              <div class="evaluation-card">
+                <div class="eval-header">
+                  <span class="eval-evaluator">{{ eval.evaluatorName }}</span>
+                  <span class="eval-score">{{ eval.score }}/100</span>
+                </div>
+                <div class="eval-criteria">
+                  @for (criterion of getCriteriaKeys(); track criterion) {
+                    <div class="criterion-item">
+                      <span class="criterion-label">{{ getCriterionLabel(criterion) }}</span>
+                      <span class="criterion-value">{{ eval.criteriaScores[criterion] }}</span>
+                    </div>
+                  }
+                </div>
+                <p class="eval-feedback">{{ eval.feedback }}</p>
+                <small class="eval-date">تاریخ: {{ formatDate(eval.evaluatedAt) }}</small>
+              </div>
+            }
+            <div class="average-score">
+              <strong>میانگین نمرات: {{ getAverageScore(evaluations) }}/100</strong>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

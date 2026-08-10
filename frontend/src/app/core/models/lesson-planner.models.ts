@@ -998,6 +998,184 @@ export interface UpsertDailySpiritualEntryPayload {
   completedSteps?: string;
 }
 
+export interface DailyActivity {
+  id: number;
+  userId: number;
+  activityDate: string;
+  activityMinutes?: number | null;
+  steps?: number | null;
+  sleepHours?: number | null;
+  notes?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpsertDailyActivityPayload {
+  activityDate: string;
+  activityMinutes?: number | null;
+  steps?: number | null;
+  sleepHours?: number | null;
+  notes?: string | null;
+}
+
+// Spaced Repetition (SRS) — Phase 2 (SM-2 algorithm)
+export type SrsContentType = 'math' | 'quran' | 'vocabulary' | string;
+
+export interface SpacedRepetitionCard {
+  id: number;
+  userId: number;
+  contentType: SrsContentType;
+  contentId?: number | null;
+  question: string;
+  answer: string;
+  nextReviewAt: string;
+  interval: number;
+  easeFactor: number;
+  repetition: number;
+  lastReviewedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpsertSrsCardPayload {
+  contentType: SrsContentType;
+  contentId?: number | null;
+  question: string;
+  answer: string;
+}
+
+export interface SrsReviewPayload {
+  quality: number;
+}
+
+export interface SrsStats {
+  dueToday: number;
+  totalCards: number;
+  learningCards: number;
+  reviewCards: number;
+  averageEaseFactor: number;
+}
+
+export interface UserXp {
+  userId: number;
+  totalXp: number;
+  level: number;
+  currentLevelXp: number;
+  nextLevelXp: number;
+  levelProgressXp: number;
+  levelProgressPercent: number;
+  updatedAt: string;
+}
+
+export interface XpBadge {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  icon?: string | null;
+  xpMilestone: number;
+  category: string;
+  isEarned: boolean;
+}
+
+export interface XpActivity {
+  id: number;
+  type: string;
+  xpAmount: number;
+  badgeId?: number | null;
+  badgeName?: string | null;
+  badgeIcon?: string | null;
+  reason: string;
+  createdAt: string;
+}
+
+export interface AwardXpResult {
+  userXp: UserXp;
+  awardedXp: number;
+  leveledUp: boolean;
+  newBadges: XpBadge[];
+}
+
+export interface AwardXpPayload {
+  xp: number;
+  reason: string;
+}
+
+export type ArtworkType = 'painting' | 'craft' | 'music' | 'calligraphy';
+
+export interface Artwork {
+  id: number;
+  userId: number;
+  title: string;
+  type: ArtworkType | string;
+  fileUrl: string;
+  description?: string | null;
+  tags?: string | null;
+  isPublic: boolean;
+  likeCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateArtworkPayload {
+  title: string;
+  type: ArtworkType | string;
+  fileUrl: string;
+  description?: string | null;
+  tags?: string | null;
+  isPublic?: boolean;
+}
+
+export interface MusicRecord {
+  id: number;
+  userId: number;
+  title: string;
+  audioUrl: string;
+  artistName?: string | null;
+  durationSeconds?: number | null;
+  genre?: string | null;
+  description?: string | null;
+  tags?: string | null;
+  isPublic: boolean;
+  likeCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateMusicRecordPayload {
+  title: string;
+  audioUrl: string;
+  artistName?: string | null;
+  durationSeconds?: number | null;
+  genre?: string | null;
+  description?: string | null;
+  tags?: string | null;
+  isPublic?: boolean;
+}
+
+export interface CalligraphySample {
+  id: number;
+  userId: number;
+  title: string;
+  imageUrl: string;
+  style?: string | null;
+  description?: string | null;
+  tags?: string | null;
+  isPublic: boolean;
+  likeCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCalligraphySamplePayload {
+  title: string;
+  imageUrl: string;
+  style?: string | null;
+  description?: string | null;
+  tags?: string | null;
+  isPublic?: boolean;
+}
+
 export interface UserOccasionProgress {
   id: number;
   userId: number;
@@ -3050,4 +3228,410 @@ export interface HadithDashboardStats {
 export interface SubmitHadithReviewPayload {
   hadithId: number;
   isCorrect: boolean;
+}
+
+// ===== Trainee Domain Radar + Multi-domain Streaks =====
+
+export type TraineeDomainKey = 'scientific' | 'spiritual' | 'physical' | 'artistic' | 'social' | 'career';
+
+export interface DomainProgress {
+  key: TraineeDomainKey;
+  labelFa: string;
+  icon: string;
+  score: number;
+}
+
+export type StreakDomainKey = 'academic' | 'spiritual' | 'physical';
+
+export interface StreakInfo {
+  academic: number;
+  spiritual: number;
+  physical: number;
+  unified: number;
+}
+
+export type NudgeDomain = 'scientific' | 'spiritual' | 'physical';
+
+export interface DailyNudge {
+  id: number;
+  userId: number;
+  domain: NudgeDomain;
+  message: string;
+  scheduledFor: string;
+  status: 'pending' | 'delivered' | 'dismissed';
+  createdAt: string;
+  dismissedAt?: string | null;
+}
+
+export interface NudgeSchedule {
+  id: number;
+  domain: NudgeDomain;
+  hour: number;
+  minute: number;
+  message: string;
+  enabled: boolean;
+}
+
+// ===== XP / Gamification Module =====
+
+export interface AwardXpRequest {
+  xp: number;
+  reason: string;
+}
+
+export interface CollaborationProject {
+  id: number;
+  title: string;
+  description?: string | null;
+  subject?: string | null;
+  memberIds: number[];
+  memberNames?: string[];
+  createdAt: string;
+  updatedAt: string;
+  progressPercent: number;
+  taskCount: number;
+  completedTaskCount: number;
+}
+
+export interface CreateCollaborationProjectPayload {
+  title: string;
+  description?: string | null;
+  subject?: string | null;
+  memberIds: number[];
+}
+
+export interface CareerPath {
+  id: number;
+  title: string;
+  description?: string | null;
+  category: string;
+  targetLevel: number;
+  targetXp: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  milestones: CareerPathMilestone[];
+  prerequisites?: string[];
+}
+
+export interface CreateCareerPathPayload {
+  title: string;
+  description?: string | null;
+  category: string;
+  targetLevel: number;
+  targetXp: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  prerequisites?: string[];
+}
+
+export interface CareerPathMilestone {
+  id: number;
+  pathId: number;
+  title: string;
+  description?: string | null;
+  skillRequirement: string;
+  requiredXp: number;
+  isCompleted: boolean;
+  createdAt: string;
+}
+
+export interface CareerPathProgress {
+  pathId: number;
+  currentMilestoneId: number | null;
+  completedMilestoneCount: number;
+  totalMilestones: number;
+  xpEarned: number;
+  xpNeeded: number;
+  pathTitle: string;
+}
+
+export interface PathwayRecommendation {
+  id: number;
+  careerPathId: number;
+  careerPathTitle: string;
+  recommendationLevel: 'high' | 'medium' | 'low';
+  reason: string;
+  userId: number;
+  createdAt: string;
+}
+
+export interface CreateCareerPathPayload {
+  title: string;
+  description?: string | null;
+  category: string;
+  targetLevel: number;
+  targetXp: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  prerequisites?: string[];
+}
+
+export interface SaveProgressPayload {
+  pathId: number;
+  currentMilestoneId: number | null;
+  completedMilestoneCount: number;
+  totalMilestones: number;
+  xpEarned: number;
+  xpNeeded: number;
+  pathTitle: string;
+}
+
+export interface SelectPathwayPayload {
+  pathId: number;
+}
+
+export interface DiscussionThread {
+  id: number;
+  projectId: number;
+  projectTitle?: string;
+  title: string;
+  body: string;
+  authorId: number;
+  authorName?: string;
+  createdAt: string;
+  updatedAt: string;
+  postCount: number;
+  isPinned: boolean;
+}
+
+export interface CreateDiscussionThreadPayload {
+  projectId: number;
+  title: string;
+  body: string;
+}
+
+export interface DiscussionPost {
+  id: number;
+  threadId: number;
+  threadTitle?: string;
+  body: string;
+  authorId: number;
+  authorName?: string;
+  createdAt: string;
+  updatedAt: string;
+  parentId?: number | null;
+  likeCount: number;
+  isLiked: boolean;
+}
+
+export interface CreateDiscussionPostPayload {
+  threadId: number;
+  body: string;
+  parentId?: number | null;
+}
+
+export interface PeerReview {
+  id: number;
+  projectId: number;
+  projectTitle?: string;
+  reviewerId: number;
+  reviewerName?: string;
+  authorId: number;
+  authorName?: string;
+  score: number;
+  feedback: string;
+  submittedAt: string;
+  status: 'assigned' | 'submitted' | 'returned';
+}
+
+export interface SubmitPeerReviewPayload {
+  projectId: number;
+  score: number;
+  feedback: string;
+}
+
+export interface PortfolioItem {
+  id: number;
+  userId: number;
+  title: string;
+  type: 'artwork' | 'music' | 'writing' | 'project' | 'certificate' | 'other';
+  typeLabel?: string;
+  description?: string | null;
+  fileUrl?: string | null;
+  tags?: string | null;
+  isPublic: boolean;
+  likeCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UploadPortfolioItemPayload {
+  title: string;
+  type: 'artwork' | 'music' | 'writing' | 'project' | 'certificate' | 'other';
+  fileUrl?: string | null;
+  description?: string | null;
+  tags?: string | null;
+  isPublic?: boolean;
+}
+
+export interface SkillCertificate {
+  id: number;
+  userId: number;
+  title: string;
+  issuer: string;
+  issueDate?: string | null;
+  expiryDate?: string | null;
+  credentialHash?: string | null;
+  certificateUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SkillBasket {
+  id: number;
+  userId: number;
+  title: string;
+  description?: string | null;
+  skillIds: number[];
+  skillNames?: string[];
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+  competencyPercent: number;
+}
+
+export interface CreateSkillBasketPayload {
+  title: string;
+  description?: string | null;
+  skillIds: number[];
+  isPublic?: boolean;
+}
+
+export interface ProjectDefense {
+  id: number;
+  userId: number;
+  title: string;
+  description?: string | null;
+  projectUrl?: string | null;
+  videoUrl?: string | null;
+  status: 'draft' | 'submitted' | 'scheduled' | 'completed' | 'failed';
+  scheduledAt?: string | null;
+  scheduledDate?: string | null;
+  defenseDate?: string | null;
+  score?: number | null;
+  feedback?: string | null;
+  evaluatorId?: number | null;
+  evaluatorName?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProjectDefensePayload {
+  title: string;
+  description?: string | null;
+  projectUrl?: string | null;
+  videoUrl?: string | null;
+}
+
+export interface SubmitProjectDefensePayload {
+  defenseId: number;
+  projectUrl?: string | null;
+  videoUrl?: string | null;
+}
+
+export interface ProjectDefenseEvaluation {
+  id: number;
+  defenseId: number;
+  evaluatorId: number;
+  evaluatorName?: string;
+  score: number;
+  feedback: string;
+  criteriaScores: Record<string, number>;
+  evaluatedAt: string;
+}
+
+export interface ScheduleDefensePayload {
+  defenseId: number;
+  scheduledDate?: string;
+  scheduledAt?: string;
+  evaluatorId?: number;
+  evaluatorIds?: number[];
+  location?: string;
+  durationMinutes?: number;
+}
+
+export interface DefenseSchedule {
+  id: number;
+  defenseId: number;
+  defenseTitle?: string;
+  studentId: number;
+  studentName?: string;
+  evaluatorId: number;
+  evaluatorName?: string;
+  scheduledDate: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  createdAt: string;
+}
+
+// ===== Community Metrics Module (Phase 9) =====
+export interface CommunityMetrics {
+  totalTrainees: number;
+  activeThisWeek: number;
+  totalCollaborations: number;
+  totalPortfolioItems: number;
+  avgSkillLevel: number;
+  topDomains: DomainMetric[];
+}
+
+export interface DomainMetric {
+  domain: string;
+  traineeCount: number;
+  avgXp: number;
+  avgLevel: number;
+}
+
+export interface PeerActivity {
+  id: number;
+  traineeId: number;
+  traineeName: string;
+  traineeAvatar?: string | null;
+  activityType: 'project_created' | 'discussion_posted' | 'portfolio_uploaded' | 'badge_earned' | 'level_up' | 'collaboration_joined';
+  description: string;
+  timestamp: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SkillSharingMetrics {
+  totalShared: number;
+  topSharedSkills: SkillShare[];
+  recentShares: SkillShare[];
+}
+
+export interface SkillShare {
+  id: number;
+  skillName: string;
+  sharedBy: string;
+  sharedById: number;
+  category: string;
+  viewCount: number;
+  likeCount: number;
+  sharedAt: string;
+}
+
+export interface CollaborationMetrics {
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+  avgTeamSize: number;
+  topCollaborators: CollaboratorMetric[];
+}
+
+export interface CollaboratorMetric {
+  traineeId: number;
+  traineeName: string;
+  projectCount: number;
+  contributionScore: number;
+}
+
+export interface PublicShowcase {
+  id: number;
+  traineeId: number;
+  traineeName: string;
+  traineeAvatar?: string | null;
+  title: string;
+  type: 'portfolio' | 'artwork' | 'music' | 'calligraphy' | 'project' | 'achievement';
+  thumbnailUrl: string;
+  viewCount: number;
+  likeCount: number;
+  createdAt: string;
 }

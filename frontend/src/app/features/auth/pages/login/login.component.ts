@@ -27,11 +27,11 @@ export class LoginComponent implements OnInit {
 
   protected readonly roles: RoleOption[] = [
     { key: 'admin',        label: 'مدیر',         icon: '⚙️',  description: 'دسترسی کامل مدیریتی' },
-    { key: 'trainee',      label: 'دانش‌آموز',    icon: '📚',  description: 'داشبورد روزانه و تکالیف' },
-    { key: 'coach',        label: 'مربی',         icon: '🏋️',  description: 'مدیریت دانش‌آموزان' },
+    { key: 'trainee',      label: 'متربی',    icon: '📚',  description: 'داشبورد روزانه و تکالیف' },
+    { key: 'coach',        label: 'مربی',         icon: '🏋️',  description: 'مدیریت متربیان' },
     { key: 'parent',       label: 'والدین',        icon: '👨‍👩‍👧', description: 'پیگیری پیشرفت' },
     { key: 'branch_manager', label: 'مدیر شعبه',  icon: '🏢',  description: 'مدیریت شعبه' },
-    { key: 'evaluator',    label: 'ارزیاب',       icon: '📋',  description: 'ارزیابی دانش‌آموزان' },
+    { key: 'evaluator',    label: 'ارزیاب',       icon: '📋',  description: 'ارزیابی متربیان' },
     { key: 'headquarters', label: 'ستاد',         icon: '🏛️',  description: 'داشبورد ستادی' },
   ];
 

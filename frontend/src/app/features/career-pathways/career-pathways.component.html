@@ -1,0 +1,179 @@
+<div class="career-pathways-page">
+  <header class="page-header">
+    <div class="header-content">
+      <a routerLink="/dashboard" class="back-link">
+        <span>←</span> داشبورد
+      </a>
+      <h1>مسیرهای شغلی</h1>
+    </div>
+    <button class="create-btn" (click)="openCreateModal()">
+      <span>+</span> مسیر جدید
+    </button>
+  </header>
+
+  <div class="view-tabs">
+    <button class="view-tab" [class.active]="view === 'paths'" (click)="switchView('paths')">
+      <span>{{ getViewIcon() }}</span> مسیرها
+    </button>
+    <button class="view-tab" [class.active]="view === 'recommendations'" (click)="switchView('recommendations')">
+      <span>{{ getViewIcon() }}</span> پیشنهادها
+    </button>
+    <button class="view-tab" [class.active]="view === 'progress'" (click)="switchView('progress')">
+      <span>{{ getViewIcon() }}</span> پیشرفت
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <span class="spinner"></span>
+      <p class="muted">در حال بارگذاری مسیرهای شغلی...</p>
+    </div>
+  } @else {
+    <div class="content-area">
+      @if (view === 'paths') {
+        <div class="paths-grid">
+          @for (path of careerPaths; track path.id) {
+            <article class="path-card" (click)="selectPath(path)">
+              <div class="path-header">
+                <h3 class="path-title">{{ path.title }}</h3>
+                <span class="difficulty-badge" [class]="'difficulty-' + path.difficulty">{{ path.difficulty }}</span>
+              </div>
+              <p class="path-desc">{{ path.description || 'بدون توضیحات' }}</p>
+              <div class="path-meta">
+                <div class="meta-item">
+                  <span class="meta-label">دسته‌بندی</span>
+                  <span class="meta-value">{{ getCategoryLabel(path.category) }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">سطح هدف</span>
+                  <span class="meta-value">{{ path.targetLevel }}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">XP هدف</span>
+                  <span class="meta-value">{{ path.targetXp }}</span>
+                </div>
+              </div>
+              <div class="path-milestones">
+                <span class="milestone-count">{{ path.milestones?.length || 0 }} estaciones</span>
+              </div>
+            </article>
+          }
+        </div>
+      }
+
+      @if (view === 'recommendations') {
+        <div class="recommendations-list">
+          @for (rec of recommendations; track rec.id) {
+            <article class="recommendation-card">
+              <div class="rec-header">
+                <h3 class="rec-title">{{ rec.careerPathTitle }}</h3>
+                <span class="rec-level" [class]="'level-' + rec.recommendationLevel">{{ rec.recommendationLevel }}</span>
+              </div>
+              <p class="rec-reason">{{ rec.reason }}</p>
+              <button class="apply-btn" (click)="onApplyRecommendation(rec)">
+                درخواست مسیر
+              </button>
+            </article>
+          }
+        </div>
+      }
+
+      @if (view === 'progress') {
+        <div class="progress-section">
+          @if (!selectedPath) {
+            <div class="empty-state">
+              <span class="empty-icon">📊</span>
+              <h3>هیچ مسیری انتخاب نشده</h3>
+              <p>یک مسیر را از تب «مسیرها» انتخاب کنید تا پیشرفت خود را ببینید</p>
+            </div>
+          } @else {
+            <div class="progress-card">
+              <div class="progress-header">
+                <h3>{{ selectedPath.title }}</h3>
+                <span class="progress-percent">{{ getProgressPercent() }}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getProgressPercent()"></div>
+              </div>
+              <div class="progress-stats">
+                <div class="stat">
+                  <span class="stat-value">{{ progress?.completedMilestoneCount || 0 }}</span>
+                  <span class="stat-label">مilstones کامل</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">{{ progress?.totalMilestones || 0 }}</span>
+                  <span class="stat-label">کل milestones</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">{{ progress?.xpEarned || 0 }}</span>
+                  <span class="stat-label">XP کسب شده</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">{{ progress?.xpNeeded || 0 }}</span>
+                  <span class="stat-label">XP باقی‌مانده</span>
+                </div>
+              </div>
+              <div class="current-milestone">
+                <h4>milestone جاری</h4>
+                <p>{{ getCurrentMilestoneTitle() || 'تمام milestones تکمیل شده' }}</p>
+              </div>
+              <button class="save-progress-btn" (click)="onSaveProgress()" [disabled]="!progress">
+                ذخیره پیشرفت
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (showCreateModal) {
+  <div class="overlay" (click)="closeCreateModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>ایجاد مسیر شغلی جدید</h2>
+        <button class="close-btn" (click)="closeCreateModal()">×</button>
+      </div>
+      <form class="create-form" (ngSubmit)="onCreatePath()">
+        <div class="field">
+          <label>عنوان مسیر</label>
+          <input type="text" [(ngModel)]="newPathTitle" name="title" placeholder="مثال: توسعه‌دهنده فرانت‌اند" required>
+        </div>
+        <div class="field">
+          <label>دسته‌بندی</label>
+          <select [(ngModel)]="newPathCategory" name="category" required>
+            <option value="">انتخاب کنید...</option>
+            <option *ngFor="let cat of CAREER_CATEGORIES" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>توضیحات</label>
+          <textarea [(ngModel)]="newPathDescription" name="description" placeholder="توضیح کوتاه درباره این مسیر..."></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>سطح هدف</label>
+            <input type="number" [(ngModel)]="newPathTargetLevel" name="targetLevel" min="1" max="10" required>
+          </div>
+          <div class="field">
+            <label>XP هدف</label>
+            <input type="number" [(ngModel)]="newPathTargetXp" name="targetXp" min="0" required>
+          </div>
+        </div>
+        <div class="field">
+          <label>سطح سختی</label>
+          <select [(ngModel)]="newPathDifficulty" name="difficulty" required>
+            <option value="beginner">مبتدی</option>
+            <option value="intermediate">متوسط</option>
+            <option value="advanced">پیشرفته</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeCreateModal()">انصراف</button>
+          <button type="submit" class="save-btn" [disabled]="creating"> {{ creating ? 'در حال ایجاد...' : 'ایجاد مسیر' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

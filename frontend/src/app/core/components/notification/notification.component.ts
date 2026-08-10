@@ -18,13 +18,14 @@ import { NotificationService } from '../../services/notification.service';
     .lp-toast-container {
       position: fixed;
       bottom: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 1rem;
+      right: auto;
       z-index: 9999;
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
       gap: 0.5rem;
-      max-width: 520px;
+      max-width: 420px;
       width: calc(100% - 2rem);
       pointer-events: none;
     }
@@ -43,13 +44,23 @@ import { NotificationService } from '../../services/notification.service';
     }
     .lp-toast--error {
       background: #fef2f2;
-      border: 1px solid #fca5a5;
-      color: #991b1b;
+      border: 1px solid var(--lp-danger, #fca5a5);
+      color: var(--lp-danger, #991b1b);
     }
     .lp-toast--success {
       background: #f0fdf4;
-      border: 1px solid #86efac;
-      color: #166534;
+      border: 1px solid var(--lp-primary, #86efac);
+      color: var(--lp-primary, #166534);
+    }
+    .lp-toast--info {
+      background: var(--lp-primary-light, #e8f5ee);
+      border: 1px solid var(--lp-primary, #1a6b3c);
+      color: var(--lp-text, #1e1b14);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lp-toast {
+        animation: none;
+      }
     }
     .lp-toast__message {
       flex: 1;

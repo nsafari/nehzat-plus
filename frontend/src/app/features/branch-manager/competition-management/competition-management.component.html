@@ -114,7 +114,7 @@
         <div class="table-wrap">
           <table class="data-table">
             <thead>
-              <tr><th>نام دانش‌آموز</th><th>امتیاز</th><th>رتبه</th><th>عملیات</th></tr>
+              <tr><th>نام متربی</th><th>امتیاز</th><th>رتبه</th><th>عملیات</th></tr>
             </thead>
             <tbody>
               @for (p of detail.participants; track p.id) {
@@ -146,7 +146,7 @@
 
       <!-- Register Participant -->
       <div class="inline-form">
-        <input type="number" placeholder="شناسه دانش‌آموز" [(ngModel)]="studentIdToAdd" class="form-control inline-input" />
+        <input type="number" placeholder="شناسه متربی" [(ngModel)]="studentIdToAdd" class="form-control inline-input" />
         <button type="button" class="btn btn-sm btn-primary" (click)="registerParticipant(detail.id)">ثبت شرکت‌کننده</button>
       </div>
 
@@ -167,7 +167,7 @@
         <div class="table-wrap">
           <table class="data-table">
             <thead>
-              <tr><th>رتبه</th><th>نام دانش‌آموز</th><th>امتیاز</th></tr>
+              <tr><th>رتبه</th><th>نام متربی</th><th>امتیاز</th></tr>
             </thead>
             <tbody>
               @for (r of result.rankings; track r.id) {

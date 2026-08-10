@@ -10,17 +10,30 @@
         />
       }
       <div>
-        <h1>پنل متربی</h1>
+        <h1>داشبورد متربی</h1>
         <p class="muted">خوش آمدید {{ displayName }}</p>
       </div>
     </div>
 
     <div class="header-nav">
-      <a class="nav-link" routerLink="/trainee/spiritual" routerLinkActive="nav-link-active">مسیر معنوی</a>
+      <a class="nav-link" routerLink="/dashboard/spiritual" routerLinkActive="nav-link-active">مسیر معنوی</a>
       <a class="nav-link" routerLink="/math/topics" routerLinkActive="nav-link-active">📐 ریاضیات</a>
+      <a class="nav-link" routerLink="/activity" routerLinkActive="nav-link-active">🏃 فعالیت بدنی</a>
+      <a class="nav-link" routerLink="/arts" routerLinkActive="nav-link-active">🎨 هنری</a>
+      <a class="nav-link" routerLink="/training-courses" routerLinkActive="nav-link-active">📚 تربیت مربی</a>
     </div>
 
     <div class="user-menu">
+      <button
+        type="button"
+        class="nudge-toggle"
+        [class.active]="nudgesEnabled()"
+        (click)="toggleNudgeNotifications()"
+        [title]="nudgesEnabled() ? 'غیرفعال کردن یادآورهای روزانه' : 'فعال کردن یادآورهای روزانه'"
+        aria-label="یادآورهای روزانه"
+      >
+        <i class="bi" [class.bi-bell]="!nudgesEnabled()" [class.bi-bell-fill]="nudgesEnabled()"></i>
+      </button>
       <button type="button" class="menu-trigger" (click)="toggleUserMenu()">
         <i class="bi bi-person-circle"></i>
         <span>{{ currentUser?.username }}</span>
@@ -110,6 +123,30 @@
           </div>
         }
       </div>
+
+      @if (loadingNudges) {
+        <p class="muted">در حال دریافت یادآورها...</p>
+      } @else if (dailyNudges.length > 0) {
+        <div class="smart-nudges">
+          <h5 class="smart-nudges__title"><i class="bi bi-bell-fill"></i> یادآورهای هوشمند</h5>
+          <div class="smart-nudges__list">
+            @for (nudge of dailyNudges; track nudge.id) {
+              <article [class]="'nudge-card nudge-card--' + nudge.domain">
+                <i class="bi" [class]="nudgeDomainIcon(nudge.domain)"></i>
+                <p class="nudge-card__message">{{ nudge.message }}</p>
+                <button
+                  type="button"
+                  class="nudge-card__dismiss"
+                  (click)="dismissDailyNudge(nudge.id)"
+                  aria-label="بستن یادآور"
+                >
+                  ×
+                </button>
+              </article>
+            }
+          </div>
+        </div>
+      }
 
       <div class="chart-container">
         <h4>نمودار پیشرفت</h4>

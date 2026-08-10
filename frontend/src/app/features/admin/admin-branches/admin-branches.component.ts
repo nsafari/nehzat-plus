@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inje
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { Branch, CreateBranchPayload, UpdateBranchPayload } from '../../../core/models/lesson-planner.models';
 import { LESSON_PLANNER_API } from '../../../core/services/lesson-planner-api.token';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -29,10 +29,20 @@ import type { LessonPlannerApi } from '../../../core/services/lesson-planner-api
       } @else if (filteredBranches.length === 0) {
         <div class="empty-state">هیچ شعبه‌ای یافت نشد</div>
       } @else {
+        @if (selectedIds.size > 0) {
+          <div class="bulk-toolbar">
+            <span class="bulk-toolbar__count">انتخاب‌شده: {{ selectedIds.size }}</span>
+            <button type="button" class="btn btn-danger btn-sm" (click)="showBulkConfirm = true">حذف انتخاب‌شده ({{ selectedIds.size }})</button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="clearSelection()">انصراف</button>
+          </div>
+        }
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
+                <th class="bulk-select-cell">
+                  <input type="checkbox" [checked]="isAllSelected()" (change)="toggleAll()" aria-label="انتخاب همه" />
+                </th>
                 <th>ردیف</th>
                 <th>نام شعبه</th>
                 <th>استان</th>
@@ -43,7 +53,10 @@ import type { LessonPlannerApi } from '../../../core/services/lesson-planner-api
             </thead>
             <tbody>
               @for (branch of filteredBranches; track branch.id; let i = $index) {
-                <tr>
+                <tr [class.bulk-selected]="isSelected(branch.id)">
+                  <td class="bulk-select-cell" (click)="$event.stopPropagation()">
+                    <input type="checkbox" [checked]="isSelected(branch.id)" (change)="toggleRowSelection(branch.id)" aria-label="انتخاب ردیف" />
+                  </td>
                   <td>{{ i + 1 }}</td>
                   <td>{{ branch.name }}</td>
                   <td>{{ branch.province }}</td>
@@ -112,6 +125,26 @@ import type { LessonPlannerApi } from '../../../core/services/lesson-planner-api
             <button type="button" class="btn btn-secondary" (click)="cancelDelete()">انصراف</button>
             <button type="button" class="btn btn-danger" (click)="doDelete()" [disabled]="deleting">
               {{ deleting ? 'در حال حذف...' : 'حذف' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showBulkConfirm) {
+      <div class="modal-overlay" (click)="showBulkConfirm = false">
+        <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>تأیید حذف گروهی</h3>
+            <button type="button" class="modal-close" (click)="showBulkConfirm = false">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>آیا از حذف {{ selectedIds.size }} شعبه انتخاب‌شده اطمینان دارید؟</p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="showBulkConfirm = false">انصراف</button>
+            <button type="button" class="btn btn-danger" [disabled]="bulkDeleting" (click)="executeBulkDelete()">
+              {{ bulkDeleting ? 'در حال حذف...' : 'حذف' }}
             </button>
           </div>
         </div>
@@ -192,6 +225,13 @@ import type { LessonPlannerApi } from '../../../core/services/lesson-planner-api
     .form-input.ng-invalid.ng-touched { border-color: #d32f2f; }
     .field-error { color: #d32f2f; font-size: 0.75rem; margin-top: 0.25rem; display: block; }
     textarea.form-input { resize: vertical; }
+    .bulk-select-cell { width: 3rem; text-align: center; vertical-align: middle; }
+    .bulk-select-cell input[type="checkbox"] { cursor: pointer; accent-color: var(--lp-primary, #1a73e8); width: 1rem; height: 1rem; margin: 0; }
+    .data-table tbody tr { cursor: pointer; }
+    .data-table tbody tr.bulk-selected { background: var(--lp-primary-light, #e3f2fd); border-inline-start: 3px solid var(--lp-primary, #1a73e8); }
+    .bulk-toolbar { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; margin-bottom: 0.75rem; background: var(--lp-primary-light, #e3f2fd); border-radius: 8px; border: 1px solid var(--lp-primary, #1a73e8); }
+    .bulk-toolbar__count { font-size: 0.875rem; font-weight: 600; color: var(--lp-primary, #1a73e8); }
+    .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -212,6 +252,9 @@ export class AdminBranchesComponent implements OnInit {
   editMode = false;
   editingId: number | null = null;
   deleteTarget: Branch | null = null;
+  selectedIds = new Set<number>();
+  bulkDeleting = false;
+  showBulkConfirm = false;
 
   branchForm: FormGroup = this.fb.group({
     name: ['', Validators.required],
@@ -303,6 +346,61 @@ export class AdminBranchesComponent implements OnInit {
         this.loadBranches();
       },
       error: () => this.notify.show('خطا در حذف شعبه', 'error'),
+    });
+  }
+
+  isSelected(id: number): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleRowSelection(id: number): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+    this.cdr.markForCheck();
+  }
+
+  isAllSelected(): boolean {
+    return this.filteredBranches.length > 0 && this.filteredBranches.every(b => this.selectedIds.has(b.id));
+  }
+
+  toggleAll(): void {
+    if (this.isAllSelected()) {
+      this.selectedIds.clear();
+    } else {
+      for (const b of this.filteredBranches) {
+        this.selectedIds.add(b.id);
+      }
+    }
+    this.cdr.markForCheck();
+  }
+
+  clearSelection(): void {
+    this.selectedIds.clear();
+    this.cdr.markForCheck();
+  }
+
+  executeBulkDelete(): void {
+    this.bulkDeleting = true;
+    const ids = Array.from(this.selectedIds);
+    forkJoin(ids.map(id => this.api.deleteBranch(id))).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => { this.bulkDeleting = false; this.cdr.markForCheck(); })
+    ).subscribe({
+      next: () => {
+        this.selectedIds.clear();
+        this.showBulkConfirm = false;
+        this.notify.show(`${ids.length} شعبه با موفقیت حذف شد`, 'success');
+        this.loadBranches();
+      },
+      error: () => {
+        this.selectedIds.clear();
+        this.showBulkConfirm = false;
+        this.notify.show('حذف یک یا چند مورد با خطا مواجه شد', 'error');
+        this.loadBranches();
+      },
     });
   }
 }

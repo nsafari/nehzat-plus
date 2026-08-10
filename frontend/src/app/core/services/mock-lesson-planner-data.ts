@@ -11,7 +11,7 @@ import {
   StudentSkillProgress, AgeGroup, SpiritualPracticeItem, SpiritualOccasion,
   SpiritualPath, DailySpiritualEntry, UserOccasionProgress,
   StudentPathSelection, ServiceSurvey, ServiceSurveyQuestion,
-  ServiceSurveyResponse, ServiceDashboardSummary
+  ServiceSurveyResponse, ServiceDashboardSummary, XpBadge
 } from '../models/lesson-planner.models';
 import { UserType } from '../models/lesson-planner.models';
 
@@ -58,3 +58,16 @@ export const mockCourses: Course[] = [
 
 export const mockCourseEnrollments = new Map<number, number[]>([[1, [1, 2, 3]], [2, [1, 2]]]);
 export const mockInviteCodes = new Map<number, any>();
+
+export const mockXpBadges: XpBadge[] = [
+  { id: 1, code: 'progress.sprout', name: 'آغاز راه', description: 'اولین قدم‌ها در مسیر رشد', icon: '🌱', xpMilestone: 100, category: 'progress', isEarned: true },
+  { id: 2, code: 'progress.learner', name: 'متربیِ کوشا', description: 'گردآوری ۵۰۰ امتیاز تجربه', icon: '📖', xpMilestone: 500, category: 'progress', isEarned: false },
+  { id: 3, code: 'progress.active', name: 'نشانِ پیشرفت', description: 'گردآوری ۱۰۰۰ امتیاز تجربه', icon: '⭐', xpMilestone: 1000, category: 'progress', isEarned: false },
+  { id: 4, code: 'progress.skilled', name: 'کارآزموده', description: 'گردآوری ۲۵۰۰ امتیاز تجربه', icon: '💪', xpMilestone: 2500, category: 'progress', isEarned: false },
+  { id: 5, code: 'quran.reciter', name: 'قهرمان قرآن', description: 'تداوم در برنامه‌های قرآنی', icon: '🎧', xpMilestone: 2500, category: 'quran', isEarned: false },
+  { id: 6, code: 'math.master', name: 'استاد ریاضی', description: 'استادی در تمرین‌های ریاضی', icon: '🧮', xpMilestone: 2500, category: 'math', isEarned: false },
+  { id: 7, code: 'progress.master', name: 'استادِ نشان‌ها', description: 'گردآوری ۵۰۰۰ امتیاز تجربه', icon: '🏆', xpMilestone: 5000, category: 'progress', isEarned: false },
+  { id: 8, code: 'behavior.persistent', name: 'بااراده', description: 'پایداری و استمرار در مسیر تربیت', icon: '🎯', xpMilestone: 5000, category: 'behavior', isEarned: false },
+  { id: 9, code: 'progress.legend', name: 'اسطوره‌ی متربیان', description: 'گردآوری ۱۰۰۰۰ امتیاز تجربه', icon: '👑', xpMilestone: 10000, category: 'progress', isEarned: false },
+  { id: 10, code: 'creativity.star', name: 'خلاقِ کوچک', description: 'کشف استعدادهای هنری و خلاقانه', icon: '🎨', xpMilestone: 10000, category: 'creativity', isEarned: false }
+];

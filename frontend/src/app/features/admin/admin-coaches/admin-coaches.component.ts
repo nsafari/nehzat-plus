@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inje
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { Coach, CreateCoachPayload } from '../../../core/models/lesson-planner.models';
 import { LESSON_PLANNER_API } from '../../../core/services/lesson-planner-api.token';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -35,10 +35,20 @@ import { NotificationService } from '../../../core/services/notification.service
       } @else if (coaches.length === 0) {
         <p class="muted">هیچ مربی ثبت نشده است.</p>
       } @else {
+        @if (selectedIds.size > 0) {
+          <div class="bulk-toolbar">
+            <span class="bulk-toolbar__count">انتخاب‌شده: {{ selectedIds.size }}</span>
+            <button type="button" class="btn btn-danger btn-sm" (click)="showBulkConfirm = true">حذف انتخاب‌شده ({{ selectedIds.size }})</button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="clearSelection()">انصراف</button>
+          </div>
+        }
         <div class="table-responsive">
           <table class="data-table coach-table">
             <thead>
               <tr>
+                <th class="bulk-select-cell">
+                  <input type="checkbox" [checked]="isAllSelected()" (change)="toggleAll()" aria-label="انتخاب همه" />
+                </th>
                 <th>نام و نام خانوادگی</th>
                 <th>نام کاربری</th>
                 <th>ایمیل</th>
@@ -51,7 +61,10 @@ import { NotificationService } from '../../../core/services/notification.service
             </thead>
             <tbody>
               @for (coach of filteredCoaches; track coach.id) {
-                <tr>
+                <tr [class.bulk-selected]="isSelected(coach.id)">
+                  <td class="bulk-select-cell" (click)="$event.stopPropagation()">
+                    <input type="checkbox" [checked]="isSelected(coach.id)" (change)="toggleRowSelection(coach.id)" aria-label="انتخاب ردیف" />
+                  </td>
                   <td class="coach-name-cell">
                     <strong>{{ coach.firstName }} {{ coach.lastName }}</strong>
                   </td>
@@ -94,6 +107,31 @@ import { NotificationService } from '../../../core/services/notification.service
         </div>
       }
     </section>
+
+    @if (showBulkConfirm) {
+      <div class="modal-overlay" (click)="showBulkConfirm = false">
+        <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>تأیید حذف گروهی</h3>
+            <button type="button" class="modal-close" (click)="showBulkConfirm = false">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>آیا از حذف {{ selectedIds.size }} مربی انتخاب‌شده اطمینان دارید؟</p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="showBulkConfirm = false">انصراف</button>
+            <button type="button" class="btn btn-danger" [disabled]="bulkDeleting" (click)="executeBulkDelete()">
+              {{ bulkDeleting ? 'در حال حذف...' : 'حذف' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
 
     @if (showCoachModal) {
       <div class="modal-overlay" (click)="closeCoachModal()">
@@ -164,6 +202,22 @@ import { NotificationService } from '../../../core/services/notification.service
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    :host { display: contents; }
+    .bulk-select-cell { width: 3rem; text-align: center; vertical-align: middle; }
+    .bulk-select-cell input[type="checkbox"] { cursor: pointer; accent-color: var(--lp-primary, #1a73e8); width: 1rem; height: 1rem; margin: 0; }
+    .data-table tbody tr { cursor: pointer; }
+    .data-table tbody tr.bulk-selected { background: var(--lp-primary-light, #e3f2fd); border-inline-start: 3px solid var(--lp-primary, #1a73e8); }
+    .bulk-toolbar { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; margin-bottom: 0.75rem; background: var(--lp-primary-light, #e3f2fd); border-radius: 8px; border: 1px solid var(--lp-primary, #1a73e8); }
+    .bulk-toolbar__count { font-size: 0.875rem; font-weight: 600; color: var(--lp-primary, #1a73e8); }
+    .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
+    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; padding: 1rem 1.25rem; border-top: 1px solid var(--lp-border, #eaecf0); }
+    .modal-close { background: none; border: none; font-size: 1.25rem; cursor: pointer; padding: 0; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--lp-border, #eaecf0); }
+    .modal-header h3 { margin: 0; font-size: 1rem; }
+    .modal-body { padding: 1.25rem; }
+    .modal-sm { max-width: 400px; }
+  `],
 })
 export class AdminCoachesComponent {
   private readonly api = inject(LESSON_PLANNER_API);
@@ -194,6 +248,9 @@ export class AdminCoachesComponent {
 
   errorMessage = '';
   successMessage = '';
+  selectedIds = new Set<number>();
+  bulkDeleting = false;
+  showBulkConfirm = false;
 
   get filteredCoaches(): Coach[] {
     const q = this.searchCoachQuery.trim().toLowerCase();
@@ -359,5 +416,63 @@ export class AdminCoachesComponent {
     this.errorMessage = message;
     this.successMessage = '';
     this.notify.show(message, 'error');
+  }
+
+  isSelected(id: number): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleRowSelection(id: number): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+    this.cdr.markForCheck();
+  }
+
+  isAllSelected(): boolean {
+    const filtered = this.filteredCoaches;
+    return filtered.length > 0 && filtered.every(c => this.selectedIds.has(c.id));
+  }
+
+  toggleAll(): void {
+    if (this.isAllSelected()) {
+      this.selectedIds.clear();
+    } else {
+      for (const c of this.filteredCoaches) {
+        this.selectedIds.add(c.id);
+      }
+    }
+    this.cdr.markForCheck();
+  }
+
+  clearSelection(): void {
+    this.selectedIds.clear();
+    this.cdr.markForCheck();
+  }
+
+  executeBulkDelete(): void {
+    this.bulkDeleting = true;
+    const ids = Array.from(this.selectedIds);
+    forkJoin(ids.map(id => this.api.deleteCoach(id)))
+      .pipe(
+        finalize(() => { this.bulkDeleting = false; this.cdr.markForCheck(); }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.selectedIds.clear();
+          this.showBulkConfirm = false;
+          this.setSuccess(`${ids.length} مربی با موفقیت حذف شد.`);
+          this.loadCoaches();
+        },
+        error: () => {
+          this.selectedIds.clear();
+          this.showBulkConfirm = false;
+          this.setError('حذف یک یا چند مورد با خطا مواجه شد.');
+          this.loadCoaches();
+        },
+      });
   }
 }

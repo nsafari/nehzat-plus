@@ -82,7 +82,7 @@ export class CoachStudentDetailComponent implements OnInit {
       .subscribe(params => {
         const id = Number(params.get('id'));
         if (!id) {
-          this._error.set('شناسه دانش‌آموز نامعتبر است.');
+          this._error.set('شناسه متربی نامعتبر است.');
           return;
         }
         this._studentId.set(id);
@@ -103,7 +103,7 @@ export class CoachStudentDetailComponent implements OnInit {
         this._loading.set(false);
       },
       error: () => {
-        this._error.set('بارگذاری ارسال‌های دانش‌آموز ناموفق بود.');
+        this._error.set('بارگذاری ارسال‌های متربی ناموفق بود.');
         this._loading.set(false);
       }
     });

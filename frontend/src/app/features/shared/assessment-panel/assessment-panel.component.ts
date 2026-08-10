@@ -45,7 +45,7 @@ interface Toast {
       <div class="content-grid">
         <section class="card generate-card">
           <h2>تولید ارزیابی هفتگی هوشمند</h2>
-          <p class="card-desc">بر اساس سابقه، طرح درس و وضعیت فعلی دانش‌آموزان</p>
+          <p class="card-desc">بر اساس سابقه، طرح درس و وضعیت فعلی متربیان</p>
 
           <form [formGroup]="generateForm" (ngSubmit)="onGenerate()" class="generate-form">
             <label class="field">
@@ -157,7 +157,7 @@ interface Toast {
           <div class="results-section" *ngIf="selectedAssessment.results?.length">
             <h3>نتایج ({{ selectedAssessment.results!.length }})</h3>
             <div *ngFor="let r of selectedAssessment.results" class="result-item">
-              <span>دانش‌آموز: {{ r.studentId }}</span>
+              <span>متربی: {{ r.studentId }}</span>
               <span>نمره: {{ r.score }}/{{ r.maxPossibleScore }}</span>
               <span>درصد: {{ r.percentage | number:'1.0-1' }}%</span>
               <span class="badge" [class]="r.status">{{ r.status }}</span>
@@ -391,7 +391,7 @@ export class AssessmentPanelComponent implements OnInit {
   generateForm: FormGroup = this.fb.group({
     courseId: [0, Validators.required],
     title: ['ارزیابی هفتگی', [Validators.required, Validators.maxLength(200)]],
-    description: ['ارزیابی تولید شده بر اساس تحلیل پیشرفت دانش‌آموزان', Validators.maxLength(1000)],
+    description: ['ارزیابی تولید شده بر اساس تحلیل پیشرفت متربیان', Validators.maxLength(1000)],
     durationMinutes: [45, [Validators.required, Validators.min(10), Validators.max(300)]],
     maxScore: [100, [Validators.required, Validators.min(10), Validators.max(500)]],
     assessmentDate: [new Date().toISOString().split('T')[0], Validators.required]
@@ -408,12 +408,12 @@ export class AssessmentPanelComponent implements OnInit {
 
   getPanelTitle(): string {
     const titles: Record<string, string> = {
-      coach: 'پنل ارزیابی هوشمند - مربی',
-      branch_manager: 'پنل ارزیابی هوشمند - مسئول شعبه',
-      evaluator: 'پنل ارزیابی هوشمند - ارزیاب',
-      headquarters: 'پنل ارزیابی هوشمند - ستاد'
+      coach: 'ارزیابی هوشمند - مربی',
+      branch_manager: 'ارزیابی هوشمند - مسئول شعبه',
+      evaluator: 'ارزیابی هوشمند - ارزیاب',
+      headquarters: 'ارزیابی هوشمند - ستاد'
     };
-    return titles[this.role] ?? 'پنل ارزیابی هوشمند';
+    return titles[this.role] ?? 'ارزیابی هوشمند';
   }
 
   loadCourses(): void {

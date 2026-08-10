@@ -9,22 +9,22 @@ export const QURAN_ROUTES: Routes = [
     children: [
       {
         path: 'surahs',
-        canActivate: [roleGuard('student')],
+        canActivate: [roleGuard('trainee')],
         loadComponent: () => import('./pages/surah-list/surah-list.component').then(m => m.QuranListComponent)
       },
       {
         path: 'surahs/:id',
-        canActivate: [roleGuard('student')],
+        canActivate: [roleGuard('trainee')],
         loadComponent: () => import('./pages/surah-detail/surah-detail.component').then(m => m.SurahDetailComponent)
       },
       {
         path: 'tajweed-rules',
-        canActivate: [roleGuard('student')],
+        canActivate: [roleGuard('trainee')],
         loadComponent: () => import('./pages/tajweed-rules/tajweed-rules.component').then(m => m.TajweedRulesComponent)
       },
       {
         path: 'recitation-levels',
-        canActivate: [roleGuard('student')],
+        canActivate: [roleGuard('trainee')],
         loadComponent: () => import('./pages/recitation-levels/recitation-levels.component').then(m => m.RecitationLevelsComponent)
       },
       {

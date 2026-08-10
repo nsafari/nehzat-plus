@@ -1,0 +1,215 @@
+<section class="social-page" dir="rtl">
+  <header class="page-header">
+    <div class="header-content">
+      <button type="button" class="back-link" (click)="backToDashboard()">← بازگشت</button>
+      <h1>🗣️ ساحت اجتماعی / همکاری</h1>
+    </div>
+  </header>
+
+  <nav class="view-tabs">
+    <button
+      type="button"
+      class="view-tab"
+      [class.active]="activeView === 'projects'"
+      (click)="switchView('projects')"
+    >پروژه‌های گروهی</button>
+    <button
+      type="button"
+      class="view-tab"
+      [class.active]="activeView === 'discussions'"
+      [disabled]="!selectedProject"
+      (click)="switchView('discussions')"
+    >بحث‌ها</button>
+    <button
+      type="button"
+      class="view-tab"
+      [class.active]="activeView === 'reviews'"
+      (click)="switchView('reviews')"
+    >نظرسنجی همتا</button>
+  </nav>
+
+  @if (loading) {
+    <div class="loading-state">
+      <p class="muted">در حال بارگذاری...</p>
+    </div>
+  }
+
+  @if (!loading && activeView === 'projects') {
+    <div class="content-area">
+      <div class="section-actions">
+        <button type="button" class="create-btn" (click)="showProjectModal = true">
+          + ایجاد پروژه
+        </button>
+      </div>
+
+      @if (projects.length === 0) {
+        <div class="empty-state">
+          <p class="muted">هنوز پروژه‌ای ثبت نشده است.</p>
+        </div>
+      }
+
+      @for (project of projects; track project.id) {
+        <article class="project-card">
+          <div class="project-header">
+            <h2 class="project-title">{{ project.title }}</h2>
+            <span class="project-progress">{{ project.progressPercent }}%</span>
+          </div>
+          @if (project.description) {
+            <p class="project-desc">{{ project.description }}</p>
+          }
+          <div class="project-meta">
+            <span class="project-subject">{{ project.subject ?? 'بدون حوزه' }}</span>
+            <span class="project-stats">{{ project.completedTaskCount }}/{{ project.taskCount }} وظیفه</span>
+          </div>
+          <div class="project-actions">
+            <button type="button" class="view-btn" (click)="selectProject(project)">ورود به بحث</button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (!loading && activeView === 'discussions') {
+    @if (selectedProject) {
+      <div class="content-area">
+        <div class="section-actions">
+          <button type="button" class="create-btn" (click)="showDiscussionModal = true">
+            + بحث جدید
+          </button>
+        </div>
+
+        @if (discussions.length === 0) {
+          <div class="empty-state">
+            <p class="muted">هنوز بحثی در این پروژه نیست.</p>
+          </div>
+        }
+
+        @for (thread of discussions; track thread.id) {
+          <article class="thread-list-item">
+            <div class="thread-header">
+              <h3 class="thread-title">{{ thread.title }}</h3>
+              <span class="thread-posts">{{ thread.postCount }} پیام</span>
+            </div>
+            <p class="thread-preview">{{ thread.body }}</p>
+            <button type="button" class="view-btn" (click)="openDiscussion(thread)">
+              مشاهده بحث
+            </button>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <p class="muted">لطفاً ابتدا یک پروژه را انتخاب کنید.</p>
+      </div>
+    }
+  }
+
+  @if (!loading && activeView === 'reviews') {
+    <div class="content-area">
+      @if (reviewItems.length === 0) {
+        <div class="empty-state">
+          <p class="muted">هنوز نظرسنجی همتا ثبت نشده است.</p>
+        </div>
+      }
+
+      @for (review of reviewItems; track review.id) {
+        <article class="review-card">
+          <div class="review-header">
+            <h3 class="review-title">{{ review.projectTitle ?? ('پروژه #' + review.projectId) }}</h3>
+            <span class="review-score">{{ review.score }}/5</span>
+          </div>
+          <p class="review-feedback">{{ review.feedback }}</p>
+          <div class="review-meta">
+            <span class="review-author">{{ review.reviewerName ?? ('همتا #' + review.reviewerId) }}</span>
+            <span class="review-status">{{ review.status }}</span>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
+
+@if (showProjectModal) {
+  <div class="overlay" (click)="showProjectModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>ایجاد پروژه همکاری‌ای</h2>
+        <button type="button" class="close-btn" (click)="showProjectModal = false">×</button>
+      </header>
+      <form class="upload-form" (ngSubmit)="createProject()">
+        <label class="field">
+          <span>عنوان پروژه</span>
+          <input type="text" [(ngModel)]="projectTitle" name="projectTitle" required placeholder="عنوان پروژه را وارد کنید" />
+        </label>
+        <label class="field">
+          <span>حوزه</span>
+          <input type="text" [(ngModel)]="projectSubject" name="projectSubject" placeholder="مثلاً ریاضی، علوم، ادبیات" />
+        </label>
+        <label class="field">
+          <span>توضیحات</span>
+          <textarea [(ngModel)]="projectDescription" name="projectDescription" rows="3"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="showProjectModal = false">لغو</button>
+          <button type="submit" class="save-btn" [disabled]="saving">
+            @if (saving) { <span>در حال ساخت...</span> } @else { <span>ایجاد</span> }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showDiscussionModal) {
+  <div class="overlay" (click)="showDiscussionModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>بحث جدید</h2>
+        <button type="button" class="close-btn" (click)="showDiscussionModal = false">×</button>
+      </header>
+      <form class="upload-form" (ngSubmit)="submitDiscussionThread()">
+        <label class="field">
+          <span>عنوان بحث</span>
+          <input type="text" [(ngModel)]="discussionTitle" name="discussionTitle" required placeholder="عنوان بحث را وارد کنید" />
+        </label>
+        <label class="field">
+          <span>متن بحث</span>
+          <textarea [(ngModel)]="discussionBody" name="discussionBody" rows="4" placeholder="متن کامل بحث..."></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="showDiscussionModal = false">لغو</button>
+          <button type="submit" class="save-btn" [disabled]="saving">
+            @if (saving) { <span>در حال ارسال...</span> } @else { <span>ایجاد بحث</span> }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showReviewModal) {
+  <div class="overlay" (click)="showReviewModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>نظرسنجی همتا</h2>
+        <button type="button" class="close-btn" (click)="showReviewModal = false">×</button>
+      </header>
+      <form class="upload-form" (ngSubmit)="submitPeerReview()">
+        <label class="field">
+          <span>امتیاز (۱ تا ۵)</span>
+          <input type="number" type="range" min="1" max="5" [(ngModel)]="reviewScore" name="reviewScore" />
+        </label>
+        <label class="field">
+          <span>بازخورد</span>
+          <textarea [(ngModel)]="reviewFeedback" name="reviewFeedback" rows="4" placeholder="بازخورد خود را بنویسید..."></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="showReviewModal = false">لغو</button>
+          <button type="submit" class="save-btn" [disabled]="saving">
+            @if (saving) { <span>در حال ثبت...</span> } @else { <span>ثبت نظرسنجی</span> }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

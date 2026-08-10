@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService, LOCAL_STORAGE } from './auth.service';
 import { OTUH2_API } from './otuh2-api.token';
+import { LESSON_PLANNER_API } from './lesson-planner-api.token';
 import { AuthTokenResponse, RegisterPayload, ApiMessageResponse } from '../models/otuh2.models';
 import { CurrentUser } from '../models/lesson-planner.models';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -56,11 +57,15 @@ describe('AuthService', () => {
       navigate: vi.fn(),
       navigateByUrl: vi.fn(),
     };
+    const mockLessonPlannerApi = {
+      signin: vi.fn().mockReturnValue(of({ token: 'dev-token' })),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         AuthService,
         { provide: OTUH2_API, useValue: mockOtuh2Api },
+        { provide: LESSON_PLANNER_API, useValue: mockLessonPlannerApi },
         { provide: Router, useValue: mockRouter },
         { provide: LOCAL_STORAGE, useValue: mockLocalStorage },
       ],

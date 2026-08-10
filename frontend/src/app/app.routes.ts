@@ -113,6 +113,60 @@ export const routes: Routes = [
       import('./features/persian-literature/learning/learning.routes').then((m) => m.LEARNING_ROUTES),
   },
   {
+    path: 'activity',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/activity/activity.routes').then((m) => m.ACTIVITY_ROUTES),
+  },
+  {
+    path: 'arts',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/arts/arts.routes').then((m) => m.ARTS_ROUTES),
+  },
+  {
+    path: 'social',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/social/social.routes').then((m) => m.SOCIAL_ROUTES),
+  },
+  {
+    path: 'career',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/career/career.routes').then((m) => m.CAREER_ROUTES),
+  },
+  {
+    path: 'portfolio',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/portfolio/portfolio.routes').then((m) => m.PORTFOLIO_ROUTES),
+  },
+  {
+    path: 'career-pathways',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/career-pathways/career-pathways.routes').then((m) => m.CAREER_PATHWAYS_ROUTES),
+  },
+  {
+    path: 'project-defense',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/project-defense/project-defense.routes').then((m) => m.PROJECT_DEFENSE_ROUTES),
+  },
+  {
+    path: 'community-metrics',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/community-metrics/community-metrics.routes').then((m) => m.COMMUNITY_METRICS_ROUTES),
+  },
+  {
+    path: 'training-courses',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/training-courses/training-courses.routes').then((m) => m.TRAINING_COURSES_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: '/auth/login'
   }

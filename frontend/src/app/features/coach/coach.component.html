@@ -9,7 +9,7 @@
             (error)="logoHidden = true"
           />
           <div>
-            <h1>پنل مربی</h1>
+            <h1>داشبورد مربی</h1>
             <p class="muted">خوش آمدید {{ currentUser?.username }}</p>
           </div>
         </div>
@@ -25,12 +25,12 @@
       <section class="main-content">
         <div class="page-title">
           <h2>داشبورد مربی</h2>
-          <p class="muted">فهرست دانش‌آموزان و پیشرفت تحصیلی آن‌ها</p>
+          <p class="muted">فهرست متربیان و پیشرفت تحصیلی آن‌ها</p>
         </div>
 
         @if (loading()) {
           <div class="state-box">
-            <p class="muted">در حال بارگذاری دانش‌آموزان...</p>
+            <p class="muted">در حال بارگذاری متربیان...</p>
           </div>
         } @else if (error()) {
           <div class="state-box state-error">
@@ -39,13 +39,13 @@
           </div>
         } @else if (rows().length === 0) {
           <div class="state-box">
-            <p class="muted">هیچ دانش‌آموزی یافت نشد.</p>
+            <p class="muted">هیچ متربی یافت نشد.</p>
           </div>
         } @else {
           <div class="summary-strip">
             <div class="summary-pill">
               <span class="pill-value">{{ rows().length }}</span>
-              <span class="pill-label">دانش‌آموز</span>
+              <span class="pill-label">متربی</span>
             </div>
             <div class="summary-pill">
               <span class="pill-value">{{ totalAssignments() }}</span>
@@ -117,7 +117,7 @@
                       <p class="error-text">{{ row.error }}</p>
                     } @else if (row.progress; as p) {
                       @if (p.courses.length === 0) {
-                        <p class="muted">دانش‌آموز در هیچ دوره‌ای ثبت‌نام نکرده است.</p>
+                        <p class="muted">متربی در هیچ دوره‌ای ثبت‌نام نکرده است.</p>
                       } @else {
                         @for (courseBlock of p.courses; track courseBlock.course.id) {
                           <div class="course-block">

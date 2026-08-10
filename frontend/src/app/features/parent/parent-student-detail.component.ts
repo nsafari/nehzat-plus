@@ -14,16 +14,20 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import type {
   AssignmentSubmission,
-  StudentInfo
+  BiweeklyProgressResponse,
+  StudentInfo,
+  StudentProgressSummary,
+  StudentSkillProgress
 } from '../../core/models/lesson-planner.models';
 import { AuthService } from '../../core/services/auth.service';
 import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token';
 import { PersianDateInputComponent } from '../shared/persian-date-input/persian-date-input.component';
+import { ProgressChartComponent } from '../dashboard/progress-chart/progress-chart.component';
 
 @Component({
   selector: 'app-parent-student-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PersianDateInputComponent],
+  imports: [CommonModule, FormsModule, RouterModule, PersianDateInputComponent, ProgressChartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './parent-student-detail.component.html',
   styleUrls: ['./parent-student-detail.component.scss']
@@ -40,6 +44,9 @@ export class ParentStudentDetailComponent implements OnInit {
   private readonly _error = signal<string | null>(null);
   private readonly _studentId = signal<number | null>(null);
   private readonly _studentName = signal('');
+  private readonly _progressSummary = signal<StudentProgressSummary | null>(null);
+  private readonly _biweeklyProgress = signal<BiweeklyProgressResponse | null>(null);
+  private readonly _skillProgress = signal<StudentSkillProgress[]>([]);
 
   readonly _dateFrom = signal<string | null>(null);
   readonly _dateTo = signal<string | null>(null);
@@ -49,6 +56,14 @@ export class ParentStudentDetailComponent implements OnInit {
   readonly error = this._error.asReadonly();
   readonly studentId = this._studentId.asReadonly();
   readonly studentName = this._studentName.asReadonly();
+  readonly progressSummary = this._progressSummary.asReadonly();
+  readonly biweeklyProgress = this._biweeklyProgress.asReadonly();
+  readonly skillProgress = this._skillProgress.asReadonly();
+
+  /** Submissions that contain coach feedback */
+  readonly coachFeedbacks = computed(() =>
+    this._submissions().filter(s => !!s.feedback && s.feedback.trim().length > 0)
+  );
 
   readonly hasActiveFilter = computed(
     () => this._dateFrom() !== null || this._dateTo() !== null
@@ -82,18 +97,21 @@ export class ParentStudentDetailComponent implements OnInit {
       .subscribe(params => {
         const id = Number(params.get('id'));
         if (!id) {
-          this._error.set('شناسه دانش‌آموز نامعتبر است.');
+          this._error.set('شناسه متربی نامعتبر است.');
           return;
         }
         this._studentId.set(id);
-        this.loadSubmissions(id);
+        this.loadDashboard(id);
       });
   }
 
-  loadSubmissions(studentId: number): void {
+  loadDashboard(studentId: number): void {
     this._loading.set(true);
     this._error.set(null);
     this._submissions.set([]);
+    this._progressSummary.set(null);
+    this._biweeklyProgress.set(null);
+    this._skillProgress.set([]);
 
     this.api.getStudentProgress(studentId).subscribe({
       next: (progress) => {
@@ -103,10 +121,30 @@ export class ParentStudentDetailComponent implements OnInit {
         this._loading.set(false);
       },
       error: () => {
-        this._error.set('بارگذاری ارسال‌های دانش‌آموز ناموفق بود.');
+        this._error.set('بارگذاری اطلاعات متربی ناموفق بود.');
         this._loading.set(false);
       }
     });
+
+    this.api.getProgressSummary(studentId).subscribe({
+      next: (summary) => this._progressSummary.set(summary),
+      error: () => { /* non-fatal */ }
+    });
+
+    this.api.getBiweeklyProgress(studentId).subscribe({
+      next: (bp) => this._biweeklyProgress.set(bp),
+      error: () => { /* non-fatal */ }
+    });
+
+    this.api.getSkillProgressByStudent(studentId).subscribe({
+      next: (skills) => this._skillProgress.set(skills),
+      error: () => { /* non-fatal */ }
+    });
+  }
+
+  /** Delegate kept for retry button */
+  loadSubmissions(studentId: number): void {
+    this.loadDashboard(studentId);
   }
 
   onDateFromChange(value: string): void {
@@ -134,6 +172,16 @@ export class ParentStudentDetailComponent implements OnInit {
       late: 'دیرهنگام'
     };
     return labels[status] ?? status;
+  }
+
+  proficiencyLabel(level: string): string {
+    const labels: Record<string, string> = {
+      not_started: 'شروع نشده',
+      in_progress: 'در حال انجام',
+      achieved: 'تحصیل شده',
+      mastered: 'تسلط کامل'
+    };
+    return labels[level] ?? level;
   }
 
   formatDate(dateStr: string): string {

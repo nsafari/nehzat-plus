@@ -1,14 +1,107 @@
-import { mountStandalone } from '../shared/testing-utils';
+import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { of } from 'rxjs';
+import { vi } from 'vitest';
 
 import { ParentPanelComponent } from './parent-panel.component';
+import { StudentProgressCardComponent } from './student-progress-card.component';
+import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token';
+import { AuthService } from '../../core/services/auth.service';
+import { createMockAuthService, createMockRouter } from '../shared/testing-utils';
+import type { LessonPlannerApi } from '../../core/services/lesson-planner-api.interface';
+import type { ParentStudentInfo } from '../../core/models/lesson-planner.models';
 
 describe('ParentPanelComponent', () => {
-  it('should be defined', () => {
-    expect(ParentPanelComponent).toBeDefined();
+  let component: ParentPanelComponent;
+  let mockApi: Record<string, ReturnType<typeof vi.fn>>;
+  let mockRouter: Router;
+
+  const mockStudents: ParentStudentInfo[] = [
+    { studentId: 10, studentName: 'علی احمدی', studentCode: 'S001', courseName: 'قرآن', latestGrade: 85, attendanceRate: 92 },
+    { studentId: 20, studentName: 'فاطمه محمدی', studentCode: 'S002', courseName: 'ادبیات', latestGrade: 90, attendanceRate: 98 },
+  ];
+
+  function createComponent(): ParentPanelComponent {
+    const fixture = TestBed.createComponent(ParentPanelComponent);
+    return fixture.componentInstance;
+  }
+
+  beforeEach(() => {
+    mockApi = {};
+    const api = new Proxy({} as LessonPlannerApi, {
+      get(_target, prop: string | symbol) {
+        if (prop === 'then') return undefined;
+        if (!mockApi[prop as string]) {
+          mockApi[prop as string] = vi.fn().mockReturnValue(of(null));
+        }
+        return mockApi[prop as string];
+      },
+    });
+
+    mockRouter = createMockRouter();
+
+    TestBed.configureTestingModule({
+      imports: [ParentPanelComponent],
+      providers: [
+        { provide: LESSON_PLANNER_API, useValue: api },
+        { provide: AuthService, useFactory: createMockAuthService },
+        { provide: Router, useValue: mockRouter },
+      ],
+    });
   });
 
-  it('should create with mocked dependencies', () => {
-    const instance = mountStandalone(ParentPanelComponent);
-    expect(instance).toBeTruthy();
+  it('should be defined', () => {
+    component = createComponent();
+    expect(component).toBeTruthy();
+  });
+
+  describe('when user is a parent', () => {
+    beforeEach(() => {
+      const authService = TestBed.inject(AuthService);
+      (authService.getCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({
+        id: '1',
+        username: 'parent1',
+        roles: ['parent'],
+        userType: 'parent',
+        studentId: 1,
+      });
+      mockApi['getParentStudents'] = vi.fn().mockReturnValue(of(mockStudents));
+      component = createComponent();
+    });
+
+    it('should load parent students on init', () => {
+      component.ngOnInit();
+      expect(mockApi['getParentStudents']).toHaveBeenCalledWith(1);
+    });
+
+    it('should expose students$ observable', () => {
+      component.ngOnInit();
+      let result: ParentStudentInfo[] = [];
+      component.students$.subscribe(s => result = s);
+      expect(result.length).toBe(2);
+      expect(result[0].studentName).toBe('علی احمدی');
+    });
+
+    it('should have navigateToDetail method on child cards', () => {
+      expect(typeof StudentProgressCardComponent.prototype.navigateToDetail).toBe('function');
+    });
+  });
+
+  describe('when user is NOT a parent', () => {
+    beforeEach(() => {
+      const authService = TestBed.inject(AuthService);
+      (authService.getCurrentUser as ReturnType<typeof vi.fn>).mockReturnValue({
+        id: '2',
+        username: 'admin',
+        roles: ['manager'],
+        userType: 'manager',
+      });
+      component = createComponent();
+    });
+
+    it('should redirect to dashboard on init', () => {
+      component.ngOnInit();
+      expect(mockRouter.navigateByUrl).toHaveBeenCalled();
+    });
   });
 });

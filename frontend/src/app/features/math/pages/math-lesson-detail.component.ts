@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { LESSON_PLANNER_API } from '../../../core/services/lesson-planner-api.token';
 import { MathLesson } from '../../../core/models/lesson-planner.models';
+import { computeMasteryLevel, getMasteryLabel, getMasteryEmoji, MasteryLevel } from '../../../core/utils/mastery';
 
 @Component({
   selector: 'app-math-lesson-detail',
@@ -21,6 +22,12 @@ import { MathLesson } from '../../../core/models/lesson-planner.models';
           <h1>{{ lesson.title }}</h1>
           <div class="meta">
             <span>⏱ {{ lesson.durationMinutes }} دقیقه</span>
+          </div>
+          <div class="mastery" *ngIf="hasAttempts">
+            <span class="mastery-badge">{{ masteryEmoji }} {{ masteryLabel }}</span>
+          </div>
+          <div class="mastery neutral" *ngIf="!hasAttempts">
+            <span class="mastery-badge neutral">هنوز تمرینی ثبت نشده</span>
           </div>
         </div>
 
@@ -44,6 +51,9 @@ import { MathLesson } from '../../../core/models/lesson-planner.models';
     .lesson-header { margin-bottom: 32px; }
     .lesson-header h1 { color: var(--lp-text); margin-bottom: 8px; }
     .meta { color: var(--lp-text-muted); font-size: 0.9rem; }
+    .mastery { display: inline-block; margin-top: 12px; }
+    .mastery-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; background: var(--lp-primary-light); color: var(--lp-primary); font-size: 0.85rem; font-weight: 500; }
+    .neutral .mastery-badge { background: var(--lp-surface); color: var(--lp-text-muted); border: 1px solid var(--lp-border); }
     .content { color: var(--lp-text); line-height: 1.8; font-size: 1.1rem; background: var(--lp-surface); padding: 32px; border-radius: 12px; border: 1px solid var(--lp-border); }
     .actions { margin-top: 32px; text-align: center; }
     .btn { display: inline-block; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 500; transition: background 0.2s; }
@@ -56,12 +66,32 @@ export class MathLessonDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   lesson: MathLesson | null = null;
   loading = true;
+  hasAttempts = false;
+  masteryLevel: MasteryLevel = 'novice';
+  masteryLabel = '';
+  masteryEmoji = '';
 
   ngOnInit(): void {
     const lessonId = Number(this.route.snapshot.paramMap.get('lessonId'));
     this.api.getMathLessonById(lessonId).subscribe({
-      next: (lesson) => { this.lesson = lesson; this.loading = false; },
+      next: (lesson) => { this.lesson = lesson; this.loading = false; this.loadMastery(lessonId); },
       error: () => { this.loading = false; }
+    });
+  }
+
+  private loadMastery(lessonId: number): void {
+    this.api.getMathStudentLessonProgress(1, lessonId).subscribe({
+      next: (p) => {
+        const count = p.attemptCount ?? 0;
+        if (count > 0) {
+          const level = computeMasteryLevel(count, p.score ?? 0);
+          this.masteryLevel = level;
+          this.masteryLabel = getMasteryLabel(level);
+          this.masteryEmoji = getMasteryEmoji(level);
+          this.hasAttempts = true;
+        }
+      },
+      error: () => {}
     });
   }
 }

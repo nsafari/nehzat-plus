@@ -54,6 +54,9 @@ export class BranchManagerComponent implements OnInit {
   readonly formError = signal('');
   formModel: CreateStudentPayload = this.emptyFormModel();
 
+  readonly drillDownCoach = signal<CoachPerformance | null>(null);
+  readonly drillDownStudent = signal<Student | null>(null);
+
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
     if (this.currentUser?.userType !== 'branch_manager') {
@@ -182,7 +185,7 @@ export class BranchManagerComponent implements OnInit {
           this.closeForm();
         },
         error: () => {
-          this.formError.set('افزودن دانش‌آموز با خطا مواجه شد.');
+          this.formError.set('افزودن متربی با خطا مواجه شد.');
           this.submitting.set(false);
         }
       });
@@ -196,11 +199,26 @@ export class BranchManagerComponent implements OnInit {
           this.closeForm();
         },
         error: () => {
-          this.formError.set('به‌روزرسانی دانش‌آموز با خطا مواجه شد.');
+          this.formError.set('به‌روزرسانی متربی با خطا مواجه شد.');
           this.submitting.set(false);
         }
       });
     }
+  }
+
+  openCoachDrillDown(cp: CoachPerformance): void {
+    this.drillDownStudent.set(null);
+    this.drillDownCoach.set(this.drillDownCoach()?.coachId === cp.coachId ? null : cp);
+  }
+
+  openStudentDrillDown(s: Student): void {
+    this.drillDownCoach.set(null);
+    this.drillDownStudent.set(this.drillDownStudent()?.id === s.id ? null : s);
+  }
+
+  closeDrillDown(): void {
+    this.drillDownCoach.set(null);
+    this.drillDownStudent.set(null);
   }
 
   private emptyFormModel(): CreateStudentPayload {

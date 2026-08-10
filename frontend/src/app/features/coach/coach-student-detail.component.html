@@ -8,8 +8,8 @@
         (error)="$any($event).target.style.display = 'none'"
       />
       <div>
-        <h1>پنل مربی</h1>
-        <p class="muted">جزئیات ارسال‌های دانش‌آموز</p>
+        <h1>داشبورد مربی</h1>
+        <p class="muted">جزئیات ارسال‌های متربی</p>
       </div>
     </div>
     <div class="user-menu">
@@ -24,7 +24,7 @@
         @if (studentName()) {
           ارسال‌های {{ studentName() }}
         } @else {
-          ارسال‌های دانش‌آموز
+          ارسال‌های متربی
         }
       </h2>
     </div>
@@ -41,7 +41,7 @@
       </div>
     } @else if (submissions().length === 0) {
       <div class="state-box">
-        <p class="muted">هیچ ارسالی برای این دانش‌آموز ثبت نشده است.</p>
+        <p class="muted">هیچ ارسالی برای این متربی ثبت نشده است.</p>
       </div>
     } @else {
       <div class="date-filter">

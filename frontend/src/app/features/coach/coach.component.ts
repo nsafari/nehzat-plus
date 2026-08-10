@@ -78,7 +78,7 @@ export class CoachComponent implements OnInit {
         this._loading.set(false);
       },
       error: () => {
-        this._error.set('بارگذاری فهرست دانش‌آموزان ناموفق بود.');
+        this._error.set('بارگذاری فهرست متربیان ناموفق بود.');
         this._loading.set(false);
       }
     });
