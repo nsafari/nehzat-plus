@@ -4,7 +4,7 @@ import { delay } from 'rxjs/operators';
 
 import { LessonPlannerApi } from './lesson-planner-api.interface';
 import { base64UrlEncode, createDummyToken, nextId } from './mock-lesson-planner-helpers';
-import { mockUsers, mockStudents, mockBranches, mockCourses, mockCourseEnrollments, mockInviteCodes } from './mock-lesson-planner-data';
+import { mockUsers, mockStudents, mockBranches, mockCourses, mockCourseEnrollments, mockInviteCodes, mockXpBadges } from './mock-lesson-planner-data';
 import { seedSurveyData } from './mock-lesson-planner-seed';
 import {
   AdminCourseStatistics,
@@ -112,6 +112,37 @@ import {
   SpiritualOccasionDetail,
   DailySpiritualEntry,
   UpsertDailySpiritualEntryPayload,
+  DailyActivity,
+  UpsertDailyActivityPayload,
+  SpacedRepetitionCard,
+  UpsertSrsCardPayload,
+  SrsStats,
+  UserXp,
+  XpBadge,
+  XpActivity,
+  AwardXpResult,
+  AwardXpPayload,
+  DailyNudge,
+  NudgeSchedule,
+  Artwork,
+  CreateArtworkPayload,
+  MusicRecord,
+  CreateMusicRecordPayload,
+  CalligraphySample,
+  CreateCalligraphySamplePayload,
+  CollaborationProject,
+  CreateCollaborationProjectPayload,
+  DiscussionThread,
+  CreateDiscussionThreadPayload,
+  DiscussionPost,
+  CreateDiscussionPostPayload,
+  PeerReview,
+  SubmitPeerReviewPayload,
+  PortfolioItem,
+  UploadPortfolioItemPayload,
+  SkillCertificate,
+  SkillBasket,
+  CreateSkillBasketPayload,
   UserOccasionProgress,
   MarkOccasionPracticePayload,
   SpiritualPath,
@@ -190,6 +221,24 @@ import {
   HadithReviewStats,
   HadithReview,
   SubmitHadithReviewPayload,
+  CareerPath,
+  CareerPathMilestone,
+  CareerPathProgress,
+  PathwayRecommendation,
+  CreateCareerPathPayload,
+  SaveProgressPayload,
+  SelectPathwayPayload,
+  ProjectDefense,
+  CreateProjectDefensePayload,
+  SubmitProjectDefensePayload,
+  ProjectDefenseEvaluation,
+  ScheduleDefensePayload,
+  DefenseSchedule,
+  CommunityMetrics,
+  PeerActivity,
+  SkillSharingMetrics,
+  CollaborationMetrics,
+  PublicShowcase,
   PersianLiteraturePoet,
   PersianLiteraturePoem,
   PersianLiteratureAnalysis,
@@ -279,7 +328,10 @@ import {
   LearningPathTreeDto,
   LearningDashboardStatsDto,
   UserDashboardDto,
+  DomainProgress,
+  StreakInfo,
 } from '../models/lesson-planner.models';
+import { scheduleReview, SrsCardState } from '../utils/srs';
 
 @Injectable()
 export class MockLessonPlannerApi extends LessonPlannerApi {
@@ -317,6 +369,22 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
   private spiritualOccasions: SpiritualOccasion[] = [];
   private spiritualPaths: SpiritualPath[] = [];
   private dailySpiritualEntries: DailySpiritualEntry[] = [];
+  private dailyActivities: DailyActivity[] = [];
+  private srsCards: SpacedRepetitionCard[] = [];
+  private userXp: UserXp | null = null;
+  private dailyNudges: DailyNudge[] = [];
+  private artworks: Artwork[] = [];
+  private musicRecords: MusicRecord[] = [];
+  private calligraphySamples: CalligraphySample[] = [];
+
+  private collaborationProjects: CollaborationProject[] = [];
+  private discussionThreads: DiscussionThread[] = [];
+  private discussionPosts: DiscussionPost[] = [];
+  private peerReviews: PeerReview[] = [];
+  private portfolioItems: PortfolioItem[] = [];
+  private skillCertificates: SkillCertificate[] = [];
+  private skillBaskets: SkillBasket[] = [];
+
   private userOccasionProgress: UserOccasionProgress[] = [];
   private studentPathSelections: StudentPathSelection[] = [];
   private monthlyBooklets: MonthlyBooklet[] = [];
@@ -351,6 +419,109 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
     this.seedCurriculumData();
     this.seedSpiritualData();
     this.seedSurveyData();
+    this.seedDailyActivityData();
+    this.seedDailyNudgeData();
+    this.seedXpData();
+    this.seedArtsData();
+  }
+
+  private seedXpData(): void {
+    const now = this.now();
+    this.userXp = {
+      userId: 42,
+      totalXp: 620,
+      level: 2,
+      currentLevelXp: 400,
+      nextLevelXp: 900,
+      levelProgressXp: 220,
+      levelProgressPercent: 44,
+      updatedAt: now
+    };
+    this.xpBadges = [
+      { id: 1, code: 'progress.sprout', name: 'آغاز راه', description: 'اولین قدم‌ها در مسیر رشد', icon: '🌱', xpMilestone: 100, category: 'progress', isEarned: true },
+      { id: 2, code: 'progress.learner', name: 'متربیِ کوشا', description: 'گردآوری ۵۰۰ امتیاز تجربه', icon: '📖', xpMilestone: 500, category: 'progress', isEarned: true },
+      { id: 3, code: 'progress.active', name: 'نشانِ پیشرفت', description: 'گردآوری ۱۰۰۰ امتیاز تجربه', icon: '⭐', xpMilestone: 1000, category: 'progress', isEarned: false },
+      { id: 4, code: 'progress.skilled', name: 'کارآزموده', description: 'گردآوری ۲۵۰۰ امتیاز تجربه', icon: '💪', xpMilestone: 2500, category: 'progress', isEarned: false },
+      { id: 5, code: 'quran.reciter', name: 'قهرمان قرآن', description: 'تداوم در برنامه‌های قرآنی', icon: '🎧', xpMilestone: 2500, category: 'quran', isEarned: false },
+      { id: 6, code: 'math.master', name: 'استاد ریاضی', description: 'استادی در تمرین‌های ریاضی', icon: '🧮', xpMilestone: 2500, category: 'math', isEarned: false },
+      { id: 7, code: 'progress.master', name: 'استادِ نشان‌ها', description: 'گردآوری ۵۰۰۰ امتیاز تجربه', icon: '🏆', xpMilestone: 5000, category: 'progress', isEarned: false },
+      { id: 8, code: 'behavior.persistent', name: 'بااراده', description: 'پایداری و استمرار در مسیر تربیت', icon: '🎯', xpMilestone: 5000, category: 'behavior', isEarned: false },
+      { id: 9, code: 'progress.legend', name: 'اسطوره‌ی متربیان', description: 'گردآوری ۱۰۰۰۰ امتیاز تجربه', icon: '👑', xpMilestone: 10000, category: 'progress', isEarned: false },
+      { id: 10, code: 'creativity.star', name: 'خلاقِ کوچک', description: 'کشف استعدادهای هنری و خلاقانه', icon: '🎨', xpMilestone: 10000, category: 'creativity', isEarned: false }
+    ];
+    this.xpActivities = [
+      { id: 1, type: 'xp', xpAmount: 50, badgeId: null, badgeName: null, badgeIcon: null, reason: 'تکمیل تمرین ریاضی', createdAt: now },
+      { id: 2, type: 'badge', xpAmount: 0, badgeId: 2, badgeName: 'متربیِ کوشا', badgeIcon: '📖', reason: 'دریافت نشان «متربیِ کوشا»', createdAt: now },
+      { id: 3, type: 'xp', xpAmount: 30, badgeId: null, badgeName: null, badgeIcon: null, reason: 'تکمیل تکلیف روزانه', createdAt: now }
+    ];
+  }
+
+  private seedDailyNudgeData(): void {
+    const today = new Date().toISOString().split('T')[0];
+    const now = this.now();
+    this.dailyNudges = [
+      {
+        id: 1,
+        userId: 42,
+        domain: 'scientific',
+        message: 'امروز ۳۰ دقیقه تمرین ریاضی در نظر گرفته‌ای؟',
+        scheduledFor: `${today}T08:00:00.000Z`,
+        status: 'pending',
+        createdAt: now
+      },
+      {
+        id: 2,
+        userId: 42,
+        domain: 'spiritual',
+        message: 'تعهد معنوی امروز: یک صفحه قرآن با تامل بخوان.',
+        scheduledFor: `${today}T07:30:00.000Z`,
+        status: 'pending',
+        createdAt: now
+      },
+      {
+        id: 3,
+        userId: 42,
+        domain: 'physical',
+        message: 'فعالیت بدنی امروز ثبت شد؟ ۲۰ دقیقه پیاده‌روی فراموش نشود.',
+        scheduledFor: `${today}T17:00:00.000Z`,
+        status: 'pending',
+        createdAt: now
+      }
+    ];
+  }
+
+  private seedDailyActivityData(): void {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = this.yesterday();
+    const dayBefore = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const now = this.now();
+    this.dailyActivities = [
+      { id: 1, userId: 42, activityDate: today, activityMinutes: 40, steps: 6500, sleepHours: 7.5, notes: 'پیاده‌روی عصرگاهی', createdAt: now, updatedAt: now },
+      { id: 2, userId: 42, activityDate: yesterday, activityMinutes: 30, steps: 4200, sleepHours: 8, notes: 'ورزش صبحگاهی', createdAt: now, updatedAt: now },
+      { id: 3, userId: 42, activityDate: dayBefore, activityMinutes: 0, steps: 0, sleepHours: 0, notes: '', createdAt: now, updatedAt: now }
+    ];
+  }
+
+  private seedArtsData(): void {
+    const now = this.now();
+    const svg = (bg: string, fg: string, label: string): string => {
+      const escaped = label.replace(/'/g, '').replace(/#/g, '%23');
+      return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='${encodeURIComponent(bg)}'/%3E%3Ctext x='200' y='160' font-size='34' text-anchor='middle' fill='${encodeURIComponent(fg)}' font-family='Tahoma'%3E${encodeURIComponent(escaped)}%3C/text%3E%3C/svg%3E`;
+    };
+    this.artworks = [
+      { id: 1, userId: 42, title: 'نقاشی طبیعت', type: 'painting', fileUrl: svg('#7fb3d5', '#fff', 'طبیعت'), description: 'نقاشی منظره با آبرنگ', tags: 'طبیعت,آبرنگ', isPublic: true, likeCount: 12, createdAt: now, updatedAt: now },
+      { id: 2, userId: 42, title: 'صنایع دستی چوبی', type: 'craft', fileUrl: svg('#a9714b', '#fff', 'چوب'), description: 'ساخت جعبه چوبی', tags: 'چوب,صنایع دستی', isPublic: true, likeCount: 8, createdAt: now, updatedAt: now },
+      { id: 3, userId: 43, title: 'نقاشی خیال‌انگیز', type: 'painting', fileUrl: svg('#c0392b', '#fff', 'خیال'), description: 'اثر رنگ روغن', tags: 'رنگ روغن', isPublic: true, likeCount: 5, createdAt: now, updatedAt: now },
+      { id: 4, userId: 43, title: 'سفالگری', type: 'craft', fileUrl: svg('#8d6e63', '#fff', 'سفال'), description: 'ظرف سفالی', tags: 'سفال', isPublic: true, likeCount: 3, createdAt: now, updatedAt: now }
+    ];
+    this.musicRecords = [
+      { id: 1, userId: 42, title: 'سرود گروهی', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', artistName: 'علی احمدی', durationSeconds: 90, genre: 'سرود', description: 'سرود گروهی تربیتی', tags: 'سرود', isPublic: true, likeCount: 15, createdAt: now, updatedAt: now },
+      { id: 2, userId: 43, title: 'تلاوت قرآن', audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', artistName: 'فاطمه محمدی', durationSeconds: 120, genre: 'تلاوت', description: 'تلاوت سوره مبارکه', tags: 'تلاوت,قرآن', isPublic: true, likeCount: 20, createdAt: now, updatedAt: now }
+    ];
+    this.calligraphySamples = [
+      { id: 1, userId: 42, title: 'خط نستعلیق بسم الله', imageUrl: svg('#faf3e0', '#8a6d1a', 'بسم الله'), style: 'نستعلیق', description: 'مشق نستعلیق', tags: 'نستعلیق,مشق', isPublic: true, likeCount: 18, createdAt: now, updatedAt: now },
+      { id: 2, userId: 43, title: 'خط ثلث', imageUrl: svg('#e8f5ee', '#14522d', 'لا اله الا الله'), style: 'ثلث', description: 'مشق خط ثلث', tags: 'ثلث', isPublic: true, likeCount: 9, createdAt: now, updatedAt: now }
+    ];
   }
 
   private seedSpiritualData(): void {
@@ -1107,7 +1278,7 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
   deleteStudent(id: number): Observable<ApiMessageResponse> {
     this.students = this.students.filter((s) => s.id !== id);
     this.users = this.users.filter((u) => u.studentId !== id);
-    return this.delayed({ message: 'دانش‌آموز با موفقیت حذف شد' });
+    return this.delayed({ message: 'متربی با موفقیت حذف شد' });
   }
 
   getBranchManagers(): Observable<BranchManager[]> {
@@ -1220,7 +1391,7 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
       list.push(studentId);
       this.courseEnrollments.set(courseId, list);
     }
-    return this.delayed({ message: 'دانش‌آموز در دوره ثبت‌نام شد' });
+    return this.delayed({ message: 'متربی در دوره ثبت‌نام شد' });
   }
 
   unenrollStudentFromCourse(courseId: number, studentId: number): Observable<ApiMessageResponse> {
@@ -1229,7 +1400,7 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
       courseId,
       list.filter((id) => id !== studentId)
     );
-    return this.delayed({ message: 'دانش‌آموز از دوره حذف شد' });
+    return this.delayed({ message: 'متربی از دوره حذف شد' });
   }
 
   generateCourseInviteCode(courseId: number): Observable<CourseInviteCode> {
@@ -1428,7 +1599,7 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
     this.ringStudents = this.ringStudents.filter(
       (rs) => !(rs.ringId === ringId && rs.studentId === studentId)
     );
-    return this.delayed({ message: 'دانش‌آموز از حلقه حذف شد' });
+    return this.delayed({ message: 'متربی از حلقه حذف شد' });
   }
 
   addRingBook(ringId: number, payload: CreateRingBookPayload): Observable<ApiMessageResponse> {
@@ -2177,6 +2348,439 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
     return d.toISOString().split('T')[0];
   }
 
+  upsertDailyActivity(payload: UpsertDailyActivityPayload): Observable<DailyActivity> {
+    const now = this.now();
+    const existing = this.dailyActivities.find(a => a.userId === 42 && a.activityDate === payload.activityDate);
+    if (existing) {
+      existing.activityMinutes = payload.activityMinutes;
+      existing.steps = payload.steps;
+      existing.sleepHours = payload.sleepHours;
+      existing.notes = payload.notes;
+      existing.updatedAt = now;
+      return this.delayed(existing);
+    }
+    const activity: DailyActivity = {
+      id: this.nextId(this.dailyActivities),
+      userId: 42,
+      activityDate: payload.activityDate,
+      activityMinutes: payload.activityMinutes,
+      steps: payload.steps,
+      sleepHours: payload.sleepHours,
+      notes: payload.notes,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.dailyActivities.push(activity);
+    return this.delayed(activity);
+  }
+
+  getTodayActivity(): Observable<DailyActivity | null> {
+    const today = new Date().toISOString().split('T')[0];
+    const entry = this.dailyActivities.find(a => a.userId === 42 && a.activityDate === today);
+    return this.delayed(entry ?? null);
+  }
+
+  getActivityHistory(fromDate?: string, toDate?: string): Observable<DailyActivity[]> {
+    let entries = this.dailyActivities.filter(a => a.userId === 42);
+    if (fromDate) entries = entries.filter(a => a.activityDate >= fromDate);
+    if (toDate) entries = entries.filter(a => a.activityDate <= toDate);
+    entries.sort((a, b) => b.activityDate.localeCompare(a.activityDate));
+    return this.delayed(entries);
+  }
+
+  getActivityStreak(): Observable<{ streak: number }> {
+    return this.delayed({ streak: 3 });
+  }
+
+  getUserXp(): Observable<UserXp> {
+    if (!this.userXp) {
+      this.seedXpData();
+    }
+    return this.delayed({ ...this.userXp } as UserXp);
+  }
+
+  awardXp(payload: AwardXpPayload): Observable<AwardXpResult> {
+    if (!this.userXp) {
+      this.seedXpData();
+    }
+    const now = this.now();
+    const userXp = this.userXp!;
+    const before = userXp.totalXp;
+    userXp.totalXp += payload.xp;
+    userXp.updatedAt = now;
+    userXp.level = Math.floor(Math.sqrt(userXp.totalXp / 100));
+    userXp.currentLevelXp = 100 * userXp.level * userXp.level;
+    userXp.nextLevelXp = 100 * (userXp.level + 1) * (userXp.level + 1);
+    const range = userXp.nextLevelXp - userXp.currentLevelXp;
+    userXp.levelProgressXp = userXp.totalXp - userXp.currentLevelXp;
+    userXp.levelProgressPercent = range > 0 ? Math.min(100, Math.round((userXp.levelProgressXp * 100) / range)) : 100;
+
+    this.xpActivities.unshift({
+      id: this.nextId(this.xpActivities),
+      type: 'xp',
+      xpAmount: payload.xp,
+      badgeId: null,
+      badgeName: null,
+      badgeIcon: null,
+      reason: payload.reason,
+      createdAt: now
+    });
+
+    const newBadges = this.xpBadges
+      .filter((b) => !b.isEarned && b.xpMilestone > before && b.xpMilestone <= userXp.totalXp)
+      .map((b) => {
+        b.isEarned = true;
+        this.xpActivities.unshift({
+          id: this.nextId(this.xpActivities),
+          type: 'badge',
+          xpAmount: 0,
+          badgeId: b.id,
+          badgeName: b.name,
+          badgeIcon: b.icon,
+          reason: `دریافت نشان «${b.name}»`,
+          createdAt: now
+        });
+        return { ...b };
+      });
+
+    return this.delayed({
+      userXp: { ...userXp },
+      awardedXp: payload.xp,
+      leveledUp: newBadges.length > 0,
+      newBadges
+    });
+  }
+
+  getBadges(): Observable<XpBadge[]> {
+    if (!this.userXp) {
+      this.seedXpData();
+    }
+    return this.delayed(this.xpBadges.map((b) => ({ ...b })));
+  }
+
+  getRecentActivity(limit: number = 10): Observable<XpActivity[]> {
+    if (!this.userXp) {
+      this.seedXpData();
+    }
+    return this.delayed(this.xpActivities.slice(0, limit).map((a) => ({ ...a })));
+  }
+
+  getDomainProgress(): Observable<DomainProgress[]> {
+    const pct = (n: number, max: number, fallback: number) =>
+      Math.max(0, Math.min(100, max > 0 ? Math.round((n / max) * 100) : fallback));
+
+    const weekAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const submitted = this.submissions.filter((s) => s.studentId === 42);
+    const spiritualThisWeek = this.dailySpiritualEntries.filter(
+      (e) => e.userId === 42 && e.entryDate >= weekAgo
+    ).length;
+    const activeDays = this.dailyActivities.filter(
+      (a) => a.userId === 42 && a.activityDate >= weekAgo && (a.activityMinutes ?? 0) > 0
+    ).length;
+    const artCount =
+      this.artworks.filter((a) => a.userId === 42).length +
+      this.musicRecords.filter((m) => m.userId === 42).length +
+      this.calligraphySamples.filter((c) => c.userId === 42).length;
+
+    const progress: DomainProgress[] = [
+      { key: 'scientific', labelFa: 'علمی', icon: '📚', score: pct(submitted.length, 12, 72) },
+      { key: 'spiritual', labelFa: 'معنوی', icon: '🕌', score: pct(spiritualThisWeek, 7, 64) },
+      { key: 'physical', labelFa: 'بدنی', icon: '🏃', score: pct(activeDays, 7, 48) },
+      { key: 'artistic', labelFa: 'هنری', icon: '🎨', score: pct(artCount, 6, 58) },
+      { key: 'social', labelFa: 'اجتماعی', icon: '👥', score: pct(this.ringStudents.length, 4, 45) },
+      { key: 'career', labelFa: 'اقتصادی', icon: '💼', score: pct(0, 1, 38) }
+    ];
+    return this.delayed(progress);
+  }
+
+  getUserStreaks(): Observable<StreakInfo> {
+    const submitted = this.submissions.some((s) => s.studentId === 42);
+    const spiritualThisWeek = this.dailySpiritualEntries.filter((e) => e.userId === 42).length;
+    const activeDays = this.dailyActivities.filter((a) => a.userId === 42 && (a.activityMinutes ?? 0) > 0).length;
+    const academic = submitted ? 5 : 0;
+    const spiritual = Math.min(14, spiritualThisWeek);
+    const physical = Math.min(7, activeDays);
+    return this.delayed({
+      academic,
+      spiritual,
+      physical,
+      unified: Math.min(academic, spiritual || 0, physical || 0)
+    });
+  }
+
+  getDailyNudges(): Observable<DailyNudge[]> {
+    return this.delayed([...this.dailyNudges]);
+  }
+
+  getNudgeSchedules(): Observable<NudgeSchedule[]> {
+    const schedules: NudgeSchedule[] = [
+      { id: 1, domain: 'scientific', hour: 8, minute: 0, message: 'تمرین درسی امروز را انجام بده', enabled: true },
+      { id: 2, domain: 'spiritual', hour: 7, minute: 30, message: 'تعهد معنوی امروز را ثبت کن', enabled: true },
+      { id: 3, domain: 'physical', hour: 17, minute: 0, message: 'فعالیت بدنی امروز را ثبت کن', enabled: true }
+    ];
+    return this.delayed(schedules);
+  }
+
+  dismissNudge(nudgeId: number): Observable<ApiMessageResponse> {
+    const nudge = this.dailyNudges.find((n) => n.id === nudgeId);
+    if (nudge) {
+      nudge.status = 'dismissed';
+      nudge.dismissedAt = this.now();
+    }
+    return this.delayed({ message: 'یادآور بسته شد' });
+  }
+
+  getArtworks(): Observable<Artwork[]> {
+    return this.delayed([...this.artworks]);
+  }
+
+  uploadArtwork(payload: CreateArtworkPayload): Observable<Artwork> {
+    const now = this.now();
+    const artwork: Artwork = {
+      id: this.nextId(this.artworks),
+      userId: 42,
+      title: payload.title,
+      type: payload.type,
+      fileUrl: payload.fileUrl,
+      description: payload.description ?? null,
+      tags: payload.tags ?? null,
+      isPublic: payload.isPublic ?? true,
+      likeCount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.artworks.unshift(artwork);
+    return this.delayed(artwork);
+  }
+
+  getMusicRecords(): Observable<MusicRecord[]> {
+    return this.delayed([...this.musicRecords]);
+  }
+
+  uploadMusicRecord(payload: CreateMusicRecordPayload): Observable<MusicRecord> {
+    const now = this.now();
+    const record: MusicRecord = {
+      id: this.nextId(this.musicRecords),
+      userId: 42,
+      title: payload.title,
+      audioUrl: payload.audioUrl,
+      artistName: payload.artistName ?? null,
+      durationSeconds: payload.durationSeconds ?? null,
+      genre: payload.genre ?? null,
+      description: payload.description ?? null,
+      tags: payload.tags ?? null,
+      isPublic: payload.isPublic ?? true,
+      likeCount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.musicRecords.unshift(record);
+    return this.delayed(record);
+  }
+
+  getCalligraphySamples(): Observable<CalligraphySample[]> {
+    return this.delayed([...this.calligraphySamples]);
+  }
+
+  uploadCalligraphySample(payload: CreateCalligraphySamplePayload): Observable<CalligraphySample> {
+    const now = this.now();
+    const sample: CalligraphySample = {
+      id: this.nextId(this.calligraphySamples),
+      userId: 42,
+      title: payload.title,
+      imageUrl: payload.imageUrl,
+      style: payload.style ?? null,
+      description: payload.description ?? null,
+      tags: payload.tags ?? null,
+      isPublic: payload.isPublic ?? true,
+      likeCount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.calligraphySamples.unshift(sample);
+    return this.delayed(sample);
+  }
+
+  likeArtwork(id: number): Observable<{ id: number; likeCount: number }> {
+    const artwork = this.artworks.find(a => a.id === id);
+    if (!artwork) return this.delayed({ id, likeCount: 0 });
+    artwork.likeCount++;
+    return this.delayed({ id, likeCount: artwork.likeCount });
+  }
+
+  likeMusicRecord(id: number): Observable<{ id: number; likeCount: number }> {
+    const record = this.musicRecords.find(r => r.id === id);
+    if (!record) return this.delayed({ id, likeCount: 0 });
+    record.likeCount++;
+    return this.delayed({ id, likeCount: record.likeCount });
+  }
+
+  likeCalligraphySample(id: number): Observable<{ id: number; likeCount: number }> {
+    const sample = this.calligraphySamples.find(s => s.id === id);
+    if (!sample) return this.delayed({ id, likeCount: 0 });
+    sample.likeCount++;
+    return this.delayed({ id, likeCount: sample.likeCount });
+  }
+
+  getCollaborationProjects(): Observable<CollaborationProject[]> {
+    return this.delayed([...this.collaborationProjects]);
+  }
+
+  createCollaborationProject(payload: CreateCollaborationProjectPayload): Observable<CollaborationProject> {
+    const now = this.now();
+    const project: CollaborationProject = {
+      id: this.nextId(this.collaborationProjects),
+      title: payload.title,
+      description: payload.description ?? null,
+      subject: payload.subject ?? null,
+      memberIds: payload.memberIds,
+      createdAt: now,
+      updatedAt: now,
+      progressPercent: 0,
+      taskCount: 0,
+      completedTaskCount: 0
+    };
+    this.collaborationProjects.unshift(project);
+    return this.delayed(project);
+  }
+
+  getDiscussions(projectId: number): Observable<DiscussionThread[]> {
+    const threads = this.discussionThreads.filter(t => t.projectId === projectId);
+    return this.delayed([...threads]);
+  }
+
+  createDiscussionThread(payload: CreateDiscussionThreadPayload): Observable<DiscussionThread> {
+    const now = this.now();
+    const thread: DiscussionThread = {
+      id: this.nextId(this.discussionThreads),
+      projectId: payload.projectId,
+      projectTitle: this.collaborationProjects.find(p => p.id === payload.projectId)?.title ?? undefined,
+      title: payload.title,
+      body: payload.body,
+      authorId: 42,
+      createdAt: now,
+      updatedAt: now,
+      postCount: 0,
+      isPinned: false
+    };
+    this.discussionThreads.unshift(thread);
+    return this.delayed(thread);
+  }
+
+  getDiscussionPosts(threadId: number): Observable<DiscussionPost[]> {
+    const posts = this.discussionPosts.filter(p => p.threadId === threadId);
+    return this.delayed([...posts]);
+  }
+
+  createDiscussionPost(payload: CreateDiscussionPostPayload): Observable<DiscussionPost> {
+    const now = this.now();
+    const post: DiscussionPost = {
+      id: this.nextId(this.discussionPosts),
+      threadId: payload.threadId,
+      threadTitle: this.discussionThreads.find(t => t.id === payload.threadId)?.title ?? undefined,
+      body: payload.body,
+      authorId: 42,
+      createdAt: now,
+      updatedAt: now,
+      parentId: payload.parentId ?? null,
+      likeCount: 0,
+      isLiked: false
+    };
+    this.discussionPosts.unshift(post);
+    const thread = this.discussionThreads.find(t => t.id === payload.threadId);
+    if (thread) thread.postCount++;
+    return this.delayed(post);
+  }
+
+  getPeerReviews(): Observable<PeerReview[]> {
+    return this.delayed([...this.peerReviews]);
+  }
+
+  submitPeerReview(payload: SubmitPeerReviewPayload): Observable<PeerReview> {
+    const now = this.now();
+    const review: PeerReview = {
+      id: this.nextId(this.peerReviews),
+      projectId: payload.projectId,
+      projectTitle: this.collaborationProjects.find(p => p.id === payload.projectId)?.title ?? undefined,
+      reviewerId: 42,
+      authorId: this.collaborationProjects.find(p => p.id === payload.projectId)?.memberIds[0] ?? 0,
+      score: payload.score,
+      feedback: payload.feedback,
+      submittedAt: now,
+      status: 'submitted'
+    };
+    this.peerReviews.unshift(review);
+    return this.delayed(review);
+  }
+
+  getPortfolioItems(): Observable<PortfolioItem[]> {
+    return this.delayed([...this.portfolioItems]);
+  }
+
+  uploadPortfolioItem(payload: UploadPortfolioItemPayload): Observable<PortfolioItem> {
+    const now = this.now();
+    const item: PortfolioItem = {
+      id: this.nextId(this.portfolioItems),
+      userId: 42,
+      title: payload.title,
+      type: payload.type,
+      typeLabel: this.portfolioTypeLabels[payload.type] ?? payload.type,
+      description: payload.description ?? null,
+      fileUrl: payload.fileUrl ?? null,
+      tags: payload.tags ?? null,
+      isPublic: payload.isPublic ?? true,
+      likeCount: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.portfolioItems.unshift(item);
+    return this.delayed(item);
+  }
+
+  getSkillCertificates(): Observable<SkillCertificate[]> {
+    return this.delayed([...this.skillCertificates]);
+  }
+
+  getSkillBasket(): Observable<SkillBasket> {
+    return this.delayed(this.skillBaskets[0] ?? {
+      id: 1,
+      userId: 42,
+      title: 'سبد مهارت‌های من',
+      description: null,
+      skillIds: [],
+      isPublic: true,
+      createdAt: this.now(),
+      updatedAt: this.now(),
+      competencyPercent: 0
+    });
+  }
+
+  createSkillBasket(payload: CreateSkillBasketPayload): Observable<SkillBasket> {
+    const now = this.now();
+    const basket: SkillBasket = {
+      id: this.nextId(this.skillBaskets),
+      userId: 42,
+      title: payload.title,
+      description: payload.description ?? null,
+      skillIds: payload.skillIds,
+      isPublic: payload.isPublic ?? true,
+      createdAt: now,
+      updatedAt: now,
+      competencyPercent: 0
+    };
+    this.skillBaskets.unshift(basket);
+    return this.delayed(basket);
+  }
+
+  private readonly portfolioTypeLabels: Record<string, string> = {
+    artwork: 'هنری',
+    music: 'موسیقی',
+    writing: 'نوشتاری',
+    project: 'پروژه‌ای',
+    certificate: 'گواهی',
+    other: 'سایر'
+  };
+
   getUserOccasionProgress(userId: number, occasionId?: number, hijriYear?: number): Observable<UserOccasionProgress[]> {
     let items = this.userOccasionProgress.filter(p => p.userId === userId);
     if (occasionId !== undefined) items = items.filter(p => p.occasionId === occasionId);
@@ -2625,7 +3229,7 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
   ];
 
   private issueSurveys: IssueSurvey[] = [
-    { id: 1, title: 'نظرسنجی جامع مسائل مکتب', description: 'نظرسنجی جامع برای ارزیابی مسائل مکتب از دیدگاه دانش‌آموزان و آموزجوها', surveyType: 'general', targetRole: 'all', status: 'active', startDate: '2026-07-01', endDate: '2026-07-31', isAnonymous: true, scoreScaleMin: 1, scoreScaleMax: 5, createdById: 1, createdByName: 'مدیر سیستم', createdAt: '2026-07-01', updatedAt: '2026-07-01', questionCount: 184, responseCount: 27 }
+    { id: 1, title: 'نظرسنجی جامع مسائل مکتب', description: 'نظرسنجی جامع برای ارزیابی مسائل مکتب از دیدگاه متربیان و آموزجوها', surveyType: 'general', targetRole: 'all', status: 'active', startDate: '2026-07-01', endDate: '2026-07-31', isAnonymous: true, scoreScaleMin: 1, scoreScaleMax: 5, createdById: 1, createdByName: 'مدیر سیستم', createdAt: '2026-07-01', updatedAt: '2026-07-01', questionCount: 184, responseCount: 27 }
   ];
   private issueQuestions: IssueSurveyQuestion[] = [];
   private issuePoolItems: IssueItemPool[] = [];
@@ -2670,7 +3274,7 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
   }
 
   registerParticipant(competitionId: number, payload: RegisterParticipantPayload): Observable<CompetitionParticipant> {
-    const p: CompetitionParticipant = { id: this.nextId('cp'), studentId: payload.studentId, studentName: `دانش‌آموز ${payload.studentId}` };
+    const p: CompetitionParticipant = { id: this.nextId('cp'), studentId: payload.studentId, studentName: `متربی ${payload.studentId}` };
     this.competitionParticipants.push(p);
     const comp = this.competitions.find(c => c.id === competitionId);
     if (comp) comp.participantCount++;
@@ -2733,7 +3337,7 @@ export class MockLessonPlannerApi extends LessonPlannerApi {
   updateLeagueRanking(leagueId: number, payload: UpdateLeagueRankingPayload): Observable<LeagueRanking> {
     const idx = this.leagueRankings.findIndex(r => r.studentId === payload.studentId);
     if (idx < 0) {
-      const newRanking: LeagueRanking = { id: this.nextId('lr'), studentId: payload.studentId, studentName: `دانش‌آموز ${payload.studentId}`, score: payload.score, rank: this.leagueRankings.length + 1, trend: payload.trend ?? 'stable', lastUpdated: this.now() };
+      const newRanking: LeagueRanking = { id: this.nextId('lr'), studentId: payload.studentId, studentName: `متربی ${payload.studentId}`, score: payload.score, rank: this.leagueRankings.length + 1, trend: payload.trend ?? 'stable', lastUpdated: this.now() };
       this.leagueRankings.push(newRanking);
       return this.delayed(newRanking);
     }
@@ -4350,6 +4954,19 @@ return this.delayed(summary);
   }
 
   recordMathProgress(payload: RecordMathProgressPayload): Observable<MathProgress> {
+    const existing = this.mathProgress.find(p =>
+      p.studentId === payload.studentId &&
+      p.mathLessonId === payload.mathLessonId &&
+      (p.mathQuestionId ?? null) === (payload.mathQuestionId ?? null)
+    );
+    if (existing) {
+      existing.attemptCount += 1;
+      existing.score = Math.max(existing.score ?? 0, payload.score ?? 0);
+      existing.isCompleted = payload.isCompleted || existing.isCompleted;
+      existing.completedAt = payload.isCompleted ? new Date().toISOString() : existing.completedAt;
+      existing.updatedAt = new Date().toISOString();
+      return of(existing).pipe(delay(300));
+    }
     const progress: MathProgress = {
       id: this.nextId(this.mathProgress),
       studentId: payload.studentId,
@@ -4786,6 +5403,28 @@ return this.delayed(summary);
 
   private quizAttempts: UserQuizAttempt[] = [];
 
+  private xpState: UserXp = {
+    userId: 2,
+    totalXp: 270,
+    level: 1,
+    currentLevelXp: 100,
+    nextLevelXp: 400,
+    levelProgressXp: 170,
+    levelProgressPercent: 57,
+    updatedAt: new Date().toISOString()
+  };
+
+  private xpBadges: XpBadge[] = [...mockXpBadges];
+
+  private xpActivities: XpActivity[] = [
+    { id: 4, type: 'xp', xpAmount: 20, reason: 'تکمیل تکلیف روزانه قرآن', createdAt: new Date(Date.now() - 86400000).toISOString() },
+    { id: 3, type: 'badge', xpAmount: 0, badgeId: 1, badgeName: 'آغاز راه', badgeIcon: '🌱', reason: 'دریافت نشان «آغاز راه»', createdAt: new Date(Date.now() - 172800000).toISOString() },
+    { id: 2, type: 'xp', xpAmount: 50, reason: 'پاسخ‌گویی به آزمون هفتگی', createdAt: new Date(Date.now() - 259200000).toISOString() },
+    { id: 1, type: 'xp', xpAmount: 30, reason: 'تکمیل تمرین ریاضی', createdAt: new Date(Date.now() - 345600000).toISOString() }
+  ];
+
+  private nextXpId = 100;
+
   private nextLearningId = 500;
 
   getLearningPaths(): Observable<LearningPath[]> {
@@ -5016,7 +5655,7 @@ return this.delayed(summary);
     return of(void 0).pipe(delay(300));
   }
 
-  enrollUser(payload: EnrollUserRequest): Observable<UserEnrollment> {
+enrollUser(payload: EnrollUserRequest): Observable<UserEnrollment> {
     const enrollment: UserEnrollment = {
       id: this.nextLearningId++, userId: 1, learningPathId: payload.learningPathId,
       progress: 0, xpEarned: 0, isCompleted: false,
@@ -5024,6 +5663,180 @@ return this.delayed(summary);
     };
     this.userEnrollments.push(enrollment);
     return of(enrollment).pipe(delay(300));
+  }
+
+  // ===== Career Pathways Module (Phase 7) =====
+  careerPaths: CareerPath[] = [
+    {
+      id: 1, title: 'فناوری‌های نوین', description: 'یادگیری قدرتمند فناوری‌ها', category: 'فناوری', targetLevel: 5, targetXp: 1000, difficulty: 'advanced', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-06-01',
+      milestones: [
+        { id: 1, pathId: 1, title: 'پایه‌های برنامه‌نویسی', description: 'ساخت اولین پروژه وب', skillRequirement: 'HTML+CSS+JavaScript', requiredXp: 100, isCompleted: true, createdAt: '2024-01-01' },
+        { id: 2, pathId: 1, title: 'فرانت‌اند و برنامه‌نویسی جامع', description: 'طراحی وب با React', skillRequirement: 'React', requiredXp: 200, isCompleted: true, createdAt: '2024-01-15' },
+        { id: 3, pathId: 1, title: 'ساخت اپلیکیشن', description: 'تولید اپلیکیشن رایگان', skillRequirement: 'React Native', requiredXp: 300, isCompleted: false, createdAt: '2024-03-01' }
+      ]
+    },
+    {
+      id: 2, title: 'مهندسی سیستم‌ها', description: 'طراحی و توسعه سیستم‌ها', category: 'تکنولوژی', targetLevel: 4, targetXp: 800, difficulty: 'intermediate', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-06-01',
+      milestones: [
+        { id: 1, pathId: 2, title: 'پایه‌های سیستم‌گذاری', description: 'شناخت اصول سیستم‌ها', skillRequirement: 'پایه‌های سیستم‌گذاری', requiredXp: 100, isCompleted: true, createdAt: '2024-01-01' },
+        { id: 2, pathId: 2, title: 'مبني‌سازی API', description: 'توسعه API REST', skillRequirement: 'Node.js + Express', requiredXp: 150, isCompleted: true, createdAt: '2024-01-15' },
+        { id: 3, pathId: 2, title: 'بیکاری سرویس‌ها', description: 'نسخه‌بندی از دسترسی‌ها', skillRequirement: 'Docker + AWS', requiredXp: 250, isCompleted: false, createdAt: '2024-03-01' }
+      ]
+    },
+    {
+      id: 3, title: 'تحلیل داده‌ها و بیان تحلیلی', description: 'تحلیل داده‌ها و ایجاد بیان تحلیلی', category: 'تحلیل', targetLevel: 3, targetXp: 600, difficulty: 'intermediate', isActive: false, createdAt: '2024-01-01', updatedAt: '2024-06-01',
+      milestones: [
+        { id: 1, pathId: 3, title: 'پایه‌های آمار و استخراج داده', description: 'آموزش آمار و داده‌ها', skillRequirement: 'SQL + Python', requiredXp: 100, isCompleted: true, createdAt: '2024-01-01' },
+        { id: 2, pathId: 3, title: 'نموداری پیشرفته', description: 'طراحی نمودارها و گرافیک‌ها', skillRequirement: 'ECharts + PowerBI', requiredXp: 150, isCompleted: false, createdAt: '2024-02-01' },
+        { id: 3, pathId: 3, title: 'گزارش‌گیری و نوشتن تحلیل', description: 'نوشتن گزارش‌های تحلیلی', skillRequirement: 'نوشتن تحلیلی', requiredXp: 100, isCompleted: false, createdAt: '2024-04-01' }
+      ]
+    },
+    {
+      id: 4, title: 'مهندسی بازاریابی و صرف‌التجارت', description: 'مدیریت بازاریابی و توسعه تجارت الکترونیکی', category: 'بازاریابی', targetLevel: 2, targetXp: 400, difficulty: 'beginner', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-06-01',
+      milestones: [
+        { id: 1, pathId: 4, title: 'راه‌اندازی فروشگاه', description: 'توسعه یک فروشگاه آنلاین', skillRequirement: 'PHP + MySQL', requiredXp: 100, isCompleted: true, createdAt: '2024-01-01' },
+        { id: 2, pathId: 4, title: 'مدیریت مشتریان و سفارشات', description: 'مدیریت سفارشات و مشتریان', skillRequirement: 'PHP + MySQL', requiredXp: 150, isCompleted: false, createdAt: '2024-02-01' }
+      ]
+    }
+  ];
+
+  pathwayRecommendations: PathwayRecommendation[] = [
+    { id: 1, careerPathId: 1, careerPathTitle: 'فناوری‌های نوین', recommendationLevel: 'high', reason: 'شما مهارت‌های برنامه‌نویسی JavaScript را دارید که سطح متوسطی از پیشرفته‌های این مسیر را نشان می‌دهد', userId: 1, createdAt: '2024-06-01' },
+    { id: 2, careerPathId: 2, careerPathTitle: 'مهندسی سیستم‌ها', recommendationLevel: 'high', reason: 'شما پایه‌های سیستم‌گذاری و اسکریپت‌نویسی دارید و این مسیر همکاری زیادی دارد', userId: 1, createdAt: '2024-06-01' },
+    { id: 3, careerPathId: 4, careerPathTitle: 'مهندسی بازاریابی', recommendationLevel: 'medium', reason: 'شما علاقه‌مند به تجارت هستید و راه‌اندازی یک فروشگاه آنلاین دارید', userId: 1, createdAt: '2024-06-01' }
+  ];
+  // ===== Project Defense Module (Phase 8) =====
+  projectDefenses: ProjectDefense[] = [
+    {
+      id: 1,
+      userId: 42,
+      title: 'پروتوتایپ برنامه مدیریت زمان',
+      description: 'یک اپلیکیشن وب برای مدیریت کارهای روزانه با استفاده از تکنیک پومودورو',
+      status: 'submitted',
+      scheduledDate: '2024-12-15',
+      evaluatorId: 101,
+      evaluatorName: 'دکتر محمد رضایی',
+      createdAt: '2024-11-01',
+      updatedAt: '2024-12-01'
+    },
+    {
+      id: 2,
+      userId: 42,
+      title: 'سامانه ثبت و پیگیری یادگیری',
+      description: 'پلتفرمی برای ثبت پیشرفت درس‌ها و دریافت بازخورد از مربیان',
+      status: 'draft',
+      createdAt: '2024-11-15',
+      updatedAt: '2024-11-20'
+    }
+  ];
+
+  defenseEvaluations: ProjectDefenseEvaluation[] = [
+    {
+      id: 1,
+      defenseId: 1,
+      evaluatorId: 101,
+      evaluatorName: 'دکتر محمد رضایی',
+      score: 85,
+      feedback: 'پیاده‌سازی عالی، اما مستندات نیاز به بهبود دارد',
+      criteriaScores: { technical: 90, presentation: 80, documentation: 75, innovation: 85 },
+      evaluatedAt: '2024-12-16'
+    },
+    {
+      id: 2,
+      defenseId: 1,
+      evaluatorId: 102,
+      evaluatorName: 'مهندس فاطمه احمدی',
+      score: 78,
+      feedback: 'ایده خوب، اجرا متوسط',
+      criteriaScores: { technical: 75, presentation: 85, documentation: 80, innovation: 70 },
+      evaluatedAt: '2024-12-16'
+    }
+  ];
+
+  defenseSchedule: DefenseSchedule | null = {
+    id: 1,
+    defenseId: 1,
+    defenseTitle: 'پروتوتایپ برنامه مدیریت زمان',
+    studentId: 42,
+    studentName: 'علی رضایی',
+    evaluatorId: 101,
+    evaluatorName: 'دکتر محمد رضایی',
+    scheduledDate: '2024-12-15T10:00:00',
+    status: 'confirmed',
+    createdAt: '2024-12-01'
+  };
+
+  getProjectDefenses(): Observable<ProjectDefense[]> {
+    return this.delayed([...this.projectDefenses]);
+  }
+
+  getProjectDefenseById(id: number): Observable<ProjectDefense> {
+    const defense = this.projectDefenses.find(d => d.id === id);
+    if (!defense) return throwError(() => new Error('دفاع پروژه یافت نشد'));
+    return this.delayed({ ...defense });
+  }
+
+  createProjectDefense(payload: CreateProjectDefensePayload): Observable<ProjectDefense> {
+    const now = this.now();
+    const defense: ProjectDefense = {
+      id: this.nextId(this.projectDefenses),
+      userId: 42,
+      title: payload.title,
+      description: payload.description,
+      status: 'draft',
+      createdAt: now,
+      updatedAt: now
+    };
+    this.projectDefenses.unshift(defense);
+    return this.delayed(defense);
+  }
+
+  submitProjectDefense(payload: SubmitProjectDefensePayload): Observable<ProjectDefense> {
+    const defense = this.projectDefenses.find(d => d.id === payload.defenseId);
+    if (!defense) return throwError(() => new Error('دفاع پروژه یافت نشد'));
+    defense.status = 'submitted';
+    defense.updatedAt = this.now();
+    return this.delayed({ ...defense });
+  }
+
+  getProjectDefenseEvaluations(defenseId: number): Observable<ProjectDefenseEvaluation[]> {
+    return this.delayed(this.defenseEvaluations.filter(e => e.defenseId === defenseId));
+  }
+
+  scheduleDefense(payload: ScheduleDefensePayload): Observable<DefenseSchedule> {
+    const defense = this.projectDefenses.find(d => d.id === payload.defenseId);
+    if (!defense) return throwError(() => new Error('دفاع پروژه یافت نشد'));
+    defense.status = 'scheduled';
+    defense.scheduledDate = (payload.scheduledAt ?? payload.scheduledDate ?? '').split('T')[0];
+    defense.updatedAt = this.now();
+
+    const schedule: DefenseSchedule = {
+      id: this.defenseSchedule ? this.defenseSchedule.id + 1 : 1,
+      defenseId: payload.defenseId,
+      defenseTitle: defense.title,
+      studentId: 42,
+      studentName: 'علی رضایی',
+      evaluatorId: payload.evaluatorIds?.[0] ?? payload.evaluatorId ?? 0,
+      evaluatorName: this.getEvaluatorName(payload.evaluatorIds?.[0] ?? payload.evaluatorId ?? 0),
+      scheduledDate: payload.scheduledAt ?? payload.scheduledDate ?? '',
+      status: 'confirmed',
+      createdAt: this.now()
+    };
+    this.defenseSchedule = schedule;
+    return this.delayed(schedule);
+  }
+
+  getDefenseSchedule(studentId: number): Observable<DefenseSchedule | null> {
+    return this.delayed(this.defenseSchedule);
+  }
+
+  private getEvaluatorName(id: number): string {
+    const evaluators: Record<number, string> = {
+      101: 'دکتر محمد رضایی',
+      102: 'مهندس فاطمه احمدی',
+      103: 'دکتر علی محمدی'
+    };
+    return evaluators[id] ?? `ارزیاب ${id}`;
   }
 
   getUserEnrollments(userId?: number): Observable<UserEnrollment[]> {
@@ -5092,10 +5905,265 @@ return this.delayed(summary);
     });
     const score = answered.filter(a => a.isCorrect).length * (questions.length > 0 ? 100 / questions.length : 0);
     const isPassed = score >= quiz.passingScore;
-    return of({ quizId: payload.quizId, score, totalPoints: 100, isPassed, attemptNumber: 1, answers: answered }).pipe(delay(300));
+    const existingAttempts = this.quizAttempts.filter(a => a.quizId === payload.quizId);
+    const attempt: UserQuizAttempt = {
+      id: this.nextId(this.quizAttempts),
+      userEnrollmentId: (payload as SubmitQuizRequest & { userEnrollmentId?: number }).userEnrollmentId ?? 42,
+      quizId: payload.quizId,
+      score,
+      totalPoints: 100,
+      answers: JSON.stringify(answered),
+      isPassed,
+      attemptNumber: existingAttempts.length + 1,
+      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    this.quizAttempts.push(attempt);
+    return of({ quizId: payload.quizId, score, totalPoints: 100, isPassed, attemptNumber: attempt.attemptNumber, answers: answered }).pipe(delay(300));
   }
 
   getUserQuizAttempts(enrollmentId: number): Observable<UserQuizAttempt[]> {
     return of(this.quizAttempts.filter(a => a.userEnrollmentId === enrollmentId)).pipe(delay(300));
+  }
+
+  private mockXpLevel(totalXp: number): number {
+    return Math.floor(Math.sqrt(totalXp / 100));
+  }
+
+  private mockXpForLevel(level: number): number {
+    return 100 * level * level;
+  }
+
+  private buildMockUserXp(totalXp: number): UserXp {
+    const level = this.mockXpLevel(totalXp);
+    const currentLevelXp = this.mockXpForLevel(level);
+    const nextLevelXp = this.mockXpForLevel(level + 1);
+    const range = nextLevelXp - currentLevelXp;
+    const progress = totalXp - currentLevelXp;
+    const percent = range > 0 ? Math.min(100, Math.max(0, Math.round((progress * 100) / range))) : 100;
+return {
+      userId: 2,
+      totalXp,
+      level,
+      currentLevelXp,
+      nextLevelXp,
+      levelProgressXp: progress,
+      levelProgressPercent: percent,
+updatedAt: new Date().toISOString()
+    };
+  }
+
+  // ===== Community Metrics Module (Phase 9) =====
+  getCommunityMetrics(): Observable<CommunityMetrics> {
+    const metrics: CommunityMetrics = {
+      totalTrainees: 1250,
+      activeThisWeek: 342,
+      totalCollaborations: 89,
+      totalPortfolioItems: 456,
+      avgSkillLevel: 3.2,
+      topDomains: [
+        { domain: 'علمی-فناورانه', traineeCount: 320, avgXp: 1250, avgLevel: 4 },
+        { domain: 'اجتماعی-سیاسی', traineeCount: 210, avgXp: 980, avgLevel: 3 },
+        { domain: 'زینی-بدنی', traineeCount: 180, avgXp: 850, avgLevel: 3 },
+        { domain: 'اقتصادی-حرفه‌ای', traineeCount: 150, avgXp: 1100, avgLevel: 4 },
+        { domain: 'زیباشناختی-هنری', traineeCount: 120, avgXp: 720, avgLevel: 2 },
+        { domain: 'اعتقادی-عبادی', traineeCount: 270, avgXp: 1050, avgLevel: 3 }
+      ]
+    };
+    return this.delayed(metrics);
+  }
+
+  getPeerActivity(limit?: number): Observable<PeerActivity[]> {
+    const count = limit && limit > 0 ? limit : 10;
+    const activities: PeerActivity[] = [
+      { id: 1, traineeId: 1, traineeName: 'زهرا محمدی', traineeAvatar: null, activityType: 'project_created', description: 'پروژه جدید «ریاضی پیشرفته» را ایجاد کرد', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
+      { id: 2, traineeId: 2, traineeName: 'علی رضایی', traineeAvatar: null, activityType: 'discussion_posted', description: 'در بحث «تکنیک‌های یادگیری موثر» شرکت کرد', timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString() },
+      { id: 3, traineeId: 3, traineeName: 'فاطمه احمدی', traineeAvatar: null, activityType: 'portfolio_uploaded', description: 'نمونه کار «طراحی وب‌سایت» را آپلود کرد', timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString() },
+      { id: 4, traineeId: 4, traineeName: 'محمد کریمی', traineeAvatar: null, activityType: 'badge_earned', description: 'نشان «مبدع سازنده» را کسب کرد', timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 5, traineeId: 5, traineeName: 'مریم حسینی', traineeAvatar: null, activityType: 'level_up', description: 'به سطح ۵ ارتقا یافت', timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 6, traineeId: 6, traineeName: 'حسین محمدی', traineeAvatar: null, activityType: 'collaboration_joined', description: 'به همکاری «تیم برنامه‌نویسی» پیوست', timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() }
+    ];
+    return this.delayed(activities.slice(0, count));
+  }
+
+  getSkillSharingMetrics(): Observable<SkillSharingMetrics> {
+    const metrics: SkillSharingMetrics = {
+      totalShared: 234,
+      topSharedSkills: [
+        { id: 1, skillName: 'برنامه‌نویسی پایتون', sharedBy: 'زهرا محمدی', sharedById: 1, category: 'فناوری', viewCount: 1250, likeCount: 89, sharedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 2, skillName: 'طراحی گرافیک', sharedBy: 'فاطمه احمدی', sharedById: 3, category: 'هنر', viewCount: 980, likeCount: 67, sharedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 3, skillName: 'تحلیل داده', sharedBy: 'علی رضایی', sharedById: 2, category: 'علمی', viewCount: 870, likeCount: 54, sharedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString() }
+      ],
+      recentShares: [
+        { id: 4, skillName: 'مدیریت پروژه', sharedBy: 'مریم حسینی', sharedById: 5, category: 'مهارت‌های نرم', viewCount: 320, likeCount: 23, sharedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 5, skillName: 'مکانیک کوانتومی', sharedBy: 'حسین محمدی', sharedById: 6, category: 'علمی', viewCount: 180, likeCount: 15, sharedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString() }
+      ]
+    };
+    return this.delayed(metrics);
+  }
+
+  getCollaborationMetrics(): Observable<CollaborationMetrics> {
+    const metrics: CollaborationMetrics = {
+      totalProjects: 89,
+      activeProjects: 34,
+      completedProjects: 42,
+      avgTeamSize: 3.5,
+      topCollaborators: [
+        { traineeId: 1, traineeName: 'زهرا محمدی', projectCount: 8, contributionScore: 95 },
+        { traineeId: 2, traineeName: 'علی رضایی', projectCount: 6, contributionScore: 88 },
+        { traineeId: 3, traineeName: 'فاطمه احمدی', projectCount: 7, contributionScore: 82 },
+        { traineeId: 4, traineeName: 'محمد کریمی', projectCount: 5, contributionScore: 79 },
+        { traineeId: 5, traineeName: 'مریم حسینی', projectCount: 6, contributionScore: 75 }
+      ]
+    };
+    return this.delayed(metrics);
+  }
+
+  getPublicShowcases(limit?: number): Observable<PublicShowcase[]> {
+    const count = limit && limit > 0 ? limit : 10;
+    const showcases: PublicShowcase[] = [
+      { id: 1, traineeId: 1, traineeName: 'زهرا محمدی', traineeAvatar: null, title: 'پروژه یادگیری ماشین', type: 'project', thumbnailUrl: 'https://picsum.photos/seed/ml-project/400/300', viewCount: 1250, likeCount: 89, createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 2, traineeId: 3, traineeName: 'فاطمه احمدی', traineeAvatar: null, title: 'نقاشی دیجیتال: طبیعت', type: 'artwork', thumbnailUrl: 'https://picsum.photos/seed/digital-art/400/300', viewCount: 980, likeCount: 67, createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 3, traineeId: 2, traineeName: 'علی رضایی', traineeAvatar: null, title: 'سرود تلاوت: سوره الرحمن', type: 'music', thumbnailUrl: 'https://picsum.photos/seed/recitation/400/300', viewCount: 870, likeCount: 54, createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 4, traineeId: 5, traineeName: 'مریم حسینی', traineeAvatar: null, title: 'خوشنویسی نستعلیق', type: 'calligraphy', thumbnailUrl: 'https://picsum.photos/seed/calligraphy/400/300', viewCount: 750, likeCount: 43, createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString() },
+      { id: 5, traineeId: 4, traineeName: 'محمد کریمی', traineeAvatar: null, title: 'پورتفولیو توسعه وب', type: 'portfolio', thumbnailUrl: 'https://picsum.photos/seed/web-portfolio/400/300', viewCount: 620, likeCount: 38, createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() }
+    ];
+    return this.delayed(showcases.slice(0, count));
+  }
+
+  getSrsCardsDueToday(): Observable<SpacedRepetitionCard[]> {
+    const now = new Date();
+    const dueCards = this.srsCards.filter(c => new Date(c.nextReviewAt) <= now);
+    return this.delayed(dueCards);
+  }
+
+  reviewSrsCard(cardId: number, quality: number): Observable<SpacedRepetitionCard> {
+    const card = this.srsCards.find(c => c.id === cardId);
+    if (!card) {
+      throw new Error('SRS card not found');
+    }
+    card.repetition += 1;
+    card.easeFactor = Math.max(1.3, card.easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+    card.interval = Math.round(card.interval * card.easeFactor);
+    const nextReview = new Date();
+    nextReview.setDate(nextReview.getDate() + card.interval);
+    card.nextReviewAt = nextReview.toISOString();
+    card.updatedAt = this.now();
+    return this.delayed({ ...card });
+  }
+
+  getSrsStats(): Observable<SrsStats> {
+    const now = new Date();
+    const dueToday = this.srsCards.filter(c => new Date(c.nextReviewAt) <= now).length;
+    const learningCards = this.srsCards.filter(c => c.repetition < 3).length;
+    const reviewCards = this.srsCards.filter(c => c.repetition >= 3).length;
+    const averageEaseFactor = this.srsCards.length > 0
+      ? this.srsCards.reduce((sum, c) => sum + c.easeFactor, 0) / this.srsCards.length
+      : 0;
+    return this.delayed({
+      dueToday,
+      totalCards: this.srsCards.length,
+      learningCards,
+      reviewCards,
+      averageEaseFactor: Math.round(averageEaseFactor * 100) / 100
+    });
+  }
+
+  upsertSrsCard(payload: UpsertSrsCardPayload): Observable<SpacedRepetitionCard> {
+    const existing = this.srsCards.find(c =>
+      c.contentType === payload.contentType && c.contentId === payload.contentId
+    );
+    if (existing) {
+      existing.question = payload.question;
+      existing.answer = payload.answer;
+      existing.updatedAt = this.now();
+      return this.delayed({ ...existing });
+    }
+    const card: SpacedRepetitionCard = {
+      id: this.nextId(this.srsCards),
+      userId: 42,
+      contentType: payload.contentType,
+      contentId: payload.contentId ?? null,
+      question: payload.question,
+      answer: payload.answer,
+      nextReviewAt: this.now(),
+      interval: 1,
+      easeFactor: 2.5,
+      repetition: 0,
+      createdAt: this.now(),
+      updatedAt: this.now()
+    };
+    this.srsCards.push(card);
+    return this.delayed({ ...card });
+  }
+
+  // ─── Career Paths ──────────────────────────────────────────────
+
+  getCareerPaths(): Observable<CareerPath[]> {
+    return this.delayed([...this.careerPaths]);
+  }
+
+  getCareerPathById(id: number): Observable<CareerPath> {
+    const path = this.careerPaths.find(p => p.id === id);
+    if (!path) return throwError(() => new Error('Career path not found'));
+    return this.delayed({ ...path });
+  }
+
+  createCareerPath(payload: CreateCareerPathPayload): Observable<CareerPath> {
+    const now = this.now();
+    const newPath: CareerPath = {
+      id: this.nextId(this.careerPaths),
+      title: payload.title,
+      description: payload.description ?? '',
+      category: payload.category,
+      targetLevel: payload.targetLevel,
+      targetXp: payload.targetXp,
+      difficulty: payload.difficulty,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+      milestones: [],
+      prerequisites: payload.prerequisites ?? []
+    };
+    this.careerPaths.push(newPath);
+    return this.delayed({ ...newPath });
+  }
+
+  getCareerPathMilestones(pathId: number): Observable<CareerPathMilestone[]> {
+    return this.delayed([]);
+  }
+
+  getCareerPathProgress(pathId: number): Observable<CareerPathProgress> {
+    return this.delayed({
+      pathId,
+      currentMilestoneId: null,
+      completedMilestoneCount: 0,
+      totalMilestones: 0,
+      xpEarned: 0,
+      xpNeeded: 0,
+      pathTitle: ''
+    });
+  }
+
+  saveProgress(payload: SaveProgressPayload): Observable<CareerPathProgress> {
+    return this.delayed({
+      pathId: payload.pathId,
+      currentMilestoneId: payload.currentMilestoneId,
+      completedMilestoneCount: payload.completedMilestoneCount,
+      totalMilestones: payload.totalMilestones,
+      xpEarned: payload.xpEarned,
+      xpNeeded: payload.xpNeeded,
+      pathTitle: payload.pathTitle
+    });
+  }
+
+getPathwayRecommendations(): Observable<PathwayRecommendation[]> {
+    return this.delayed([]);
+  }
+
+selectPathway(payload: SelectPathwayPayload): Observable<void> {
+    return this.delayed(undefined as void);
   }
 }
