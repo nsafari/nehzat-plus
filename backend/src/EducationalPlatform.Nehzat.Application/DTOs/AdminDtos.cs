@@ -20,7 +20,7 @@ public record ApproveUserRequest(
     [RegularExpression(@"^09\d{9}$", ErrorMessage = "شماره تلفن معتبر نیست")]
     string PhoneNumber,
 
-    [Required(ErrorMessage = "کد دانش‌آموزی الزامی است")]
+    [Required(ErrorMessage = "کد متربی الزامی است")]
     [StringLength(50)]
     string StudentId,
 

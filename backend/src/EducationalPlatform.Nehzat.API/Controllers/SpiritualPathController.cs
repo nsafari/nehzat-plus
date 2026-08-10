@@ -27,7 +27,7 @@ public class SpiritualPathController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = "دانش‌آموز یافت نشد" });
+            return NotFound(new { message = "متربی یافت نشد" });
         }
     }
 
@@ -41,7 +41,7 @@ public class SpiritualPathController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = "دانش‌آموز یا مسیر یافت نشد" });
+            return NotFound(new { message = "متربی یا مسیر یافت نشد" });
         }
         catch (InvalidOperationException ex)
         {
@@ -59,7 +59,7 @@ public class SpiritualPathController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = "دانش‌آموز یا مسیر یافت نشد" });
+            return NotFound(new { message = "متربی یا مسیر یافت نشد" });
         }
         catch (InvalidOperationException ex)
         {
@@ -77,7 +77,7 @@ public class SpiritualPathController : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound(new { message = "دانش‌آموز یا مسیر یافت نشد" });
+            return NotFound(new { message = "متربی یا مسیر یافت نشد" });
         }
         catch (InvalidOperationException ex)
         {
@@ -89,7 +89,7 @@ public class SpiritualPathController : ControllerBase
     public async Task<IActionResult> GetSelection(int studentId)
     {
         var result = await _pathService.GetSelectionAsync(studentId);
-        if (result == null) return NotFound(new { message = "انتخابی برای این دانش‌آموز یافت نشد" });
+        if (result == null) return NotFound(new { message = "انتخابی برای این متربی یافت نشد" });
         return Ok(result);
     }
 

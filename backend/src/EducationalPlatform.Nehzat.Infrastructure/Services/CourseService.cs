@@ -270,7 +270,7 @@ public class CourseService : ICourseService
 
         return new
         {
-            Message = "کاربر با موفقیت تایید شد و دانش‌آموز ایجاد شد",
+            Message = "کاربر با موفقیت تایید شد و متربی ایجاد شد",
             Student = student,
             EnrolledCourses = courseIds.Length
         };

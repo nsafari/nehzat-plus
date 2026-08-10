@@ -160,7 +160,7 @@ public record PathRankingRequest(
 );
 
 public record FinalizePathRequest(
-    [Required(ErrorMessage = "شناسه دانش‌آموز الزامی است")]
+    [Required(ErrorMessage = "شناسه متربی الزامی است")]
     int StudentId,
 
     [Required(ErrorMessage = "شناسه مسیر نهایی الزامی است")]

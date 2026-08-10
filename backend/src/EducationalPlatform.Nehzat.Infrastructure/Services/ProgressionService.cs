@@ -20,7 +20,7 @@ public class ProgressionService : IProgressionService
         var student = await _db.Students
             .Include(s => s.Branch)
             .FirstOrDefaultAsync(s => s.Id == studentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز پیدا نشد.");
+            ?? throw new KeyNotFoundException("متربی پیدا نشد.");
 
         var activeRingStudent = await _db.RingStudents
             .Include(rs => rs.Ring)
@@ -108,7 +108,7 @@ public class ProgressionService : IProgressionService
     public async Task<StudentPathHistory> RecordProgressionAsync(int studentId, string fromLevel, string toLevel, int? changedByUserId = null)
     {
         var student = await _db.Students.FindAsync(studentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز پیدا نشد.");
+            ?? throw new KeyNotFoundException("متربی پیدا نشد.");
 
         var history = new StudentPathHistory
         {

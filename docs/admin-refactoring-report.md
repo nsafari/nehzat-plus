@@ -1,4 +1,4 @@
-# گزارش بازآفرینی ادمین پنل (Admin Refactoring)
+# گزارش بازآفرینی داشبورد مدیریت (Admin Refactoring)
 
 **تاریخ:** ۲۱ جولای ۲۰۲۶  
 **پروژه:** Nehzat Plus (Lesson Planner)  
@@ -25,10 +25,10 @@
 
 | ردیف | کامپوننت | مسیر | وظایف |
 |------|----------|------|-------|
-| ۱ | `AdminStudentsComponent` | `admin-students/` | CRUD دانش‌آموزان، مودال فرم، جستجو |
+| ۱ | `AdminStudentsComponent` | `admin-students/` | CRUD متربیان، مودال فرم، جستجو |
 | ۲ | `AdminCoachesComponent` | `admin-coaches/` | CRUD مربیان، مودال فرم، جستجو |
 | ۳ | `AdminBranchManagersComponent` | `admin-branch-managers/` | CRUD مدیران شعبه، dropdown شعبه |
-| ۴ | `AdminParentsComponent` | `admin-parents/` | CRUD والدین، نمایش اطلاعات دانش‌آموز |
+| ۴ | `AdminParentsComponent` | `admin-parents/` | CRUD والدین، نمایش اطلاعات متربی |
 | ۵ | `AdminEvaluatorsComponent` | `admin-evaluators/` | CRUD ارزیابان + بخش سوابق ارزیابی |
 | ۶ | `AdminHeadquartersComponent` | `admin-headquarters/` | داشبورد ستاد با ۳ تب (خلاصه، شعب، مربیان) |
 | ۷ | `AdminMakatibComponent` | `admin-makatib/` | سیستم ۲ تَب: CRUD مکتب + CRUD شعب مکتوب |
@@ -48,7 +48,7 @@
 | `admin.component.html` | ~۲۳۰۸ خط | ~۳۰۰ خط |
 
 **تغییرات شل:**
-- حذف state و متدهای مربوط به ۷ دامنه (دانش‌آموزان، مربیان، مدیران شعبه، والدین، ارزیابان، ستاد، مکاتب)
+- حذف state و متدهای مربوط به ۷ دامنه (متربیان، مربیان، مدیران شعبه، والدین، ارزیابان، ستاد، مکاتب)
 - جایگزینی ۷ بخش از تمپلیت با تگ زیرکامپوننت (`<app-admin-students />`, ...)
 - نگه‌داشتن بخش دوره‌ها + تکالیف + پیوست‌ها + ثبت‌نام + کد دعوت در شل (برای استخراج بعدی)
 - بخش مکاتب: تمام مقادیر `activeMenu` مربوط به مکتب به `<app-admin-makatib />` هدایت شده
@@ -101,7 +101,7 @@ frontend/src/app/features/admin/
 ├── admin.component.html            # ~300 خط (تمپلیت)
 ├── admin.component.scss            # استایل‌ها
 ├── admin.routes.ts                 # lazy route
-├── admin-students/                 # زیرکامپوننت دانش‌آموزان
+├── admin-students/                 # زیرکامپوننت متربیان
 ├── admin-coaches/                  # زیرکامپوننت مربیان
 ├── admin-branch-managers/          # زیرکامپوننت مدیران شعبه
 ├── admin-parents/                  # زیرکامپوننت والدین

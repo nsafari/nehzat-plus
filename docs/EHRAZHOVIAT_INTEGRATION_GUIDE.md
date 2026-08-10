@@ -656,7 +656,7 @@ curl http://localhost:5000/api/admin/roles \
 curl -X POST http://localhost:5000/api/admin/roles \
   -H "Authorization: Bearer <service_token>" \
   -H "Content-Type: application/json" \
-  -d '{"name": "coach", "description": "مربی - ارزیابی دانش‌آموزان"}'
+  -d '{"name": "coach", "description": "مربی - ارزیابی متربیان"}'
 
 # Assign role to user
 curl -X POST http://localhost:5000/api/internal/users/{userId}/roles \

@@ -18,10 +18,10 @@ public class Otuh2RoleSeeder
         ["manager"] = "مدیر سیستم - دسترسی کامل",
         ["headquarters"] = "ستاد - مدیریت چند شعبه",
         ["branch_manager"] = "مدیر شعبه - مدیریت یک شعبه",
-        ["coach"] = "مربی - ارزیابی دانش‌آموزان",
+        ["coach"] = "مربی - ارزیابی متربیان",
         ["parent"] = "والدین - مشاهده وضعیت فرزند",
         ["evaluator"] = "ارزیاب - ارزیابی تخصصی",
-        ["trainee"] = "دانش‌آموز - داشبورد شخصی"
+        ["trainee"] = "متربی - داشبورد شخصی"
     };
 
     public static async Task SeedAsync(IServiceProvider services)

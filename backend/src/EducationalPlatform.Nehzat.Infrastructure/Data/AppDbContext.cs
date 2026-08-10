@@ -57,6 +57,13 @@ public class AppDbContext : DbContext
     public DbSet<SpiritualOccasion> SpiritualOccasions => Set<SpiritualOccasion>();
     public DbSet<SpiritualOccasionPractice> SpiritualOccasionPractices => Set<SpiritualOccasionPractice>();
     public DbSet<DailySpiritualEntry> DailySpiritualEntries => Set<DailySpiritualEntry>();
+    public DbSet<DailyActivity> DailyActivities => Set<DailyActivity>();
+    public DbSet<XpBadge> XpBadges => Set<XpBadge>();
+    public DbSet<UserXp> UserXp => Set<UserXp>();
+    public DbSet<UserXpTransaction> XpTransactions => Set<UserXpTransaction>();
+    public DbSet<Artwork> Artworks => Set<Artwork>();
+    public DbSet<MusicRecord> MusicRecords => Set<MusicRecord>();
+    public DbSet<CalligraphySample> CalligraphySamples => Set<CalligraphySample>();
     public DbSet<UserOccasionProgress> UserOccasionProgress => Set<UserOccasionProgress>();
     public DbSet<SpiritualPath> SpiritualPaths => Set<SpiritualPath>();
     public DbSet<StudentPathSelection> StudentPathSelections => Set<StudentPathSelection>();
@@ -133,6 +140,17 @@ public class AppDbContext : DbContext
   public DbSet<ExperimentQuestion> ExperimentalScienceQuestions => Set<ExperimentQuestion>();
   public DbSet<ExperimentAttempt> ExperimentalScienceAttempts => Set<ExperimentAttempt>();
   public DbSet<ExperimentProgress> ExperimentalScienceProgresses => Set<ExperimentProgress>();
+
+  public DbSet<SpacedRepetitionCard> SpacedRepetitionCards => Set<SpacedRepetitionCard>();
+
+  public DbSet<TrainingCourse> TrainingCourses => Set<TrainingCourse>();
+  public DbSet<TrainingStage> TrainingStages => Set<TrainingStage>();
+  public DbSet<TrainingSession> TrainingSessions => Set<TrainingSession>();
+  public DbSet<TrainingContent> TrainingContents => Set<TrainingContent>();
+  public DbSet<TrainingEnrollment> TrainingEnrollments => Set<TrainingEnrollment>();
+  public DbSet<TrainingProgress> TrainingProgresses => Set<TrainingProgress>();
+  public DbSet<TrainingAssignment> TrainingAssignments => Set<TrainingAssignment>();
+  public DbSet<TrainingSubmission> TrainingSubmissions => Set<TrainingSubmission>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -501,6 +519,73 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<DailySpiritualEntry>(entity =>
         {
             entity.HasIndex(e => new { e.UserId, e.EntryDate }).IsUnique();
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DailyActivity>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.ActivityDate }).IsUnique();
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<XpBadge>(entity =>
+        {
+            entity.HasIndex(e => e.Code).IsUnique();
+        });
+
+        modelBuilder.Entity<UserXp>(entity =>
+        {
+            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserXpTransaction>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Badge)
+                  .WithMany()
+                  .HasForeignKey(e => e.BadgeId)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Artwork>(entity =>
+        {
+            entity.HasIndex(e => e.Type);
+            entity.HasIndex(e => e.IsPublic);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<MusicRecord>(entity =>
+        {
+            entity.HasIndex(e => e.Genre);
+            entity.HasIndex(e => e.IsPublic);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CalligraphySample>(entity =>
+        {
+            entity.HasIndex(e => e.Style);
+            entity.HasIndex(e => e.IsPublic);
             entity.HasOne(e => e.User)
                   .WithMany()
                   .HasForeignKey(e => e.UserId)
@@ -1151,6 +1236,98 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => new { e.StudentId, e.ExperimentId }).IsUnique();
             entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Experiment).WithMany().HasForeignKey(e => e.ExperimentId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<SpacedRepetitionCard>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.NextReviewAt });
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TrainingCourse>(entity =>
+        {
+            entity.HasIndex(e => e.Slug).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.AcademicYear);
+        });
+
+        modelBuilder.Entity<TrainingStage>(entity =>
+        {
+            entity.HasOne(e => e.Course)
+                  .WithMany(c => c.Stages)
+                  .HasForeignKey(e => e.CourseId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.CourseId, e.StageOrder });
+        });
+
+        modelBuilder.Entity<TrainingSession>(entity =>
+        {
+            entity.HasOne(e => e.Stage)
+                  .WithMany(s => s.Sessions)
+                  .HasForeignKey(e => e.StageId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.StageId, e.SessionNumber });
+        });
+
+        modelBuilder.Entity<TrainingContent>(entity =>
+        {
+            entity.HasOne(e => e.Session)
+                  .WithMany(s => s.Contents)
+                  .HasForeignKey(e => e.SessionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.SessionId);
+        });
+
+        modelBuilder.Entity<TrainingEnrollment>(entity =>
+        {
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Course)
+                  .WithMany(c => c.Enrollments)
+                  .HasForeignKey(e => e.CourseId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.CourseId }).IsUnique();
+            entity.HasIndex(e => e.Status);
+        });
+
+        modelBuilder.Entity<TrainingProgress>(entity =>
+        {
+            entity.HasOne(e => e.Enrollment)
+                  .WithMany(e => e.Progresses)
+                  .HasForeignKey(e => e.EnrollmentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Session)
+                  .WithMany()
+                  .HasForeignKey(e => e.SessionId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.EnrollmentId, e.SessionId }).IsUnique();
+        });
+
+        modelBuilder.Entity<TrainingAssignment>(entity =>
+        {
+            entity.HasOne(e => e.Session)
+                  .WithMany(s => s.Assignments)
+                  .HasForeignKey(e => e.SessionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.SessionId);
+        });
+
+        modelBuilder.Entity<TrainingSubmission>(entity =>
+        {
+            entity.HasOne(e => e.Assignment)
+                  .WithMany(a => a.Submissions)
+                  .HasForeignKey(e => e.AssignmentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.AssignmentId, e.UserId }).IsUnique();
         });
     }
 }

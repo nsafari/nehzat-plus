@@ -155,10 +155,10 @@ public class CompetitionService : ICompetitionService
         var existing = await _db.CompetitionParticipants
             .AnyAsync(p => p.CompetitionId == competitionId && p.StudentId == request.StudentId);
         if (existing)
-            throw new InvalidOperationException("دانش‌آموز قبلاً در این مسابقه ثبت‌نام کرده است.");
+            throw new InvalidOperationException("متربی قبلاً در این مسابقه ثبت‌نام کرده است.");
 
         var student = await _db.Students.FindAsync(request.StudentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز یافت نشد.");
+            ?? throw new KeyNotFoundException("متربی یافت نشد.");
 
         var participant = new CompetitionParticipant
         {

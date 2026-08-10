@@ -52,9 +52,9 @@ curl -X GET http://localhost:3000/admin/users/pending \
 ]
 ```
 
-### 3. تایید کاربر و ایجاد دانش‌آموز
+### 3. تایید کاربر و ایجاد متربی
 
-مدیر کاربر را تایید می‌کند و دانش‌آموز ایجاد می‌شود:
+مدیر کاربر را تایید می‌کند و متربی ایجاد می‌شود:
 
 ```bash
 curl -X POST http://localhost:3000/admin/users/5/approve \
@@ -73,7 +73,7 @@ curl -X POST http://localhost:3000/admin/users/5/approve \
 **پاسخ:**
 ```json
 {
-  "message": "کاربر با موفقیت تایید شد و دانش‌آموز ایجاد شد",
+  "message": "کاربر با موفقیت تایید شد و متربی ایجاد شد",
   "student": {
     "id": 4,
     "firstName": "علی",
@@ -120,7 +120,7 @@ curl -X POST http://localhost:3000/auth/login \
 کاربر می‌تواند تکالیف خود را مشاهده و ارسال کند:
 
 ```bash
-# دریافت پیشرفت دانش‌آموز
+# دریافت پیشرفت متربی
 curl -X GET http://localhost:3000/students/4/progress \
   -H "Authorization: Bearer STUDENT_TOKEN"
 
@@ -141,7 +141,7 @@ curl -X POST http://localhost:3000/students/4/assignments/1/submit \
 - پیام: "حساب کاربری شما در انتظار تایید مدیر سیستم است"
 
 ### approved
-- کاربر تایید شده و دانش‌آموز ایجاد شده
+- کاربر تایید شده و متربی ایجاد شده
 - می‌تواند وارد سیستم شود
 - به دوره‌های تخصیص داده شده دسترسی دارد
 
@@ -245,15 +245,15 @@ async function login(username, password) {
     const data = await response.json();
     
     if (data.userType === 'student') {
-      // ذخیره اطلاعات دانش‌آموز
+      // ذخیره اطلاعات متربی
       localStorage.setItem('studentId', data.studentId);
       localStorage.setItem('studentInfo', JSON.stringify(data.studentInfo));
       localStorage.setItem('userType', 'student');
       
-      // انتقال به داشبورد دانش‌آموز
+      // انتقال به داشبورد متربی
       window.location.href = '/student-dashboard.html';
     } else if (data.userType === 'admin') {
-      // انتقال به پنل مدیریت
+      // انتقال به داشبورد مدیریت
       window.location.href = '/admin-panel.html';
     }
   } catch (error) {
@@ -266,9 +266,9 @@ async function login(username, password) {
 
 1. **امنیت**: تمام درخواست‌های مدیریت نیاز به توکن مدیر دارند
 2. **تایید اجباری**: کاربران جدید نمی‌توانند بدون تایید وارد شوند
-3. **ایجاد خودکار**: پس از تایید، دانش‌آموز و ثبت‌نام در دوره‌ها به‌صورت خودکار انجام می‌شود
+3. **ایجاد خودکار**: پس از تایید، متربی و ثبت‌نام در دوره‌ها به‌صورت خودکار انجام می‌شود
 4. **پیام‌های مناسب**: سیستم پیام‌های واضح برای هر وضعیت ارائه می‌دهد
-5. **مدیریت دوره‌ها**: مدیر می‌تواند دوره‌های مختلف را به دانش‌آموز تخصیص دهد
+5. **مدیریت دوره‌ها**: مدیر می‌تواند دوره‌های مختلف را به متربی تخصیص دهد
 
 ## خطاهای رایج
 

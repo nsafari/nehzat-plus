@@ -12,7 +12,7 @@
 
 | دامنه | متدهای واقعی در بک‌اند |
 |------|------------------------|
-| دانش‌آموزان | `GetAllStudents`, `GetProgress`, `GetAssignmentProgress`, `GetSubmissions` |
+| متربیان | `GetAllStudents`, `GetProgress`, `GetAssignmentProgress`, `GetSubmissions` |
 | والدین | `GetAllParents`, `GetParentStudents` |
 | مربیان | `GetAllCoaches` |
 | مدیران شعبه | `GetAllBranchManagers`, `GetAllBranches` |
@@ -26,11 +26,11 @@
 
 ## ⚠️ کشف مهم درباره `assessment-panel`
 
-`features/shared/assessment-panel/assessment-panel.component.ts` (۵۶۸ خط) یک پنل **مدیریت/تولید ارزیابی** است:
+`features/shared/assessment-panel/assessment-panel.component.ts` (۵۶۸ خط) یک کامپوننت **مدیریت/تولید ارزیابی** است:
 - دارد: `generateWeeklyAssessment`, `publishAssessment`, `deleteAssessment`, نمایش سوالات و نتایج
-- **ندارد:** ثبت نمره دانش‌آموز توسط دانش‌آموز (`submitAssessmentResult`)
+- **ندارد:** ثبت نمره متربی توسط متربی (`submitAssessmentResult`)
 
-**تصحیح نقشه قبلی:** متد `submitAssessmentResult` متعلق به **دانش‌آموز در dashboard** است، نه ارزیاب.
+**تصحیح نقشه قبلی:** متد `submitAssessmentResult` متعلق به **متربی در dashboard** است، نه ارزیاب.
 ارزیاب باید از `getEvaluationRecords` + `createEvaluation` استفاده کند (ثبت ارزیابی توسط انسان، نه تولید هوشمند).
 
 ---
@@ -56,7 +56,7 @@
 
 ---
 
-## صفحه ۱ — `coach` (پنل مربی)
+## صفحه ۱ — `coach` (داشبورد مربی)
 
 **فایل:** `frontend/src/app/features/coach/`
 **وضعیت:** ✅ کامل
@@ -64,7 +64,7 @@
 **گام‌ها (عملیاتی):**
 1. ✅ انتقال `template` درون‌خطی به `coach.component.html`.
 2. ✅ `ngOnInit`: `api.getStudents()` → رندر لیست.
-3. ✅ برای هر دانش‌آموز: `api.getStudentProgress(id)` در کارت (درخواست موازی، نه تو‌در‌تو).
+3. ✅ برای هر متربی: `api.getStudentProgress(id)` در کارت (درخواست موازی، نه تو‌در‌تو).
 4. ✅ دکمه "مشاهده تکالیف" → زیرصفحه `coach-student-detail` (در همین پوشه) با `getStudentSubmissions`.
 5. ✅ فیلتر تاریخ با `shared/persian-date-input`.
 
@@ -78,7 +78,7 @@
 **وضعیت:** ✅ کامل
 
 **گام‌ها:**
-1. ✅ ایجاد `parent-panel.component.html` — پنل اصلی والد با لیست فرزندان.
+1. ✅ ایجاد `parent-panel.component.html` — داشبورد اصلی والد با لیست فرزندان.
 2. ✅ `api.getParentStudents(parentId)` → لیست فرزندان.
 3. ✅ برای هر فرزند: `getAssignmentProgress(id, assignmentId)` (وضعیت lock/unlock) + `getStudentAssessmentResults(id)` (نمرات).
 4. ✅ نمایش آیکون وضعیت تکلیف در `student-progress-card` کامپوننت.
@@ -99,7 +99,7 @@
 2. ✅ `api.getBranches()` + `api.getBranchManagers()` → نمایش شعبه جاری.
 3. ✅ `api.getBranchPerformance()` → داشبورد عملکرد.
 4. ✅ `api.getCoaches()` (فیلتر سمت کلاینت بر اساس شعبه) + `api.getCoachPerformance()`.
-5. ✅ فرم مدیریت دانش‌آموزان شعبه: `getStudents` + `createStudent`/`updateStudent`.
+5. ✅ فرم مدیریت متربیان شعبه: `getStudents` + `createStudent`/`updateStudent`.
 6. ✅ استخراج `competition-management` + `league-management` به فایل‌های جداگانه html/scss.
 7. ✅ مسیرهای `/competitions` و `/leagues` در `branch-manager.routes.ts` فعال.
 
@@ -131,7 +131,7 @@
 **وضعیت:** ✅ کامل
 
 **گام‌ها:**
-1. ✅ ایجاد `headquarters.component.html` + `.scss` — پنل اصلی با ۴ تب (خلاصه، عملکرد شعب، عملکرد مربیان، مدیریت مدارس).
+1. ✅ ایجاد `headquarters.component.html` + `.scss` — داشبورد اصلی با ۴ تب (خلاصه، عملکرد شعب، عملکرد مربیان، مدیریت مدارس).
 2. ✅ `headquarters-dashboard.component.html` + `.scss` — داشبورد جداگانه با کارت‌های خلاصه و جداول عملکرد.
 3. ✅ `monthly-booklet.component.html` + `.scss` — مدیریت دفترچه‌های ماهانه (CRUD، فرم، جداول).
 4. ✅ `api.getHeadquartersSummary()` → هدر خلاصه و کارت‌های آمار.
@@ -149,7 +149,7 @@
 **وضعیت:** نسبتاً کامل.
 
 **گام‌ها:**
-1. تکمیل `assessment-taker`: `startAssessment(id, studentId)` → نمایش سوالات → `submitAssessmentResult(id, payload)` (ثبت نمره دانش‌آموز).
+1. تکمیل `assessment-taker`: `startAssessment(id, studentId)` → نمایش سوالات → `submitAssessmentResult(id, payload)` (ثبت نمره متربی).
 2. تکمیل `dashboard-training-steps` با گام‌های تعاملی.
 3. اتصال `getStudentAssessmentHistory` به تاریخچه نمرات.
 

@@ -17,7 +17,7 @@ public class SpiritualPathService : ISpiritualPathService
     public async Task<List<SpiritualPath>> GetAvailablePathsAsync(int studentId)
     {
         var student = await _db.Students.FindAsync(studentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز یافت نشد");
+            ?? throw new KeyNotFoundException("متربی یافت نشد");
 
         var gender = student.Gender ?? "mixed";
 
@@ -32,7 +32,7 @@ public class SpiritualPathService : ISpiritualPathService
     public async Task<StudentPathSelection> SubmitRankingAsync(int studentId, int pathId, int rankOrdinal)
     {
         var student = await _db.Students.FindAsync(studentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز یافت نشد");
+            ?? throw new KeyNotFoundException("متربی یافت نشد");
 
         var path = await _db.SpiritualPaths.FindAsync(pathId)
             ?? throw new KeyNotFoundException("مسیر یافت نشد");
@@ -75,7 +75,7 @@ public class SpiritualPathService : ISpiritualPathService
     public async Task<StudentPathSelection> FinalizePathAsync(int studentId, int pathId, string? reason)
     {
         var student = await _db.Students.FindAsync(studentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز یافت نشد");
+            ?? throw new KeyNotFoundException("متربی یافت نشد");
 
         var path = await _db.SpiritualPaths.FindAsync(pathId)
             ?? throw new KeyNotFoundException("مسیر یافت نشد");
@@ -102,14 +102,14 @@ public class SpiritualPathService : ISpiritualPathService
     public async Task<StudentPathSelection> SwitchFinalizedPathAsync(int studentId, int newPathId, string? reason)
     {
         var student = await _db.Students.FindAsync(studentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز یافت نشد");
+            ?? throw new KeyNotFoundException("متربی یافت نشد");
 
         var newPath = await _db.SpiritualPaths.FindAsync(newPathId)
             ?? throw new KeyNotFoundException("مسیر جدید یافت نشد");
 
         var selection = await _db.StudentPathSelections
             .FirstOrDefaultAsync(s => s.StudentId == studentId)
-            ?? throw new KeyNotFoundException("انتخابی برای این دانش‌آموز یافت نشد");
+            ?? throw new KeyNotFoundException("انتخابی برای این متربی یافت نشد");
 
         if (selection.Stage == "locked")
             throw new InvalidOperationException("مرحله انتخاب قفل شده است و امکان تغییر وجود ندارد");

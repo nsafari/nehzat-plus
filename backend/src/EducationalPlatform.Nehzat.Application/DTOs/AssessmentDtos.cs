@@ -28,7 +28,7 @@ public record GenerateWeeklyAssessmentRequest(
 );
 
 public record SubmitAssessmentResultRequest(
-    [Required(ErrorMessage = "شناسه دانش‌آموز الزامی است")]
+    [Required(ErrorMessage = "شناسه متربی الزامی است")]
     int StudentId,
 
     [Required(ErrorMessage = "تاریخ تکمیل الزامی است")]

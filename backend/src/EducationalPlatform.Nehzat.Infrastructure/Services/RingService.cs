@@ -96,7 +96,7 @@ public class RingService : IRingService
     public async Task<RingStudent> AddStudentAsync(CreateRingStudentRequest request)
     {
         if (await _db.RingStudents.AnyAsync(rs => rs.RingId == request.RingId && rs.StudentId == request.StudentId))
-            throw new InvalidOperationException("دانش‌آموز قبلاً در این حلقه ثبت شده است.");
+            throw new InvalidOperationException("متربی قبلاً در این حلقه ثبت شده است.");
 
         var entity = new RingStudent
         {
@@ -114,7 +114,7 @@ public class RingService : IRingService
     {
         var entity = await _db.RingStudents
             .FirstOrDefaultAsync(rs => rs.RingId == ringId && rs.StudentId == studentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز در این حلقه پیدا نشد.");
+            ?? throw new KeyNotFoundException("متربی در این حلقه پیدا نشد.");
         _db.RingStudents.Remove(entity);
         await _db.SaveChangesAsync();
     }

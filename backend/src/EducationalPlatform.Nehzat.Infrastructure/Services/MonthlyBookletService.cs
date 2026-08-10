@@ -56,7 +56,7 @@ public class MonthlyBookletService : IMonthlyBookletService
             throw new InvalidOperationException("دفترچه ماهانه برای این دوره قبلاً ثبت شده است.");
 
         if (!await _db.Students.AnyAsync(s => s.Id == request.StudentId))
-            throw new KeyNotFoundException("دانش‌آموز پیدا نشد.");
+            throw new KeyNotFoundException("متربی پیدا نشد.");
 
         var entity = new MonthlyBooklet
         {

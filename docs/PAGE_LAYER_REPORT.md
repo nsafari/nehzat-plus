@@ -11,7 +11,7 @@
 | صفحه | HTML | TS Files | خطوط TS | وضعیت |
 |------|------|----------|---------|--------|
 | **coach** | ۲ | ۵ | ~۱۲۰۰ | **کامل** |
-| **parent** | ۳ | ۴ | ~۸۰۰ | **کامل** — ۳ کامپوننت استخراج‌شده + زیرصفحه جزئیات دانش‌آموز + HTML/SCSS جداگانه |
+| **parent** | ۳ | ۴ | ~۸۰۰ | **کامل** — ۳ کامپوننت استخراج‌شده + زیرصفحه جزئیات متربی + HTML/SCSS جداگانه |
 | **branch-manager** | ۳ | ۳ | ~۱۳۰۰ | **کامل** — ۳ کامپوننت (main, competition, league) با HTML/SCSS جداگانه + routes کامل |
 | **evaluator** | ۱ | ۳ | ~۱۳۰۰ | **کامل** — evaluator + HTML/SCSS جداگانه، سوابق ارزیابی + ثبت ارزیابی + تحلیل‌ها |
 | **headquarters** | ۳ | ۴ | ~۲۲۰۰ | **کامل** — headquarters-dashboard + headquarters + monthly-booklet، HTML/SCSS جداگانه، routes کامل |
@@ -21,7 +21,7 @@
 ### کامپوننت‌های مشترک (`features/shared/`)
 | کامپوننت | خطوط | کاربرد |
 |-----------|------|-------|
-| `assessment-panel` | ۵۳۱ | پنل تولید/نمایش ارزیابی (مصرف evaluator/dashboard) |
+| `assessment-panel` | ۵۳۱ | کامپوننت تولید/نمایش ارزیابی (مصرف evaluator/dashboard) |
 | `spiritual-history-panel` | ۱۱۶ | تاریخچه معنوی/عبادی |
 | `spiritual-occasion-panel` | ۱۸۱ | مناسبت‌های معنوی |
 | `spiritual-path-panel` | ۱۴۳ | مسیر معنوی |
@@ -80,7 +80,7 @@ features/coach/
 ### Parent (~۸۰۰ خط / ۴ فایل TS + ۳ HTML + ۳ SCSS)
 ```
 features/parent/
-├── parent-panel.component.ts/html/scss      # پنل اصلی والد + لیست فرزندان
+├── parent-panel.component.ts/html/scss      # داشبورد اصلی والد + لیست فرزندان
 ├── student-progress-card.component.ts/html/scss  # کارت پیشرفت هر فرزند
 ├── monthly-booklet.component.ts/html/scss   # مشاهده جزوات ماهانه
 ├── parent-student-detail.component.ts/html/scss  # جزئیات فرزند + تکالیف/نمرات
@@ -91,7 +91,7 @@ features/parent/
 
 ### Branch-Manager (۶۰۵ خط / ۲ فایل)
 - Component اصلی + routes
-- نیاز به: داشبورد عملکرد شعبه، مدیریت مربیان/دانش‌آموزان
+- نیاز به: داشبورد عملکرد شعبه، مدیریت مربیان/متربیان
 
 ### Evaluator (۶۳۹ خط / ۳ فایل + ۱ HTML + ۱ SCSS)
 ```
@@ -186,7 +186,7 @@ features/admin/
 **نتیجه:** پروژه در حالت **"نصفه‌کاره پیشرفته"** است — بک‌اند کامل و تمیز، فرانت‌اند بک‌اندها را دارد اما UI لایه‌های ۵ صفحه اصلی همچنان inline template است و نیاز به تکمیل دارد. **Admin و Dashboard تنها صفحات با HTML/SCSS جداگانه هستند.**
 
 **به‌روزرسانی ۲۰۲۶-۰۷-۲۷:** ۳ صفحه کامل‌شده:
-- ✅ Coach — استخراج HTML/SCSS، زیرصفحه دانش‌آموز
+- ✅ Coach — استخراج HTML/SCSS، زیرصفحه متربی
 - ✅ Parent — ۳ کامپوننت استخراج‌شده + زیرصفحه جزئیات
 - ✅ Branch-Manager — ۳ کامپوننت (main, competition, league) با HTML/SCSS جداگانه
 - ✅ Evaluator — جداسازی HTML/SCSS، فرم Reactive، تحلیل‌ها

@@ -155,7 +155,7 @@ public class LeagueService : ILeagueService
             throw new InvalidOperationException("لیگ فعال نیست.");
 
         var student = await _db.Students.FindAsync(request.StudentId)
-            ?? throw new KeyNotFoundException("دانش‌آموز یافت نشد.");
+            ?? throw new KeyNotFoundException("متربی یافت نشد.");
 
         var ranking = await _db.LeagueRankings
             .FirstOrDefaultAsync(r => r.LeagueId == leagueId && r.StudentId == request.StudentId);

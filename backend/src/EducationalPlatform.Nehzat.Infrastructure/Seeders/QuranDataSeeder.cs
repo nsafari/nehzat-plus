@@ -274,7 +274,7 @@ public class QuranDataSeeder
             new QuranCurriculum
             {
                 Title = "برنامه حفظ سوره‌های متوسط (۱۱-۵۰)",
-                Description = "برنامه حفظ سوره‌های متوسط قرآن برای دانش‌آموزان متوسط",
+                Description = "برنامه حفظ سوره‌های متوسط قرآن برای متربیان متوسط",
                 Language = "fa",
                 StartSurah = 11,
                 EndSurah = 50,

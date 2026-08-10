@@ -635,7 +635,7 @@ public class FiqhQuiz
 }
 
 /// <summary>
-/// تلاش دانش‌آموز برای یک سؤال
+/// تلاش متربی برای یک سؤال
 /// </summary>
 [Table("Nehzat_fiqh_attempts")]
 public class FiqhAttempt
@@ -705,7 +705,7 @@ public class FiqhFatwaResponse
 
 ```csharp
 /// <summary>
-/// پیشرفت دانش‌آموز در هر درس — با داده‌های BKT
+/// پیشرفت متربی در هر درس — با داده‌های BKT
 /// </summary>
 [Table("Nehzat_fiqh_student_progress")]
 public class FiqhStudentProgress
@@ -1383,7 +1383,7 @@ public class FiqhService : IFiqhService
         // توصیه درس بعدی بر اساس:
         // 1. درس‌هایی که پیش‌نیازشان Mastered شده
         // 2. درس‌هایی که بیش از همه از آخرین تمرینشان گذشته
-        // 3. درس‌هایی که Outer Fringe دانش‌آموز هستند
+        // 3. درس‌هایی که Outer Fringe متربی هستند
 
         var completedLessons = await _db.Set<FiqhStudentProgress>()
             .Where(p => p.StudentId == studentId && p.Status == "completed")
@@ -1914,7 +1914,7 @@ public class FiqhSpacedRepetition
 ```
 حلقه بیرونی (Outer — عمومی)
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-مناسب: دانش‌آموز عادی که می‌خواهد احکام را یاد بگیرد
+مناسب: متربی عادی که می‌خواهد احکام را یاد بگیرد
 فعالیت: تماشای ویدئو + خواندن متن + MCQ
 ارزیابی: auto-graded
 حمایت: تالار گفتگو
@@ -1937,7 +1937,7 @@ public class FiqhSpacedRepetition
 ### پیاده‌سازی تعیین حلقه
 
 ```csharp
-// تعیین حلقه دانش‌آموز بر اساس P_known و تعدادlessonهای تکمیل شده
+// تعیین حلقه متربی بر اساس P_known و تعدادlessonهای تکمیل شده
 public string DetermineStudentRing(int studentId)
 {
     var progress = _db.Set<FiqhStudentProgress>()
@@ -2260,7 +2260,7 @@ export const FIQH_ROUTES: Routes = [
         path: 'progress/:studentId',
         loadComponent: () => import('./pages/progress/progress.component')
           .then(m => m.ProgressComponent),
-        title: 'پیشرفت دانش‌آموز',
+        title: 'پیشرفت متربی',
         canActivate: [roleGuard('admin', 'coach')]
       },
       {

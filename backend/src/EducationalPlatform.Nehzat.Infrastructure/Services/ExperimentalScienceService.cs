@@ -294,7 +294,7 @@ namespace EducationalPlatform.Nehzat.Infrastructure.Services
         {
             var studentExists = await _db.Students.AnyAsync(s => s.Id == request.StudentId);
             if (!studentExists)
-                throw new KeyNotFoundException("دانش‌آموز یافت نشد.");
+                throw new KeyNotFoundException("متربی یافت نشد.");
 
             var question = await _db.Set<ExperimentQuestion>().FindAsync(request.QuestionId)
                 ?? throw new KeyNotFoundException("سوال یافت نشد.");
@@ -346,7 +346,7 @@ namespace EducationalPlatform.Nehzat.Infrastructure.Services
             {
                 var studentExists = await _db.Students.AnyAsync(s => s.Id == request.StudentId);
                 if (!studentExists)
-                    throw new KeyNotFoundException("دانش‌آموز یافت نشد.");
+                    throw new KeyNotFoundException("متربی یافت نشد.");
 
                 var experimentExists = await _db.Set<Experiment>().AnyAsync(e => e.Id == request.ExperimentId);
                 if (!experimentExists)
