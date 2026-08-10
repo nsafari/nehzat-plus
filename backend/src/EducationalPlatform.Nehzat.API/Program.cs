@@ -135,6 +135,7 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
     builder.Services.AddScoped<ISrsService, SrsService>();
     builder.Services.AddScoped<IXpService, XpService>();
     builder.Services.AddScoped<XpDataSeeder>();
+    builder.Services.AddScoped<TrainingDataSeeder>();
     builder.Services.AddScoped<ITrainingService, TrainingService>();
 
     builder.Services.AddCors(options =>
@@ -224,6 +225,9 @@ using (var scope = app.Services.CreateScope())
 
     var xpSeeder = scope.ServiceProvider.GetRequiredService<XpDataSeeder>();
     await xpSeeder.SeedAsync();
+
+    var trainingSeeder = scope.ServiceProvider.GetRequiredService<TrainingDataSeeder>();
+    await trainingSeeder.SeedAsync();
 
     var logService = scope.ServiceProvider.GetRequiredService<ILogService>();
 
