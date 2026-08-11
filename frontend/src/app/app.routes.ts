@@ -101,16 +101,10 @@ export const routes: Routes = [
       import('./features/experimental-sciences/experimental-sciences.routes').then((m) => m.EXPERIMENTAL_SCIENCES_ROUTES),
   },
   {
-    path: 'math',
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import('./features/math/math.routes').then((m) => m.MATH_ROUTES),
-  },
-  {
     path: 'learning',
     canActivate: [authGuard],
     loadChildren: () =>
-      import('./features/persian-literature/learning/learning.routes').then((m) => m.LEARNING_ROUTES),
+      import('./features/learning/learning.routes').then((m) => m.LEARNING_ROUTES),
   },
   {
     path: 'activity',

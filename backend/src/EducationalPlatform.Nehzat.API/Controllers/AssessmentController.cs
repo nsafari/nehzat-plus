@@ -10,7 +10,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers;
 
 [ApiController]
 [Route("assessments")]
-[Authorize]
+[Authorize(Roles = "manager,headquarters,branch_manager,coach,evaluator")]
 public class AssessmentController : ControllerBase
 {
     private readonly IAssessmentService _assessmentService;
@@ -159,6 +159,7 @@ public class AssessmentController : ControllerBase
     }
 
     [HttpPost("{id}/submit")]
+    [Authorize(Roles = "manager,headquarters,branch_manager,coach,evaluator,trainee")]
     public async Task<IActionResult> SubmitResult(int id, [FromBody] SubmitAssessmentResultRequest request)
     {
         var result = new AssessmentResult
@@ -196,6 +197,7 @@ public class AssessmentController : ControllerBase
     }
 
     [HttpPost("{id}/start/{studentId}")]
+    [Authorize(Roles = "manager,headquarters,branch_manager,coach,evaluator,trainee")]
     public async Task<IActionResult> StartAssessment(int id, int studentId)
     {
         var existing = await _assessmentService.GetResultByAssessmentAndStudentAsync(id, studentId);
@@ -234,6 +236,7 @@ public class AssessmentController : ControllerBase
     }
 
     [HttpGet("student/{studentId}/results")]
+    [Authorize(Roles = "manager,headquarters,branch_manager,coach,evaluator,parent,trainee")]
     public async Task<IActionResult> GetResultsByStudent(int studentId)
     {
         var result = await _assessmentService.GetResultsByStudentAsync(studentId);
