@@ -7,7 +7,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers;
 
 [ApiController]
 [Route("api/teachers")]
-[Authorize(Roles = "admin,manager,headquarters,coach")]
+[Authorize(Roles = "admin,manager,headquarters,coach,teacher")]
 public class TeacherController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
