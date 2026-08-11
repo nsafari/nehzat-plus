@@ -1,40 +1,47 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
+import { Router } from '@angular/router';
 
 import type {
   Assignment,
-  AssignmentAttachment,
   AssignmentSubmission,
   BiweeklyProgressResponse,
   Course,
   CurrentUser,
   StudentAssignmentGateState,
   StudentAssessmentHistory,
-  UserXp,
-  XpBadge,
-  DailyNudge,
-  NudgeDomain
+  DailyNudge
 } from '../../core/models/lesson-planner.models';
-import { buildXpSummary } from '../../core/utils/xp';
 import { resolveMediaUrl } from '../../core/services/api-url.util';
 import { AuthService } from '../../core/services/auth.service';
 import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token';
 import { NotificationService } from '../../core/services/notification.service';
 import { DashboardTrainingStepsComponent } from './dashboard-training-steps/dashboard-training-steps.component';
 import { AssessmentTakerComponent } from './assessment-taker/assessment-taker.component';
-import { ProgressChartComponent, BiweeklyProgressData } from './progress-chart/progress-chart.component';
+import { DashboardAssignmentModalComponent } from './components/dashboard-assignment-modal/dashboard-assignment-modal.component';
+import { DashboardNudgePanelComponent } from './components/dashboard-nudge-panel/dashboard-nudge-panel.component';
+import { DashboardHeaderComponent } from './components/dashboard-header/dashboard-header.component';
 import { QuranProgressWidgetComponent } from '../quran/pages/quran-progress-widget/quran-progress-widget.component';
 import { MathProgressWidgetComponent } from '../math/pages/math-progress-widget/math-progress-widget.component';
+import type { BiweeklyProgressData } from './progress-chart/progress-chart.component';
 
 type TimelineStatus = 'future' | 'today' | 'past';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, DashboardTrainingStepsComponent, AssessmentTakerComponent, QuranProgressWidgetComponent, MathProgressWidgetComponent],
+  imports: [
+    CommonModule,
+    DashboardTrainingStepsComponent,
+    AssessmentTakerComponent,
+    DashboardAssignmentModalComponent,
+    DashboardNudgePanelComponent,
+    DashboardHeaderComponent,
+    QuranProgressWidgetComponent,
+    MathProgressWidgetComponent
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -57,29 +64,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
   biweeklyProgress: BiweeklyProgressData | null = null;
   assessmentHistory: StudentAssessmentHistory | null = null;
   loadingHistory = false;
-  userXp: UserXp | null = null;
-  badges: XpBadge[] = [];
-  loadingXp = false;
 
   loadingCourses = false;
   loadingAssignments = false;
   loadingSubmissions = false;
   isSubmitting = false;
-  errorMessage = '';
-  successMessage = '';
-  chartSummary = 'پس از انتخاب درس، وضعیت پیشرفت اینجا نمایش داده می‌شود.';
 
   isRecording = false;
   private mediaRecorder: MediaRecorder | null = null;
   private mediaStream: MediaStream | null = null;
   private recordingChunks: Blob[] = [];
   private recordingStartedAt = 0;
-  private recordingDurationSeconds = 0;
+  recordingDurationSeconds = 0;
   audioBlob: Blob | null = null;
   audioUrl: string | null = null;
 
-  logoHidden = false;
-  isUserMenuOpen = false;
   isUserModalOpen = false;
   isAssignmentModalOpen = false;
   isAssessmentTakerOpen = false;
@@ -88,44 +87,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dailyNudges: DailyNudge[] = [];
   loadingNudges = false;
 
-  private listenSession = {
-    active: false,
-    lastTime: 0,
-    listenedSeconds: 0,
-    duration: 0
-  };
-  private listenRequestInFlight = false;
-  private lastProgressRequestKey = '';
-
-  get displayName(): string {
-    const student = this.currentUser?.studentInfo;
-    if (!student) {
-      return this.currentUser?.username ?? 'متربی';
-    }
-    return `${student.firstName} ${student.lastName}`;
-  }
-
-  get roleDisplayName(): string {
-    return 'متربی';
-  }
-
-  get filteredSubmissions(): AssignmentSubmission[] {
-    if (!this.selectedCourse) {
-      return this.submissions;
-    }
-    const assignmentIds = new Set(this.assignments.map((assignment) => assignment.id));
-    return this.submissions.filter((submission) => assignmentIds.has(submission.assignmentId));
-  }
-
-  get isRecordingUnlocked(): boolean {
-    if (!this.selectedAssignment) {
-      return false;
-    }
-    if (!this.primaryInstructionAudioUrl) {
-      return true;
-    }
-    return Boolean(this.assignmentProgress?.isRecordingUnlocked);
-  }
+  errorMessage = '';
+  successMessage = '';
+  chartSummary = 'پس از انتخاب درس، وضعیت پیشرفت اینجا نمایش داده می‌شود.';
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
@@ -153,12 +117,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleUserMenu(): void {
-    this.isUserMenuOpen = !this.isUserMenuOpen;
-  }
+  toggleUserMenu(): void {}
 
   showUserModal(): void {
-    this.isUserMenuOpen = false;
     this.isUserModalOpen = true;
   }
 
@@ -184,7 +145,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.api
       .getActiveCourses()
       .pipe(finalize(() => (this.loadingCourses = false)))
-      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: (courses) => {
           this.courses = courses;
           if (courses.length > 0) {
@@ -206,8 +168,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.selectedAssignment = null;
     this.assignmentProgress = null;
     this.primaryInstructionAudioUrl = null;
-    this.audioBlob = null;
-    this.audioUrl = null;
     this.isAssignmentModalOpen = false;
     this.loadAssignments(course.id);
     this.loadSubmissions();
@@ -221,7 +181,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.api
       .getBiweeklyProgress(studentId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(takeUntilDestroyed())
       .subscribe({
         next: (progress) => {
           this.biweeklyProgress = this.mapToChartData(progress);
@@ -271,7 +231,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.api
       .getCourseAssignments(courseId)
       .pipe(finalize(() => (this.loadingAssignments = false)))
-      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: (assignments) => {
           this.assignments = [...assignments].sort((a, b) => a.assignmentDate.localeCompare(b.assignmentDate));
           this.updateChartSummary();
@@ -293,7 +254,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.api
       .getStudentSubmissions(studentId)
       .pipe(finalize(() => (this.loadingSubmissions = false)))
-      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: (submissions) => {
           this.submissions = submissions;
           this.updateChartSummary();
@@ -363,23 +325,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  nudgeDomainIcon(domain: NudgeDomain): string {
-    switch (domain) {
-      case 'scientific':
-        return 'bi-journal-bookmark';
-      case 'spiritual':
-        return 'bi-moon-stars';
-      case 'physical':
-        return 'bi-activity';
-      default:
-        return 'bi-bell';
-    }
-  }
-
   private scheduleDefaultNudges(): void {
     this.notify.scheduleDailyNudge(8, 0, 'امروز تمرین درسی خود را انجام دادی؟', 'scientific');
     this.notify.scheduleDailyNudge(7, 30, 'تعهد معنوی امروز را فراموش نکن.', 'spiritual');
     this.notify.scheduleDailyNudge(17, 0, 'فعالیت بدنی امروز را ثبت کن.', 'physical');
+  }
+
+  get filteredSubmissions(): AssignmentSubmission[] {
+    if (!this.selectedCourse) {
+      return this.submissions;
+    }
+    const assignmentIds = new Set(this.assignments.map((assignment) => assignment.id));
+    return this.submissions.filter((submission) => assignmentIds.has(submission.assignmentId));
   }
 
   getAssignmentStatus(assignment: Assignment): TimelineStatus {
@@ -401,18 +358,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return Boolean((assignment.attachments ?? []).some((attachment) => attachment.kind === 'audio'));
   }
 
+  get isRecordingUnlocked(): boolean {
+    if (!this.selectedAssignment) {
+      return false;
+    }
+    if (!this.primaryInstructionAudioUrl) {
+      return true;
+    }
+    return Boolean(this.assignmentProgress?.isRecordingUnlocked);
+  }
+
   showAssignmentDetails(assignment: Assignment): void {
     this.selectedAssignment = assignment;
     this.errorMessage = '';
     this.successMessage = '';
     this.resetRecordingPreview();
-    this.listenSession = {
-      active: false,
-      lastTime: 0,
-      listenedSeconds: 0,
-      duration: 0
-    };
-    this.primaryInstructionAudioUrl = this.resolvePrimaryInstructionAudioUrl(assignment.attachments ?? []);
+    this.primaryInstructionAudioUrl = this.resolvePrimaryInstructionAudioUrl(
+      assignment.attachments ?? []
+    );
     this.isAssignmentModalOpen = true;
     this.loadAssignmentProgress(assignment.id);
   }
@@ -422,6 +385,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.stopRecording();
     }
     this.isAssignmentModalOpen = false;
+    this.selectedAssignment = null;
+    this.assignmentProgress = null;
+    this.primaryInstructionAudioUrl = null;
   }
 
   startRecordingForAssignment(assignment: Assignment): void {
@@ -465,7 +431,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (!this.recordingChunks.length) {
           return;
         }
-        this.audioBlob = new Blob(this.recordingChunks, { type: this.mediaRecorder?.mimeType || 'audio/webm' });
+        this.audioBlob = new Blob(this.recordingChunks, {
+          type: this.mediaRecorder?.mimeType || 'audio/webm'
+        });
         this.audioUrl = URL.createObjectURL(this.audioBlob);
       };
       this.mediaRecorder.start();
@@ -514,7 +482,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.api
       .submitAssignment(studentId, this.selectedAssignment.id, payload)
       .pipe(finalize(() => (this.isSubmitting = false)))
-      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: () => {
           this.setSuccess('فایل صوتی با موفقیت ارسال شد.');
           this.loadSubmissions();
@@ -561,81 +530,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return resolveMediaUrl(url);
   }
 
-  onInstructionAudioPlay(audio: HTMLAudioElement): void {
-    this.listenSession = {
-      active: true,
-      lastTime: audio.currentTime,
-      listenedSeconds: 0,
-      duration: audio.duration || 0
-    };
-  }
-
-  onInstructionAudioTimeUpdate(audio: HTMLAudioElement): void {
-    if (!this.listenSession.active) {
-      return;
-    }
-    const delta = audio.currentTime - this.listenSession.lastTime;
-    if (delta > 0 && delta <= 1.5) {
-      this.listenSession.listenedSeconds += delta;
-    }
-    this.listenSession.lastTime = audio.currentTime;
-    if (audio.duration && Number.isFinite(audio.duration) && audio.duration > 0) {
-      this.listenSession.duration = audio.duration;
-    }
-  }
-
-  onInstructionAudioEnded(audio: HTMLAudioElement): void {
-    if (!this.selectedAssignment || this.listenRequestInFlight) {
-      return;
-    }
-    this.listenSession.active = false;
-    const duration = this.listenSession.duration || audio.duration || 0;
-    if (duration <= 0) {
-      return;
-    }
-    const requiredElapsed = Math.max(duration * 0.85, duration - 3);
-    if (this.listenSession.listenedSeconds < requiredElapsed) {
-      return;
-    }
-
-    const studentId = this.getStudentId();
-    if (studentId === null) {
-      return;
-    }
-    this.listenRequestInFlight = true;
-    this.api
-      .registerAssignmentListenCompletion(
-        studentId,
-        this.selectedAssignment.id,
-        this.selectedAssignment.instructionAudioVersion
-      )
-      .pipe(finalize(() => (this.listenRequestInFlight = false)))
-      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (progress) => {
-          this.assignmentProgress = progress;
-        },
-        error: (error) => {
-          this.setError(error?.error?.message ?? 'ثبت گوش‌دادن با خطا مواجه شد.');
-        }
-      });
-  }
-
-  onInstructionAudioError(): void {
-    this.setError('پخش فایل راهنما با خطا مواجه شد.');
-  }
-
   private loadAssignmentProgress(assignmentId: number): void {
     const studentId = this.getStudentId();
     if (studentId === null) {
       return;
     }
-    const requestKey = `${studentId}:${assignmentId}:${Date.now()}`;
-    this.lastProgressRequestKey = requestKey;
     this.api.getAssignmentProgress(studentId, assignmentId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (progress) => {
-        if (this.lastProgressRequestKey !== requestKey) {
-          return;
-        }
         if (!this.selectedAssignment || this.selectedAssignment.id !== assignmentId) {
           return;
         }
@@ -652,16 +553,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.assignmentProgress = progress;
       },
       error: (error) => {
-        if (this.lastProgressRequestKey !== requestKey) {
-          return;
-        }
         this.setError(error?.error?.message ?? 'دریافت وضعیت تکلیف با خطا مواجه شد.');
       }
     });
   }
 
-  private resolvePrimaryInstructionAudioUrl(attachments: AssignmentAttachment[]): string | null {
-    const primary = attachments.find((attachment) => attachment.kind === 'audio' && Boolean(attachment.url));
+  private resolvePrimaryInstructionAudioUrl(attachments: Assignment['attachments']): string | null {
+    const primary = attachments?.find((attachment) => attachment.kind === 'audio' && Boolean(attachment.url));
     return resolveMediaUrl(primary?.url) ?? null;
   }
 
