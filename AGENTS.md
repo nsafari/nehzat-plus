@@ -35,6 +35,7 @@ nehzat-plus/
 | Auth/token/interceptor | `frontend/src/app/core/services/`, `core/guards/`, `core/interceptors/` |
 | Styling variables | `--lp-*` CSS custom props only (see docs/AGENTS.md) |
 | Architecture/conventions | `docs/AGENTS.md` |
+| Version archive system | `scripts/archive-version.ps1`, `docs/PROJECT_INVENTORY.md` |
 
 ## CODE MAP
 | Symbol | Type | Location | Role |
