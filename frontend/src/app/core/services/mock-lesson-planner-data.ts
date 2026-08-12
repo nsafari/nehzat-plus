@@ -35,6 +35,22 @@ export const mockUsers: MockUser[] = [
   { id: 2, username: 'ali.ahmadi', password: 'password123', userType: 'trainee' as UserType, approvalStatus: 'approved' as const, firstName: 'علی', lastName: 'احمدی', email: 'ali@example.com', phoneNumber: '09121111111', studentId: 1 },
   { id: 3, username: 'fateme.mohammadi', password: 'password123', userType: 'trainee' as UserType, approvalStatus: 'approved' as const, firstName: 'فاطمه', lastName: 'محمدی', email: 'fateme@example.com', phoneNumber: '09122222222', studentId: 2 },
   { id: 4, username: 'mohammad.rezaei', password: 'password123', userType: 'trainee' as UserType, approvalStatus: 'approved' as const, firstName: 'محمد', lastName: 'رضایی', email: 'mohammad@example.com', phoneNumber: '09123333333', studentId: 3 },
+  { id: 5, username: 'parent.dev', password: 'password123', userType: 'parent' as UserType, approvalStatus: 'approved' as const, firstName: 'والد', lastName: 'تست', email: 'parent.dev@example.com', phoneNumber: '09124444444', branchId: 1 },
+  { id: 6, username: 'branchmanager.dev', password: 'password123', userType: 'branch_manager' as UserType, approvalStatus: 'approved' as const, firstName: 'مسئول', lastName: 'شعبه تست', email: 'branchmanager.dev@example.com', phoneNumber: '09125555555', branchId: 1 },
+  { id: 7, username: 'headquarters.dev', password: 'password123', userType: 'headquarters' as UserType, approvalStatus: 'approved' as const, firstName: 'مقرب', lastName: 'مرکز', email: 'headquarters.dev@example.com', phoneNumber: '09126666666' },
+  { id: 8, username: 'evaluator.dev', password: 'password123', userType: 'evaluator' as UserType, approvalStatus: 'approved' as const, firstName: 'ارزیاب', lastName: 'تست', email: 'evaluator.dev@example.com', phoneNumber: '09127777777', branchId: 1 },
+];
+
+export const mockBranchManagers: BranchManager[] = [
+  { id: 1, username: 'branchmanager.dev', firstName: 'مسئول', lastName: 'شعبه تست', email: 'branchmanager.dev@example.com', phoneNumber: '09125555555', branchId: 1, branchName: 'شعبه مرکزی', gender: 'mixed', nationalCode: '1234567891', status: 'active', createdAt: '2026-01-01T00:00:00.000Z' },
+];
+
+export const mockParents: Parent[] = [
+  { id: 1, username: 'parent.dev', firstName: 'والد', lastName: 'تست', email: 'parent.dev@example.com', phoneNumber: '09124444444', address: 'تهران، خیابان شریعتی', nationalCode: '1234567890', branchId: 1, studentIds: [1], status: 'active', createdAt: '2026-01-01T00:00:00.000Z' },
+];
+
+export const mockEvaluators: Evaluator[] = [
+  { id: 1, username: 'evaluator.dev', firstName: 'ارزیاب', lastName: 'تست', email: 'evaluator.dev@example.com', phoneNumber: '09127777777', expertise: 'قرآن و تجوید', branchId: 1, assignedMadrasahIds: [], nationalCode: '1234567892', status: 'active', createdAt: '2026-01-01T00:00:00.000Z' },
 ];
 
 export const mockStudents: Student[] = [
