@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\EducationalPlatform.Nehzat.Application\EducationalPlatform.Nehzat.Application.csproj" />
     <ProjectReference Include="..\..\src\EducationalPlatform.Nehzat.Domain\EducationalPlatform.Nehzat.Domain.csproj" />
     <ProjectReference Include="..\..\src\EducationalPlatform.Nehzat.Infrastructure\EducationalPlatform.Nehzat.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\EducationalPlatform.Nehzat.API\EducationalPlatform.Nehzat.API.csproj" />
   </ItemGroup>
 
 </Project>
