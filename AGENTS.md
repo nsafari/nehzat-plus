@@ -1,88 +1,78 @@
-# PROJECT KNOWLEDGE BASE
+# AGENTS.md — nehzat-plus (Lesson Planner)
 
-**Generated:** 2026-07-17
-**Project:** nehzat-plus (Lesson Planner)
+ASP.NET Core 10 backend + Angular 21 frontend. See [docs/AGENTS.md](docs/AGENTS.md) (bible), [backend/AGENTS.md](backend/AGENTS.md), [frontend/AGENTS.md](frontend/AGENTS.md) for domain depth.
 
-## OVERVIEW
-Two-project monorepo: `backend/` (ASP.NET Core 10, EF Core + SQL Server, Clean Architecture) and `frontend/` (Angular 21 standalone + Capacitor 8). Student daily-assignment / progress-tracking platform with OTUH2 OIDC auth. Zero-infra dev: `dotnet run` + `npm start`.
-
-The detailed architecture and conventions bible lives at [docs/AGENTS.md](docs/AGENTS.md) — read it first for auth, DB, styling, and landmine details. This root file is the navigation layer + code map not covered there.
-
-## STRUCTURE
-```
-nehzat-plus/
-├── backend/                 # ASP.NET Core 10 (see backend/AGENTS.md)
-│   └── src/
-│       ├── EducationalPlatform.Nehzat.Domain/         # Entities only
-│       ├── EducationalPlatform.Nehzat.Application/     # DTOs + service Interfaces
-│       ├── EducationalPlatform.Nehzat.Infrastructure/  # EF Data + Service impls + Seeders + Clients
-│       └── EducationalPlatform.Nehzat.API/             # Program.cs, Controllers, Middleware
-├── frontend/                # Angular 21 (see frontend/AGENTS.md)
-│   └── src/app/
-│       ├── core/            # services, guards, interceptors, models (see frontend/src/app/core/AGENTS.md)
-│       └── features/        # lazy route modules: auth, dashboard, admin, coach, parent, branch-manager, evaluator, headquarters, shared
-└── docs/                    # AGENTS.md (bible), API_ENDPOINTS.md, SYSTEM_ARCHITECTURE.md, etc.
-```
-
-## WHERE TO LOOK
-| Task | Location |
-|------|----------|
-| Add/edit API endpoint | `backend/.../API/Controllers/` (split by domain — see landmines) |
-| Add business logic | `backend/.../Infrastructure/Services/` + interface in `Application/Interfaces` |
-| New entity | `backend/.../Domain/Entities/` + DbContext in `Infrastructure/Data` |
-| New DTO | `backend/.../Application/DTOs/` |
-| Frontend page/feature | `frontend/src/app/features/<role>/` |
-| Auth/token/interceptor | `frontend/src/app/core/services/`, `core/guards/`, `core/interceptors/` |
-| Styling variables | `--lp-*` CSS custom props only (see docs/AGENTS.md) |
-| Architecture/conventions | `docs/AGENTS.md` |
-| Version archive system | `scripts/archive-version.ps1`, `docs/PROJECT_INVENTORY.md` |
-
-## CODE MAP
-| Symbol | Type | Location | Role |
-|--------|------|----------|------|
-| `Program.cs` | entry | `backend/.../API/Program.cs` | DI, auth (Mock vs JWT `at+jwt`), CORS, middleware order, `--seed` |
-| `AppDbContext` | DbContext | `backend/.../Infrastructure/Data` | EF model, `EnsureCreated()` |
-| `OidcSyncMiddleware` | middleware | `backend/.../API/Middleware` | auto-creates local `User` on first auth request |
-| `MockAuthHandler` | auth scheme | `backend/.../API` | dev auth when `UseMockAuth:true` (returns manager claims) |
-| `AdminBranchesController` .. `AdminStatisticsController` | controllers | `backend/.../API/Controllers/Admin*.cs` | 8 domain-split controllers (was one ~1130-line file) |
-| `IUserService`..`IAssessmentService` | interfaces | `backend/.../Application/Interfaces` | 10 domain service contracts |
-| `AuthService` | service | `frontend/.../core/services/auth.service.ts` | `hasRole()` (case-insensitive) — use instead of manual compare |
-| `LessonPlannerApi` (interface) | token | `frontend/.../core/services/lesson-planner-api.interface.ts` | HTTP + Mock swappable impls |
-| `admin.component.ts` | component | `frontend/.../features/admin/admin.component.ts` | ~2375 lines — largest FE file |
-| `mock-lesson-planner-api.service.ts` | service | `frontend/.../core/services` | ~1555 lines, in-browser mock API |
-
-## CONVENTIONS (deviations from standard)
-- Backend namespace prefix `EducationalPlatform.Nehzat.*`; table prefix `Nehzat_` (e.g. `Nehzat_users`).
-- Service interfaces in `Application`, implementations in `Infrastructure` (Clean Architecture dependency inward).
-- JSON: `ReferenceHandler.IgnoreCycles`, `UnsafeRelaxedJsonEscaping` (Persian text).
-- Frontend API layer is interface-based — swap HTTP/Mock via `environment.ts` `useMockApi` (per docs; confirm current flag name before editing).
-- Auth is **redirect-based OIDC** via EhrazHoviat (OTUH2) — see [docs/OTUH2_AUTH.md](docs/OTUH2_AUTH.md) for the exact flow, client IDs, and scopes. `auth.guard` redirects to OTUH2's hosted `/auth/login`; tokens return to `/auth/callback`.
-- Tokens: access+id in `sessionStorage`, refresh in `localStorage`; 401 → auto-logout.
-
-## ANTI-PATTERNS (THIS PROJECT)
-- NEVER add `Microsoft.EntityFrameworkCore.Sqlite` back — backend is SQL Server only (was replaced).
-- NEVER return `ex.Message` to client (global handler returns generic Persian error).
-- NEVER use bare CSS vars `--gold/--primary/--danger` — use `--lp-*` prefixed.
-- NEVER compare roles manually — use `hasRole()`.
-- NEVER append to a single admin controller — split into domain sub-controllers. (`AdminController.cs` already split into 8 sub-controllers.)
-- Token type MUST be `at+jwt` (gateway rejects typed JWT).
-
-## COMMANDS
+## Commands (zero-infra dev)
 ```bash
-# Backend (port 3000 per docs; verify launchSettings)
-cd backend && dotnet run            # dev
-cd backend && dotnet run --seed     # drop+recreate DB + sample data
+# Backend — http://localhost:3000
+cd backend && dotnet run            # dev server (MockAuth on in Development)
+cd backend && dotnet run --seed     # drop + recreate DB + seed
 
-# Frontend (port 4200)
-cd frontend && npm install
-cd frontend && npm start           # ng serve
-cd frontend && ng test             # Vitest + jsdom
-cd frontend && npm run build:capacitor && npx cap sync android   # mobile
+# Frontend — http://localhost:4200
+cd frontend && npm install && npm start   # ng serve
+cd frontend && ng test              # Vitest + jsdom
+cd frontend && npm run build:capacitor && npx cap sync android  # APK
 ```
 
-## NOTES
-- `docs/AGENTS.md` is the authoritative convention bible (auth, DB, test accounts, landmines). This file is the nav/code-map layer.
-- `README.md` at root is PARTLY STALE (mentions SQLite / NestJS / Angular 8 / `dummy-token`) — trust `docs/AGENTS.md` and the actual code over it.
-- `EnsureCreated()` only — no migrations; schema change needs manual DB drop or `--seed`.
-- No process manager: dev servers die with the session, must restart.
-- Root `AGENTS.md` (this file) is the canonical agent entry; `docs/AGENTS.md` is the deep-dive.
+## Layout
+| Layer | Path | Responsibility |
+|-------|------|----------------|
+| API | `backend/src/EducationalPlatform.Nehzat.API/` | Program.cs (DI, auth, CORS, middleware), Controllers, Middleware |
+| Application | `backend/src/EducationalPlatform.Nehzat.Application/` | DTOs, service interfaces |
+| Domain | `backend/src/EducationalPlatform.Nehzat.Domain/` | Entities |
+| Infrastructure | `backend/src/EducationalPlatform.Nehzat.Infrastructure/` | EF Data, Services, Seeders, Clients |
+| Frontend | `frontend/src/app/` | `core/` (services/guards/interceptors) + `features/<role>/` (lazy routes) |
+
+## Backend — Critical facts
+- **Framework**: ASP.NET Core 10 (`net10.0`). EF Core + **SQL Server** (Windows auth). EnsureCreated only — **no migrations**. Schema change → `--seed` or manual drop.
+- **Dev DB**: `LessonPlanner_Dev` — `Server=.;Database=LessonPlanner_Dev;Trusted_Connection=True;TrustServerCertificate=True;` (in `appsettings.Development.json`).
+- **Auth**: Redirect-based OIDC via OTUH2. **Production** validates `at+jwt` against `https://api.nehzat128.ir/oauth` (JWKS). **Dev** uses `DevAuth:UseMockAuth` (in `appsettings.Development.json`, under the `DevAuth` section — NOT a top-level `UseMockAuth` flag) with HMAC symmetric key. Claims: `sub`→username, `role`→role (NOT `ClaimTypes.Role`).
+- **Middleware order** (Program.cs): `GlobalException` → `Cors` → `Authentication` → `OidcSyncMiddleware` → `Authorization` → `StaticFiles` → `MapControllers` → `MapHub`.
+- **OidcSyncMiddleware**: auto-creates local `User` row on first authenticated request from OTUH2.
+- **Controllers**: All `[Authorize]` except `AuthController` (only `SignUp`). Admin endpoints split into 8 domain controllers (`AdminBranches*`, `AdminCourses*`, `AdminCoaches*`, `AdminBranchManagers*`, `AdminParents*`, `AdminEvaluators*`, `AdminStudents*`, `AdminStatistics*`) — **never append to one admin controller**.
+- **Services**: ~40 scoped `I*-Service` interfaces registered explicitly in Program.cs. Add new ones there.
+
+## Frontend — Critical facts
+- **Framework**: Angular 21 standalone + Capacitor 8 (Android only, app ID `com.nsafari.lessonplanner`).
+- **Auth**: Redirect-based OIDC. `auth.guard` sends browser to OTUH2 `/auth/login`; tokens return to `/auth/callback`. Access+ID tokens in `sessionStorage`; refresh in `localStorage`; 401→auto-logout.
+- **`hasRole()`** in `AuthService` is case-insensitive — always use it, never compare roles manually.
+- **API layer**: Interface-based. `useMockApi` flag in `environment.ts` swaps `HttpLessonPlannerApiService` ⇄ `MockLessonPlannerApiService`. Also `useMockAuth` for mock auth mode.
+- **API URL**: Runtime `/config.json` → fallback to `environment.ts` → `apiUrl`. Same cascade for `otuh2Url`.
+- **Styling**: CSS custom properties prefixed `--lp-*` only. Never bare `--gold`, `--primary`, `--danger`.
+- **Routes**: lazy per role — `auth`, `dashboard`, `admin`, `coach`, `parent`, `branch-manager`, `evaluator`, `headquarters`, `shared`. OnPush on admin/dashboard.
+
+## Where to look (task → file)
+| Need | Go to |
+|------|-------|
+| New endpoint | `backend/.../API/Controllers/` (domain-split, not AdminController) |
+| Business logic | `backend/.../Infrastructure/Services/` + interface in `Application/Interfaces` |
+| New entity | `Domain/Entities/` + register in `Infrastructure/Data/AppDbContext` |
+| New DTO | `Application/DTOs/` |
+| Auth/token/interceptor | `frontend/src/app/core/services/`, `core/guards/`, `core/interceptors/` |
+| New page/feature | `frontend/src/app/features/<role>/` |
+| Styling variables | `--lp-*` CSS custom props only |
+
+## Test accounts (MockAuth → any password works, returns manager claims)
+| Type | Username | Password |
+|------|----------|----------|
+| manager | `test` | `password` |
+| student | `ali.ahmadi` | `password123` |
+| student | `fateme.mohammadi` | `password123` |
+| student | `mohammad.rezaei` | `password123` |
+
+## Anti-patterns (will break things)
+- NEVER add `Microsoft.EntityFrameworkCore.Sqlite` — SQL Server only.
+- NEVER return `ex.Message` to client (global handler returns generic Persian error).
+- NEVER use bare CSS vars — `--lp-*` only.
+- NEVER compare roles by string — use `hasRole()`.
+- NEVER append to one admin controller — split by domain.
+- JWT `ValidTypes` MUST stay `["at+jwt"]` (gateway rejects other types).
+- `AdminController.cs` was ~1130 lines — already split into 8 sub-controllers; don't re-grow it.
+- `admin.component.ts` (~2375 lines) and `mock-lesson-planner-api.service.ts` (~1555 lines) are landmines — extract before extending.
+
+## Landmines & quirks
+- `README.md` at root is **partly stale** (claims .NET 8 / NestJS / SQLite / `dummy-token`). Trust this file and actual code over README.
+- No process manager — dev servers die with the session.
+- Multi-branch workflows partially implemented; one default branch ("شعبه مرکزی") auto-created on startup.
+- Version archive system: `scripts/archive-version.ps1` + `docs/PROJECT_INVENTORY.md` (runs via pre-push hook on tag push).
+- Deploy: GitHub Pages on push to `main`; APK on `v*` tags (see `.github/workflows/deploy.yml`).
