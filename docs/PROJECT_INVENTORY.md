@@ -1,6 +1,6 @@
 # 📦 گزارش کامل دارایی‌های پروژه — نهضت‌پلاس (Nehzat Plus)
 
-> **نسخه:** v2.8.0 (baseline — همگام با آخرین تگ گیت) — 2026-08-12
+> **نسخه:** v3.2.0 (baseline — همگام با آخرین تگ گیت) — 2026-08-18
 > **هدف فایل:** آرشیو مرجع از تمام صفحات، دارایی‌ها و ساختار پروژه. پس از هر مرحله توسعه، یک نسخه جدید با شماره نسخه افزایش‌یافته در همین فایل اضافه شود.
 >
 > **قاعده آرشیو:** هر تغییر = یک سکشن `## تغییرات نسخه X` در انتهای فایل (بدون حذف تاریخچه قبلی).
@@ -10,7 +10,7 @@
 ---
 
 ## ۱. نمای کلی معماری
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 | لایه | تکنولوژی | توضیح |
 |------|----------|-------|
@@ -44,7 +44,7 @@ nehzat-plus/
 ---
 
 ## ۲. فرانت‌اند — تمام مسیرها و صفحات
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 ### ۲.۱ احراز هویت — `/auth`
 | مسیر | کامپوننت | گارد |
@@ -226,7 +226,7 @@ nehzat-plus/
 ---
 
 ## ۳. کامپوننت‌های اشتراکی — `features/shared/`
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 | کامپوننت | مسیر | کاربرد |
 |-----------|------|-------|
@@ -244,7 +244,7 @@ nehzat-plus/
 ---
 
 ## ۴. سرویس‌های هسته — `core/services/`
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 | سرویس/فایل | وظیفه |
 |--------|-------|
@@ -295,7 +295,7 @@ nehzat-plus/
 ---
 
 ## ۵. بک‌اند — تمام کنترلرها (۴۱ عدد)
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 ### ۵.۱ احراز هویت و کاربران
 | کنترلر | مسیر پایه | نکات |
@@ -372,7 +372,7 @@ nehzat-plus/
 ---
 
 ## ۶. موجودیت‌های دامنه — `Domain/Entities/` (۱۰۰+)
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 ### ۶.۱ کاربران و نقش‌ها
 `User` (دارای `OidcSubject` — بدون PasswordHash)، `Student`، `Teacher`، `Coach`، `Parent`، `BranchManager`، `Evaluator`، `Branch`، `Madrasah`، `MadrasahBranch`، `NehzatSection`، `MaktabSubSection`، `ParentStudent` (junction)، `AgeGroup`
@@ -410,7 +410,7 @@ nehzat-plus/
 ---
 
 ## ۷. سرویس‌های بک‌اند
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 ### ۷.۱ پیاده‌سازی‌ها — `Infrastructure/Services/` (۴۰+)
 `UserService`، `CourseService`، `AssessmentService`، `AssignmentSubmissionService`، `BranchService`، `BranchManagerService`، `CoachService`، `CompetitionService`، `CurriculumService`، `CurriculumVersionService`، `DailyActivityService`، `EvaluatorService`، `ExperimentalScienceService`، `HadithService`، `IssueSurveyService`، `LeagueService`، `LearningService`، `LogService`، `MadrasahService`، `MathService`، `MonthlyBookletService`، `ParentService`، `PersianLiteratureService`، `ProgressionService`، `QuranService`، `RingService`، `SkillProgressService`، `SpiritualCatalogService`، `SpiritualEntryService`، `SpiritualOccasionService`، `SpiritualPathService`، `SrsService`، `StudentService`، `TeacherService`، `TrainingService`، `XpService`، `ArabicLiteratureService`، `ArtsService`
@@ -424,7 +424,7 @@ nehzat-plus/
 ---
 
 ## ۸. زیرساخت بک‌اند
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 ### ۸.۱ DbContext — `Infrastructure/Data/AppDbContext.cs`
 - `EnsureCreated()` فقط (بدون migration)
@@ -504,7 +504,7 @@ nehzat-plus/
 ---
 
 ## ۱۱. تست
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 | لایه | فریم‌ورک | فرمان |
 |------|----------|-------|
@@ -541,7 +541,7 @@ nehzat-plus/
 ---
 
 ## ۱۳. مستندات مرجع — `docs/`
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.2.0
 
 | فایل | محتوا |
 |------|-------|
@@ -669,3 +669,106 @@ cd frontend && npm run build:capacitor && npx cap sync android   # mobile
 ## تغییرات نسخه آرشیو 1 — 2026-08-12
 - **ایجاد اولیه گزارش**: نقشه‌برداری کامل از تمام صفحات، کنترلرها، موجودیت‌ها، سرویس‌ها و دارایی‌های پروژه.
 - **Backfill تاریخچه گیت**: بازسازی تاریخچه کامل v1.0.0 تا v2.8.0 از git log.
+
+## تغییرات نسخه v3.2.0 — خودکار (archive-version.ps1)
+
+### نسخه v3.2.0 — 2026-08-18 (86 کامیت)
+>  636 files changed, 102033 insertions(+), 11634 deletions(-)
+
+#### ویژگی‌ها (28)
+- feat(backend): add dev accounts for parent, branch_manager, headquarters, evaluator, teacher roles
+- feat(backend): add training module controllers, services, entities + data seeders
+- feat(training): seed NTM coach training content + fix progress endpoint
+- feat(auth): add coach dev account
+- feat(auth): add dev-only centralized /auth/signin with at+jwt issuance
+- feat(hadith): add complete Hadith module (back-end + front-end)
+- feat(frontend): add Hadith module, update Quran and PersianLit API
+- feat(frontend): add Learning System components and API integration
+- feat(backend): add Learning System entities, services, and API
+- feat(frontend): add Experimental Sciences Angular module
+- feat(backend): add Experimental Sciences service layer
+- feat(backend): add Experimental Sciences domain entities
+- feat(frontend): add Math widget to dashboard
+- feat(frontend): add Math API interface and feature module
+- feat(backend): add Math API controller
+- feat(backend): add Math service and seeder
+- feat(backend): add Math DTOs and service interface
+- feat(backend): add Math domain entities
+- feat(backend): enhance Quran module with additional endpoints and seed data
+- feat(teacher): extract inline template, complete tabs, add routing
+- feat(auth): auto token refresh on 401 and OTUH2 logout redirect
+- feat(config): config-driven CORS, auto DB schema on startup, fix prod environment
+- feat(survey): add complete survey feature with 4 pages
+- feat(dashboard): connect assessment history with getStudentAssessmentHistory
+- feat(frontend): complete evaluator + headquarters pages
+- feat(frontend): extract inline templates/styles for evaluator and headquarters pages
+- feat(frontend): extract inline templates/styles for branch-manager page
+- feat(auth): enable real OTUH2 OIDC authentication in development
+
+#### اصلاحات (8)
+- fix(security+quality): resolve all 50 defects (10 Critical, 14 High, 16 Medium, 5 Low, 5 Docs/Git)
+- fix(frontend): resolve TS compilation errors in API services
+- fix(backend): replace EnsureCreated with Migrate + clean InitialCreate migration
+- fix(coach): enable coach panel with coach-accessible student endpoint
+- fix(backend): repair compilation after domain refactoring
+- fix(frontend): extract complex template expression in arabic-literature course-detail
+- fix(styles): replace bare CSS vars with --lp- prefix in persian-date-input
+- fix(frontend): resolve pre-existing survey build errors
+
+#### بازسازی (11)
+- refactor(frontend): decompose dashboard into shell + 3 sub-components
+- refactor(frontend): full UI component library for nehzat-plus
+- refactor(backend): rename ExperimentalSciences to ExperimentalScience, add Hadith module, update Math entities
+- refactor(dashboard): extract inline templates, remove dead code, fix role checks
+- refactor(quran): extract 8 components to html/scss with --lp-* vars
+- refactor(quran): add types, interface methods, and service implementations
+- refactor(backend): disable local user creation, cleanup dead configs
+- refactor(frontend): add local environment config with safe prod defaults
+- refactor(backend): remove MockAuth, add nehzat schema, centralize auth
+- refactor(backend): remove mock auth, clean up OTUH2 integration
+- refactor(admin): extract courses/assignments/attachments into admin-courses sub-component
+
+#### مستندات (7)
+- docs(roadmaps): wave 4-5 QA report + README regen
+- docs(roadmaps): wave 3 subject roadmaps
+- docs(roadmaps): wave 2 core role roadmaps
+- docs(roadmaps): wave 1 pilot validation
+- docs(roadmaps): wave 0 cross-cutting foundations
+- docs(roadmaps): wave 0 foundation + bug fixes
+- docs(coach): mark coach panel complete + add getCoachStudents API
+
+#### نگهداری (1)
+- chore(opencode): enable 3 plugins + compaction
+
+#### سایر (31)
+- docs: compact AGENTS.md with verified facts, fix DevAuth config claim
+- docs: add Version Archive System section to AGENTS.md
+- chore: add install-hooks.ps1 + move pre-push to scripts/hooks/
+- docs: add PROJECT_INVENTORY.md + archive-version.ps1 script
+- test: add negative access tests for 5 course paths
+- feat: add dev accounts for parent, branch_manager, headquarters, evaluator roles
+- fix: add roleGuard('trainee') to 5 subject routes + teacher role to TeacherController
+- chore: gitignore node_modules
+- docs: add Fiqh/Ahkam educational module template (┘à╪د┌ء┘ê┘ ┘┘é┘ç ┘ê ╪د╪ص┌ر╪د┘à)
+- docs: add NTM Coach Training system (┘╪╕╪د┘à ╪ز╪▒╪ذ█î╪ز ┘à╪▒╪ذ█î)
+- feat: Arabic Literature module with curriculum system
+- chore: fix zen HA pipeline CLI invocation and update dependencies
+- feat: add Persian Literature (╪د╪»╪ذ█î╪د╪ز ┘╪د╪▒╪│█î) module
+- chore: add small_model, reorder plugins, update fallback chain
+- fix: add missing import { vi } from vitest in testing-utils.ts
+- fix: revert EnsureCreated back to Migrate for auto DB migrations
+- feat: complete remaining technical items
+- test: enhance smoke tests with TestBed + shared mock utilities
+- feat: comprehensive refactor and feature completion
+- feat: add competitions, issue surveys, leagues, teachers CRUD + survey feature modules
+- refactor: restructure parent feature into panel, monthly booklet, student detail and progress card components
+- chore: add backend build artifacts to gitignore
+- chore: remove legacy parent component and ignore backend build artifacts
+- refactor: extract coach inline template to external files and add student detail component
+- feat: add IssueSurvey HTTP and mock service implementations
+- feat: add IssueSurvey frontend types and API interface
+- feat: register IssueSurveyService in DI container
+- feat: add IssueSurvey service implementation and controller
+- feat: add IssueSurvey DTOs and service interface
+- feat: add IssueSurvey domain entities and DbContext configuration
+- fix: align Otuh2Client config with otuh2 registration (client-id, secret)
