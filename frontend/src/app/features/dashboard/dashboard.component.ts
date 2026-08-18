@@ -25,6 +25,7 @@ import { DashboardNudgePanelComponent } from './components/dashboard-nudge-panel
 import { DashboardHeaderComponent } from './components/dashboard-header/dashboard-header.component';
 import { QuranProgressWidgetComponent } from '../quran/pages/quran-progress-widget/quran-progress-widget.component';
 import { MathProgressWidgetComponent } from '../math/pages/math-progress-widget/math-progress-widget.component';
+import { DashboardSummaryComponent } from '../progress/components/dashboard-summary/dashboard-summary.component';
 import type { BiweeklyProgressData } from './progress-chart/progress-chart.component';
 
 type TimelineStatus = 'future' | 'today' | 'past';
@@ -40,7 +41,8 @@ type TimelineStatus = 'future' | 'today' | 'past';
     DashboardNudgePanelComponent,
     DashboardHeaderComponent,
     QuranProgressWidgetComponent,
-    MathProgressWidgetComponent
+    MathProgressWidgetComponent,
+    DashboardSummaryComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],

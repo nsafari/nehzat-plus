@@ -1,3 +1,4 @@
+using EducationalPlatform.Nehzat.Application.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EducationalPlatform.Nehzat.Application.DTOs;
@@ -28,7 +29,7 @@ public class ProgressionController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -55,7 +56,7 @@ public class ProgressionController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }

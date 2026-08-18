@@ -20,5 +20,9 @@ export const DASHBOARD_ROUTES: Routes = [
     path: 'spiritual',
     canActivate: [roleGuard('trainee')],
     component: TraineeSpiritualPageComponent
+  },
+  {
+    path: 'overview',
+    loadComponent: () => import('./pages/dashboard-page.component').then((m) => m.DashboardPageComponent)
   }
 ];

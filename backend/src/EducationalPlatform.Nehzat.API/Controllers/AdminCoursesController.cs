@@ -5,6 +5,7 @@ using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.API.Helpers;
 using EducationalPlatform.Nehzat.Domain.Entities;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
+using EducationalPlatform.Nehzat.Application.Constants;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -61,13 +62,13 @@ public class AdminCoursesController : ControllerBase
         {
             return Ok(await _courseService.UpdateAsync(id, course));
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
         catch (Exception)
         {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
+            return StatusCode(500, GenericErrorMessages.ServerError);
         }
     }
 
@@ -105,13 +106,13 @@ public class AdminCoursesController : ControllerBase
         {
             return Ok(await _courseService.UpdateAssignmentAsync(id, assignment));
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
         catch (Exception)
         {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
+            return StatusCode(500, GenericErrorMessages.ServerError);
         }
     }
 
@@ -135,7 +136,7 @@ public class AdminCoursesController : ControllerBase
         };
 
         if (!DateTime.TryParse(request.StartDate, out var startDate))
-            return BadRequest(new { message = "فرمت تاریخ نامعتبر است" });
+            return BadRequest(GenericErrorMessages.BadRequest);
 
         var result = await _courseService.CreateDailyAssignmentSeriesAsync(courseId, startDate, request.Days, baseTemplate);
         return Ok(result);
@@ -164,7 +165,7 @@ public class AdminCoursesController : ControllerBase
         if (file != null)
         {
             if (!FileUploadValidator.IsValidFile(file, out var validationError))
-                return BadRequest(new { message = validationError });
+                return BadRequest(GenericErrorMessages.BadRequest);
 
             var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "public", "uploads", "attachments");
             Directory.CreateDirectory(uploadsDir);
@@ -191,10 +192,10 @@ public class AdminCoursesController : ControllerBase
     public async Task<IActionResult> UploadAttachmentFile(int id, IFormFile file)
     {
         if (file == null)
-            return BadRequest(new { message = "فایل آپلود نشده است" });
+            return BadRequest(GenericErrorMessages.BadRequest);
 
         if (!FileUploadValidator.IsValidFile(file, out var validationError))
-            return BadRequest(new { message = validationError });
+            return BadRequest(GenericErrorMessages.BadRequest);
 
         var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "public", "uploads", "attachments");
         Directory.CreateDirectory(uploadsDir);
@@ -220,13 +221,13 @@ public class AdminCoursesController : ControllerBase
         {
             return Ok(await _courseService.UpdateAttachmentAsync(id, attachment));
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
         catch (Exception)
         {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
+            return StatusCode(500, GenericErrorMessages.ServerError);
         }
     }
 
@@ -244,13 +245,13 @@ public class AdminCoursesController : ControllerBase
         {
             return Ok(await _courseService.GetCourseStatisticsAsync(courseId));
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
         catch (Exception)
         {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
+            return StatusCode(500, GenericErrorMessages.ServerError);
         }
     }
 

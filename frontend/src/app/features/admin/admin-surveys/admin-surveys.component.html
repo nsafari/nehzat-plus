@@ -86,9 +86,9 @@
       } @else {
         <div class="tabs">
           <button type="button" class="tab-btn" [class.active]="detailTab === 'info'" (click)="detailTab = 'info'">اطلاعات</button>
-          <button type="button" class="tab-btn" [class.active]="detailTab === 'questions'" (click)="detailTab = 'questions'; loadSurveyQuestions()">سوالات</button>
-          <button type="button" class="tab-btn" [class.active]="detailTab === 'actions'" (click)="detailTab = 'actions'; loadSurveyActions()">اقدامات</button>
-          <button type="button" class="tab-btn" [class.active]="detailTab === 'analytics'" (click)="detailTab = 'analytics'; loadSurveyAnalytics()">تحلیل</button>
+          <button type="button" class="tab-btn" [class.active]="detailTab === 'questions'" (click)="detailTab = 'questions'; loadQuestions()">سوالات</button>
+          <button type="button" class="tab-btn" [class.active]="detailTab === 'actions'" (click)="detailTab = 'actions'; loadActions()">اقدامات</button>
+          <button type="button" class="tab-btn" [class.active]="detailTab === 'analytics'" (click)="detailTab = 'analytics'; loadAnalytics()">تحلیل</button>
         </div>
 
         <!-- INFO TAB -->
@@ -148,165 +148,32 @@
 
         <!-- QUESTIONS TAB -->
         @if (detailTab === 'questions') {
-          <div>
-            <h4 style="margin: 0.5rem 0">افزودن سوال جدید</h4>
-            <form [formGroup]="questionForm" class="editor-form" (ngSubmit)="addQuestion()">
-              <label>متن سوال <textarea formControlName="questionText" rows="2"></textarea></label>
-              <label>دسته‌بندی <input type="text" formControlName="category" /></label>
-              <label>زیرمجموعه <input type="text" formControlName="subCategory" /></label>
-              <label>مخاطب <input type="text" formControlName="targetAudience" /></label>
-              <label>ترتیب <input type="number" formControlName="sortOrder" min="0" /></label>
-              <div class="row-actions">
-                <button type="submit" class="btn btn-secondary" [disabled]="questionForm.invalid || savingQuestion">
-                  {{ savingQuestion ? '...' : 'افزودن سوال' }}
-                </button>
-              </div>
-            </form>
-
-            <h4 style="margin: 0.75rem 0 0.5rem">لیست سوالات</h4>
-            @if (loadingQuestions) {
-              <p class="muted">در حال دریافت...</p>
-            } @else if (surveyQuestions.length === 0) {
-              <p class="muted">سوالی اضافه نشده است.</p>
-            } @else {
-              <div class="question-list">
-                @for (q of surveyQuestions; track q.id) {
-                  <div class="question-item">
-                    <div class="question-header">
-                      <span class="question-order">#{{ q.sortOrder }}</span>
-                      <span class="question-text">{{ q.questionText }}</span>
-                      <button type="button" class="btn-remove" (click)="deleteQuestion(q)" title="حذف">✕</button>
-                    </div>
-                    <div class="question-meta">
-                      <span class="tag">{{ q.category }}</span>
-                      @if (q.subCategory) {
-                        <span class="tag">{{ q.subCategory }}</span>
-                      }
-                      @if (q.targetAudience) {
-                        <span class="tag">{{ q.targetAudience }}</span>
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
+          <app-survey-questions-tab
+            [questions]="questionsForTab"
+            [loading]="loadingQuestions"
+            [saving]="savingQuestion"
+            (add)="onAddQuestion($event)"
+            (remove)="onDeleteQuestion($event)"
+          ></app-survey-questions-tab>
         }
 
         <!-- ACTIONS TAB -->
         @if (detailTab === 'actions') {
-          <div>
-            <h4 style="margin: 0.5rem 0">افزودن اقدام جدید</h4>
-            <form [formGroup]="actionForm" class="editor-form" (ngSubmit)="addAction()">
-              <label>عنوان <input type="text" formControlName="title" /></label>
-              <label>توضیحات <textarea formControlName="description" rows="2"></textarea></label>
-              <label>دسته‌بندی <input type="text" formControlName="category" /></label>
-              <label>
-                اولویت
-                <select formControlName="priority">
-                  <option value="critical">بحرانی</option>
-                  <option value="high">بالا</option>
-                  <option value="medium">متوسط</option>
-                  <option value="low">پایین</option>
-                </select>
-              </label>
-              <label>تاریخ هدف <input type="date" formControlName="targetDate" /></label>
-              <label>KPI <input type="text" formControlName="kpiDefinition" placeholder="شاخص عملکرد" /></label>
-              <div class="row-actions">
-                <button type="submit" class="btn btn-secondary" [disabled]="actionForm.invalid || savingAction">
-                  {{ savingAction ? '...' : 'افزودن اقدام' }}
-                </button>
-              </div>
-            </form>
-
-            <h4 style="margin: 0.75rem 0 0.5rem">لیست اقدامات</h4>
-            @if (loadingActions) {
-              <p class="muted">در حال دریافت...</p>
-            } @else if (surveyActions.length === 0) {
-              <p class="muted">اقدامی ثبت نشده است.</p>
-            } @else {
-              <div class="action-list">
-                @for (action of surveyActions; track action.id) {
-                  <div class="action-item">
-                    <div class="action-header">
-                      <span class="action-title">{{ action.title }}</span>
-                      <span class="status-chip" [ngClass]="actionStatusClass(action.status)">
-                        {{ actionStatusLabel(action.status) }}
-                      </span>
-                    </div>
-                    <p class="action-desc">{{ action.description }}</p>
-                    <div class="action-meta">
-                      <span class="tag">{{ action.category }}</span>
-                      <span class="tag" [ngClass]="priorityClass(action.priority)">
-                        {{ actionPriorityLabel(action.priority) }}
-                      </span>
-                      @if (action.targetDate) {
-                        <span class="list-meta">مهلت: {{ action.targetDate }}</span>
-                      }
-                    </div>
-                    <div class="row-actions" style="margin-top: 0.5rem">
-                      <button type="button" class="btn btn-sm btn-secondary" [disabled]="savingAction" (click)="updateActionStatus(action, 'in_progress')">شروع</button>
-                      <button type="button" class="btn btn-sm btn-success" [disabled]="savingAction" (click)="updateActionStatus(action, 'completed')">تکمیل</button>
-                      <button type="button" class="btn btn-sm btn-danger" [disabled]="savingAction" (click)="updateActionStatus(action, 'cancelled')">لغو</button>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
+          <app-survey-actions-tab
+            [actions]="actionsForTab"
+            [loading]="loadingActions"
+            [saving]="savingAction"
+            (add)="onAddAction($event)"
+            (update)="onUpdateActionStatus($event)"
+          ></app-survey-actions-tab>
         }
 
         <!-- ANALYTICS TAB -->
         @if (detailTab === 'analytics') {
-          <div>
-            @if (loadingAnalytics) {
-              <p class="muted">در حال دریافت تحلیل...</p>
-            } @else if (analyticsData === null) {
-              <p class="muted">داده‌ای برای تحلیل موجود نیست.</p>
-            } @else {
-              <div class="analytics-section">
-                <h4>تحلیل کلی</h4>
-                <div class="survey-stats-grid">
-                  <div class="stat-card">
-                    <span class="stat-label">تعداد پاسخ‌دهندگان</span>
-                    <strong class="stat-value">{{ analyticsData.totalRespondents }}</strong>
-                  </div>
-                  <div class="stat-card">
-                    <span class="stat-label">تعداد سوالات</span>
-                    <strong class="stat-value">{{ analyticsData.totalQuestions }}</strong>
-                  </div>
-                  <div class="stat-card">
-                    <span class="stat-label">میانگین کل</span>
-                    <strong class="stat-value">{{ analyticsData.overallAverage }}</strong>
-                  </div>
-                </div>
-              </div>
-
-              @if (analyticsData.categoryBreakdown.length > 0) {
-                <div class="analytics-section">
-                  <h4>تحلیل بر اساس دسته‌بندی</h4>
-                  <div class="analytics-table">
-                    <div class="analytics-row analytics-header">
-                      <span>دسته‌بندی</span>
-                      <span>میانگین نمره</span>
-                      <span>تعداد سوال</span>
-                      <span>شدت</span>
-                    </div>
-                    @for (cat of analyticsData.categoryBreakdown; track cat.category) {
-                      <div class="analytics-row">
-                        <span>{{ cat.category }}</span>
-                        <span>{{ cat.averageScore }}</span>
-                        <span>{{ cat.questionCount }}</span>
-                        <span class="tag" [ngClass]="severityClass(cat.severity)">
-                          {{ cat.severity === 'critical' ? 'بحرانی' : cat.severity === 'problem' ? 'مشکل' : 'قابل حل' }}
-                        </span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            }
-          </div>
+          <app-survey-analytics
+            [analyticsData]="analyticsData"
+            [loading]="loadingAnalytics"
+          ></app-survey-analytics>
         }
       }
     </div>

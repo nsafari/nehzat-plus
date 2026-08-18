@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using EducationalPlatform.Nehzat.Domain.Entities;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Application.DTOs;
+using EducationalPlatform.Nehzat.Application.Constants;
+using EducationalPlatform.Nehzat.Application.Exceptions;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -42,30 +44,30 @@ public class AssessmentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateAssessmentRequest request)
-    {
-        try
+[HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateAssessmentRequest request)
         {
-            var assessmentUpdate = new Assessment();
-            if (request.Title != null) assessmentUpdate.Title = request.Title;
-            if (request.Description != null) assessmentUpdate.Description = request.Description;
-            if (request.Type != null) assessmentUpdate.Type = request.Type;
-            if (request.MaxScore.HasValue) assessmentUpdate.MaxScore = request.MaxScore.Value;
-            if (request.DurationMinutes.HasValue) assessmentUpdate.DurationMinutes = request.DurationMinutes.Value;
-            if (request.AssessmentDate.HasValue) assessmentUpdate.AssessmentDate = request.AssessmentDate.Value;
-            if (request.Status != null) assessmentUpdate.Status = request.Status;
-            if (request.Instructions != null) assessmentUpdate.Instructions = request.Instructions;
-            if (request.Criteria != null) assessmentUpdate.GenerationCriteria = JsonSerializer.Serialize(request.Criteria);
+            try
+            {
+                var assessmentUpdate = new Assessment();
+                if (request.Title != null) assessmentUpdate.Title = request.Title;
+                if (request.Description != null) assessmentUpdate.Description = request.Description;
+                if (request.Type != null) assessmentUpdate.Type = request.Type;
+                if (request.MaxScore.HasValue) assessmentUpdate.MaxScore = request.MaxScore.Value;
+                if (request.DurationMinutes.HasValue) assessmentUpdate.DurationMinutes = request.DurationMinutes.Value;
+                if (request.AssessmentDate.HasValue) assessmentUpdate.AssessmentDate = request.AssessmentDate.Value;
+                if (request.Status != null) assessmentUpdate.Status = request.Status;
+                if (request.Instructions != null) assessmentUpdate.Instructions = request.Instructions;
+                if (request.Criteria != null) assessmentUpdate.GenerationCriteria = JsonSerializer.Serialize(request.Criteria);
 
-            var result = await _assessmentService.UpdateAsync(id, assessmentUpdate);
-            return Ok(result);
+                var result = await _assessmentService.UpdateAsync(id, assessmentUpdate);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException)
-        {
-            return NotFound(new { message = "Assessment not found" });
-        }
-    }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
@@ -95,32 +97,35 @@ public class AssessmentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("generate-weekly")]
-    public async Task<IActionResult> GenerateWeekly([FromBody] GenerateWeeklyAssessmentRequest request)
-    {
-        try
+[HttpPost("generate-weekly")]
+        public async Task<IActionResult> GenerateWeekly([FromBody] GenerateWeeklyAssessmentRequest request)
         {
-            var userIdClaim = User.FindFirstValue("userId");
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
-                return Unauthorized(new { message = "User ID not found in token." });
+            try
+            {
+                var userIdClaim = User.FindFirstValue("userId");
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                    return Unauthorized(new { message = "User ID not found in token." });
 
-            var result = await _assessmentService.GenerateWeeklyAssessmentAsync(
-                request.CourseId,
-                userId,
-                request.Title,
-                request.Description,
-                request.DurationMinutes,
-                request.MaxScore,
-                request.AssessmentDate,
-                request.Criteria ?? new Dictionary<string, object>());
-            return Ok(result);
+                var result = await _assessmentService.GenerateWeeklyAssessmentAsync(
+                    request.CourseId,
+                    userId,
+                    request.Title,
+                    request.Description,
+                    request.DurationMinutes,
+                    request.MaxScore,
+                    request.AssessmentDate,
+                    request.Criteria ?? new Dictionary<string, object>());
+                return Ok(result);
+            }
+            catch (ArgumentException)
+            {
+                return BadRequest(GenericErrorMessages.BadRequest);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, GenericErrorMessages.ServerError);
+            }
         }
-        catch (Exception ex)
-        {
-            var detail = ex.InnerException?.Message ?? ex.Message;
-            return BadRequest(new { message = detail });
-        }
-    }
 
     [HttpGet("{id}/questions")]
     public async Task<IActionResult> GetQuestions(int id)
@@ -137,19 +142,23 @@ public class AssessmentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("questions/{questionId}")]
-    public async Task<IActionResult> UpdateQuestion(int questionId, [FromBody] AssessmentQuestion question)
-    {
-        try
+[HttpPut("questions/{questionId}")]
+        public async Task<IActionResult> UpdateQuestion(int questionId, [FromBody] AssessmentQuestion question)
         {
-            var result = await _assessmentService.UpdateQuestionAsync(questionId, question);
-            return Ok(result);
+            try
+            {
+                var result = await _assessmentService.UpdateQuestionAsync(questionId, question);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, GenericErrorMessages.ServerError);
+            }
         }
-        catch (Exception ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 
     [HttpDelete("questions/{questionId}")]
     public async Task<IActionResult> DeleteQuestion(int questionId)
@@ -182,19 +191,19 @@ public class AssessmentController : ControllerBase
         return Ok(created);
     }
 
-    [HttpPost("{id}/archive")]
-    public async Task<IActionResult> Archive(int id)
-    {
-        try
+[HttpPost("{id}/archive")]
+        public async Task<IActionResult> Archive(int id)
         {
-            var result = await _assessmentService.UpdateAsync(id, new Assessment { Status = "archived" });
-            return Ok(result);
+            try
+            {
+                var result = await _assessmentService.UpdateAsync(id, new Assessment { Status = "archived" });
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException)
-        {
-            return NotFound(new { message = "Assessment not found" });
-        }
-    }
 
     [HttpPost("{id}/start/{studentId}")]
     [Authorize(Roles = "manager,headquarters,branch_manager,coach,evaluator,trainee")]

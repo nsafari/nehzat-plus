@@ -32,7 +32,6 @@ public class EvaluatorService : IEvaluatorService
         var entity = new Evaluator
         {
             Username = request.Username.Trim(),
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             FirstName = request.FirstName.Trim(),
             LastName = request.LastName.Trim(),
             Email = request.Email.Trim(),

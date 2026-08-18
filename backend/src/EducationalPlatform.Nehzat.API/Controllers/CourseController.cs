@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EducationalPlatform.Nehzat.Domain.Entities;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Application.Constants;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -68,13 +69,13 @@ public class CourseController : ControllerBase
             var result = await _courseService.UpdateAsync(id, course);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
         catch (Exception)
         {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
+            return StatusCode(500, new { message = GenericErrorMessages.ServerError });
         }
     }
 

@@ -4,6 +4,8 @@ using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.API.Helpers;
 using EducationalPlatform.Nehzat.Domain.Entities;
+using EducationalPlatform.Nehzat.Application.Constants;
+using EducationalPlatform.Nehzat.Application.Exceptions;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -52,74 +54,74 @@ public class StudentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("me/profile")]
-    public async Task<IActionResult> GetCurrentProfile([FromBody] string username)
-    {
-        try
+[HttpGet("me/profile")]
+        public async Task<IActionResult> GetCurrentProfile([FromBody] string username)
         {
-            var result = await _studentService.FindByUsernameAsync(username);
-            if (result == null) return NotFound(new { message = "Student not found for this user" });
-            return Ok(result);
+            try
+            {
+                var result = await _studentService.FindByUsernameAsync(username);
+                if (result == null) return NotFound(GenericErrorMessages.NotFound);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, GenericErrorMessages.ServerError);
+            }
         }
-        catch (Exception)
-        {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
-        }
-    }
 
-    [HttpGet("{id}/progress")]
-    public async Task<IActionResult> GetProgress(int id)
-    {
-        try
+[HttpGet("{id}/progress")]
+        public async Task<IActionResult> GetProgress(int id)
         {
-            var result = await _studentService.GetStudentProgressAsync(id);
-            return Ok(result);
+            try
+            {
+                var result = await _studentService.GetStudentProgressAsync(id);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, GenericErrorMessages.ServerError);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
-        }
-    }
 
-    [HttpGet("{id}/progress/biweekly")]
-    public async Task<IActionResult> GetBiweeklyProgress(int id)
-    {
-        try
+[HttpGet("{id}/progress/biweekly")]
+        public async Task<IActionResult> GetBiweeklyProgress(int id)
         {
-            var result = await _studentService.GetBiweeklyProgressAsync(id);
-            return Ok(result);
+            try
+            {
+                var result = await _studentService.GetBiweeklyProgressAsync(id);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, GenericErrorMessages.ServerError);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
-        }
-    }
 
-    [HttpGet("{id}/assignments/{assignmentId}/progress")]
-    public async Task<IActionResult> GetAssignmentProgress(int id, int assignmentId)
-    {
-        try
+[HttpGet("{id}/assignments/{assignmentId}/progress")]
+        public async Task<IActionResult> GetAssignmentProgress(int id, int assignmentId)
         {
-            var result = await _submissionService.GetStudentProgressAsync(id, assignmentId);
-            return Ok(result);
+            try
+            {
+                var result = await _submissionService.GetStudentProgressAsync(id, assignmentId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, GenericErrorMessages.ServerError);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
-        }
-    }
 
     [HttpGet("{id}/submissions")]
     public async Task<IActionResult> GetSubmissions(int id, [FromQuery] int? assignmentId)
@@ -194,23 +196,23 @@ public class StudentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] Student student)
-    {
-        try
+[HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Student student)
         {
-            var result = await _studentService.UpdateAsync(id, student);
-            return Ok(result);
+            try
+            {
+                var result = await _studentService.UpdateAsync(id, student);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, GenericErrorMessages.ServerError);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, new { message = "خطای داخلی سرور" });
-        }
-    }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)

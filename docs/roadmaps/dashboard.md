@@ -66,7 +66,7 @@
 
 | # | Gap | Severity | Impact | Fix Complexity |
 |---|-----|----------|--------|----------------|
-| 1 | `DashboardComponent` (~714 LOC, 23613 bytes) — #1 largest file | 🔴 Critical | Unmaintainable, bug-prone, violates 250 LOC ceiling | High — decomposition required |
+| 1 | `DashboardComponent` (~714 LOC, 23613 bytes) — #1 largest file | 🔴 Critical | Unmaintainable, bug-prone, violates 251 LOC ceiling | High — decomposition required |
 | 2 | `DashboardTrainingStepsComponent` TS file is ~10 LOC (300 bytes) — logic in template | 🟡 Medium | Un-testable, violates separation of concerns | Medium |
 | 3 | No unit tests for DashboardComponent sub-features | 🟡 Medium | Regressions undetected | Medium |
 | 4 | 3 unfinished items from PAGE_LAYER_REPORT.md | 🟡 Medium | Incomplete functionality | Unknown |

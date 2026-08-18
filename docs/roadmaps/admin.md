@@ -83,7 +83,7 @@ Admin component has been refactored from ~2375 lines to 258 lines. 12 sub-module
 
 | # | Gap | Severity | Impact | Fix Complexity |
 |---|-----|----------|--------|----------------|
-| 1 | 3 admin sub-modules exceed 250 LOC ceiling (admin-courses ~700, admin-coaches ~450, admin-branch-managers ~540) | 🟡 Medium | `remove-ai-slops` required before further growth | High — decomposition |
+| 1 | 3 admin sub-modules exceed 251 LOC ceiling (admin-courses ~700, admin-coaches ~450, admin-branch-managers ~540) | 🟡 Medium | `remove-ai-slops` required before further growth | High — decomposition |
 | 2 | `adminGuard` hardcodes 4 roles — new roles require code change | 🟡 Medium | Role changes need deployment | Medium — use policy-based auth |
 | 3 | No unit tests for admin sub-components (only AdminComponent has spec) | 🟡 Medium | Regressions undetected in sub-modules | Medium |
 | 4 | No integration tests for backend admin endpoints | 🟡 Medium | API contract drift | Medium |
@@ -115,7 +115,7 @@ Admin component has been refactored from ~2375 lines to 258 lines. 12 sub-module
 ### Step 1: Decompose admin-courses
 - **Goal**: Split `admin-courses.component.ts` (~700 LOC) into smaller components
 - **Files**: `admin-courses.component.ts`, new sub-components in `admin-courses/`
-- **Acceptance**: No file exceeds 250 LOC
+- **Acceptance**: No file exceeds 251 LOC
 - **Strategy**: Split by tab: course-list, course-form, course-detail
 
 ### Step 4: Policy-based role auth

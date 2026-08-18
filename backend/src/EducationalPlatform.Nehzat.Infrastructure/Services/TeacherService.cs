@@ -49,7 +49,6 @@ public class TeacherService : ITeacherService
         var teacher = new Teacher
         {
             Username = request.Username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,

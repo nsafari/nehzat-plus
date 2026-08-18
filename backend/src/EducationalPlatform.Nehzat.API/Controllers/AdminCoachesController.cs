@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EducationalPlatform.Nehzat.Application.Constants;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
@@ -48,7 +49,7 @@ public class AdminCoachesController : ControllerBase
     public async Task<IActionResult> GetCoachById(int id)
     {
         var coach = await _coachService.FindByIdAsync(id);
-        if (coach == null) return NotFound(new { message = "مربی پیدا نشد." });
+        if (coach == null) return NotFound(GenericErrorMessages.NotFound);
         return Ok(new
         {
             coach.Id,
@@ -82,7 +83,7 @@ public class AdminCoachesController : ControllerBase
                     request.Password ?? "password123",
                     null,
                     null,
-                    "coach",
+                    RoleNames.Coach,
                     request.FirstName,
                     request.LastName,
                     request.Email,
@@ -137,9 +138,9 @@ public class AdminCoachesController : ControllerBase
                 coach.CreatedAt
             });
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -151,9 +152,9 @@ public class AdminCoachesController : ControllerBase
             await _coachService.DeleteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }

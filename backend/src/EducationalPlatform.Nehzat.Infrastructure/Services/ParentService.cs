@@ -32,7 +32,6 @@ public class ParentService : IParentService
         var entity = new Parent
         {
             Username = request.Username.Trim(),
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             FirstName = request.FirstName.Trim(),
             LastName = request.LastName.Trim(),
             Email = request.Email.Trim(),

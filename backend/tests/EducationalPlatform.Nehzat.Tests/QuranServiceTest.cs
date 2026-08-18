@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using EducationalPlatform.Nehzat.Domain.Entities.Quran;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
 using EducationalPlatform.Nehzat.Infrastructure.Services;
@@ -18,7 +21,11 @@ public class QuranServiceTest : IDisposable
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _db = new AppDbContext(options);
-        _service = new QuranService(_db);
+        
+        var mockEnv = new Mock<IWebHostEnvironment>();
+        mockEnv.Setup(x => x.EnvironmentName).Returns("Development");
+        mockEnv.Setup(x => x.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+        _service = new QuranService(_db, mockEnv.Object);
     }
 
     public void Dispose()

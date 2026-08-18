@@ -87,14 +87,13 @@ export class AdminComponent implements OnInit {
   registeredBranches: Branch[] = [];
 
   get visibleMenuItems() {
-    const currentUser = this.authService.getCurrentUser();
-    const userType = currentUser?.userType ?? 'trainee';
-    return this.menuItems.filter((item) => (item.roles as readonly string[]).includes(userType));
+    return this.menuItems.filter((item) =>
+      (item.roles as readonly string[]).some(role => this.authService.hasRole(role))
+    );
   }
 
   get isBranchManager(): boolean {
-    const currentUser = this.authService.getCurrentUser();
-    return currentUser?.userType === 'branch_manager';
+    return this.authService.hasRole('branch_manager');
   }
 
   get currentUserBranchId(): number | undefined {

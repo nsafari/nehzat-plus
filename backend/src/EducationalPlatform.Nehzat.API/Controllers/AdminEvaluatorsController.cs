@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EducationalPlatform.Nehzat.Application.Constants;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
@@ -48,7 +49,7 @@ public class AdminEvaluatorsController : ControllerBase
     public async Task<IActionResult> GetEvaluatorById(int id)
     {
         var evaluator = await _evaluatorService.FindByIdAsync(id);
-        if (evaluator == null) return NotFound(new { message = "ارزیاب پیدا نشد." });
+        if (evaluator == null) return NotFound(GenericErrorMessages.NotFound);
         return Ok(new
         {
             evaluator.Id,
@@ -82,7 +83,7 @@ public class AdminEvaluatorsController : ControllerBase
                     request.Password,
                     null,
                     null,
-                    "evaluator",
+                    RoleNames.Evaluator,
                     request.FirstName,
                     request.LastName,
                     request.Email,
@@ -136,9 +137,9 @@ public class AdminEvaluatorsController : ControllerBase
                 evaluator.CreatedAt
             });
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -150,9 +151,9 @@ public class AdminEvaluatorsController : ControllerBase
             await _evaluatorService.DeleteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }

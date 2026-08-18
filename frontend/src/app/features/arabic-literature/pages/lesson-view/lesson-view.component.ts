@@ -111,7 +111,7 @@ export class LessonViewComponent implements OnInit {
   private loadLesson(id: number): void {
     this.loading = true;
     this.api.getArabicLessonById(id).subscribe({
-      next: (lesson) => {
+      next: (lesson: ArabicLesson) => {
         this.lesson = lesson;
         this.loadExistingProgress();
       },
@@ -121,8 +121,8 @@ export class LessonViewComponent implements OnInit {
 
   private loadExistingProgress(): void {
     this.api.getArabicUserProgress().subscribe({
-      next: (progress) => {
-        this.currentProgress = progress.find(p => p.lessonId === this.lesson?.id) ?? null;
+      next: (progress: ArabicUserProgress[]) => {
+        this.currentProgress = progress.find((p: ArabicUserProgress) => p.lessonId === this.lesson?.id) ?? null;
         this.loading = false;
       },
       error: () => this.loading = false
@@ -145,7 +145,7 @@ export class LessonViewComponent implements OnInit {
     if (!this.lesson) return;
     this.clearMessages();
     this.api.recordArabicProgress({ lessonId: this.lesson.id, status: 'in_progress' }).subscribe({
-      next: (progress) => {
+      next: (progress: ArabicUserProgress) => {
         this.currentProgress = progress;
         this.successMessage = 'درس شروع شد.';
       },
@@ -157,7 +157,7 @@ export class LessonViewComponent implements OnInit {
     if (!this.lesson) return;
     this.clearMessages();
     this.api.recordArabicProgress({ lessonId: this.lesson.id, status: 'completed', score: 100 }).subscribe({
-      next: (progress) => {
+      next: (progress: ArabicUserProgress) => {
         this.currentProgress = progress;
         this.successMessage = 'درس با موفقیت تکمیل شد! 🎉';
       },

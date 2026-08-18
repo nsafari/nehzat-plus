@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Application.Constants;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -37,9 +38,9 @@ public class AdminBranchesController : ControllerBase
         {
             return Ok(await _branchService.UpdateAsync(id, request.Name, request.Province, request.Description));
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -51,9 +52,9 @@ public class AdminBranchesController : ControllerBase
             await _branchService.DeleteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }

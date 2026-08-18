@@ -71,7 +71,7 @@ cd frontend && npm run build:capacitor && npx cap sync android  # APK
 - `admin.component.ts` (~2375 lines) and `mock-lesson-planner-api.service.ts` (~1555 lines) are landmines — extract before extending.
 
 ## Landmines & quirks
-- `README.md` at root is **partly stale** (claims .NET 8 / NestJS / SQLite / `dummy-token`). Trust this file and actual code over README.
+- `README.md` at root is **partly stale** (historically claimed .NET 8 / NestJS / SQLite / `dummy-token`). Trust this file and actual code over README. Other docs like `docs/FRONTEND_PRD.md` and `docs/SYSTEM_ARCHITECTURE.md` may also contain legacy references.
 - No process manager — dev servers die with the session.
 - Multi-branch workflows partially implemented; one default branch ("شعبه مرکزی") auto-created on startup.
 - Version archive system: `scripts/archive-version.ps1` + `docs/PROJECT_INVENTORY.md` (runs via pre-push hook on tag push).

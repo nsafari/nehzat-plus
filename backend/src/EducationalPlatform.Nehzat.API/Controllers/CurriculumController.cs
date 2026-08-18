@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Application.Constants;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -39,9 +40,9 @@ public class CurriculumController : ControllerBase
             var result = await _service.CreateSubjectAreaAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(new { message = GenericErrorMessages.Conflict });
         }
     }
 
@@ -53,9 +54,9 @@ public class CurriculumController : ControllerBase
             var result = await _service.UpdateSubjectAreaAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -67,9 +68,9 @@ public class CurriculumController : ControllerBase
             await _service.DeleteSubjectAreaAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -95,9 +96,9 @@ public class CurriculumController : ControllerBase
             var result = await _service.CreateTeachingMethodAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(new { message = GenericErrorMessages.Conflict });
         }
     }
 
@@ -109,9 +110,9 @@ public class CurriculumController : ControllerBase
             var result = await _service.UpdateTeachingMethodAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -123,9 +124,9 @@ public class CurriculumController : ControllerBase
             await _service.DeleteTeachingMethodAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -151,9 +152,9 @@ public class CurriculumController : ControllerBase
             var result = await _service.CreateObjectiveAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(new { message = GenericErrorMessages.Conflict });
         }
     }
 
@@ -165,9 +166,9 @@ public class CurriculumController : ControllerBase
             var result = await _service.UpdateObjectiveAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -179,9 +180,9 @@ public class CurriculumController : ControllerBase
             await _service.DeleteObjectiveAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -207,9 +208,9 @@ public class CurriculumController : ControllerBase
             var result = await _service.CreateBookAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(new { message = GenericErrorMessages.Conflict });
         }
     }
 
@@ -221,9 +222,9 @@ public class CurriculumController : ControllerBase
             var result = await _service.UpdateBookAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -235,9 +236,9 @@ public class CurriculumController : ControllerBase
             await _service.DeleteBookAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 }

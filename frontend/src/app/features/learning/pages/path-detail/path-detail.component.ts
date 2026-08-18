@@ -60,13 +60,13 @@ import { computeMasteryLevel, getMasteryLabel, getMasteryEmoji, MasteryLevel } f
                 <div class="module-row">
                   <div class="module-info">
                     <span class="module-title">{{ mod.title }}</span>
-                    <span class="module-lessons">{{ mod.lessons?.length || 0 }} درس</span>
+                    <span class="module-lessons">{{ mod.lessons.length || 0 }} درس</span>
                   </div>
-                  <a class="module-link" [routerLink]="'/learning/lessons/' + (mod.lessons?.[0]?.id || mod.id)">مشاهده</a>
+                  <a class="module-link" [routerLink]="'/learning/lessons/' + (mod.lessons[0]?.id || mod.id)">مشاهده</a>
                 </div>
                 <div class="quizzes-box" *ngIf="mod.lessons">
                   <div class="quiz-row" *ngFor="let lesson of mod.lessons">
-                    <div class="quiz-row-lesson" *ngIf="lesson.quizzes?.length">{{ lesson.title }}</div>
+                    <div class="quiz-row-lesson" *ngIf="lesson.quizzes.length">{{ lesson.title }}</div>
                     <a class="quiz-row-item" *ngFor="let quiz of lesson.quizzes" [routerLink]="'/learning/quizzes/' + quiz.id">
                       <span class="quiz-row-title">📝 {{ quiz.title }}</span>
                       <span class="mastery-badge" *ngIf="getQuizMastery(quiz.id)">
@@ -173,7 +173,7 @@ export class PathDetailComponent implements OnInit {
           this.isEnrolled = true;
           this.loadQuizAttempts(enrollment.id);
           if (enrollment.lessonProgress && this.path?.levels) {
-            const total = this.path.levels.reduce((s, l) => s + (l.modules?.reduce((s2, m) => s2 + (m.lessons?.length || 0), 0) || 0), 0);
+            const total = this.path.levels.reduce((s, l) => s + (l.modules.reduce((s2, m) => s2 + (m.lessons?.length || 0), 0) || 0), 0);
             const done = enrollment.lessonProgress.filter(lp => lp.status === 'completed').length;
             this.userProgress = total > 0 ? Math.round((done / total) * 100) : 0;
           }

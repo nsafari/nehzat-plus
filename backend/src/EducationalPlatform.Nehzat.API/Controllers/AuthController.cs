@@ -3,6 +3,7 @@ using EducationalPlatform.Nehzat.API.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace EducationalPlatform.Nehzat.API.Controllers
 {
@@ -11,10 +12,12 @@ namespace EducationalPlatform.Nehzat.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IDevTokenService _devTokenService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IDevTokenService devTokenService)
+        public AuthController(IDevTokenService devTokenService, IConfiguration configuration)
         {
             _devTokenService = devTokenService;
+            _configuration = configuration;
         }
 
         // Sign-up is handled by OTUH2 — this endpoint is disabled in favor of centralized auth.
@@ -36,6 +39,12 @@ namespace EducationalPlatform.Nehzat.API.Controllers
         [AllowAnonymous]
         public IActionResult SignIn([FromBody] SignInRequest request)
         {
+            var useMockAuth = _configuration.GetValue<bool>("DevAuth:UseMockAuth", false);
+            if (!useMockAuth)
+            {
+                return NotFound();
+            }
+
             if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
                 return Unauthorized(new { message = "نام کاربری یا رمز عبور نامعتبر است" });

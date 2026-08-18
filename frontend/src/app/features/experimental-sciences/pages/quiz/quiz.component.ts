@@ -123,7 +123,7 @@ import { LessonDto, ExpSciQuizDto, ExpSciQuizQuestionDto } from '../../../../cor
                 <mat-icon>refresh</mat-icon>
                 تلاش مجدد
               </button>
-              <button mat-raised-button [routerLink]="['/experimental-sciences/topics', lesson?.topicId, 'lessons']">
+              <button mat-raised-button [routerLink]="['/experimental-sciences/topics', lesson.topicId, 'lessons']">
                 <mat-icon>arrow_forward</mat-icon>
                 بازگشت به درس‌ها
               </button>

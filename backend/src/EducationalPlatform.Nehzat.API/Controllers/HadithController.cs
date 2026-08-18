@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Application.Constants;
+using EducationalPlatform.Nehzat.Application.Exceptions;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -40,9 +42,9 @@ public class HadithController : ControllerBase
             var result = await _service.CreateBookAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 
@@ -54,9 +56,9 @@ public class HadithController : ControllerBase
             var result = await _service.UpdateBookAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -68,9 +70,9 @@ public class HadithController : ControllerBase
             await _service.DeleteBookAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -97,9 +99,9 @@ public class HadithController : ControllerBase
             var result = await _service.CreateChapterAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 
@@ -111,9 +113,9 @@ public class HadithController : ControllerBase
             var result = await _service.UpdateChapterAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -125,9 +127,9 @@ public class HadithController : ControllerBase
             await _service.DeleteChapterAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -154,9 +156,9 @@ public class HadithController : ControllerBase
             var result = await _service.CreateHadithAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 
@@ -168,9 +170,9 @@ public class HadithController : ControllerBase
             var result = await _service.UpdateHadithAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -182,9 +184,9 @@ public class HadithController : ControllerBase
             await _service.DeleteHadithAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -201,16 +203,16 @@ public class HadithController : ControllerBase
     {
         var userIdClaim = User.FindFirst("userId")?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
-            return Unauthorized(new { message = "شناسه کاربر نامعتبر است." });
+            return Unauthorized(GenericErrorMessages.BadRequest);
 
         try
         {
             var result = await _service.SubmitReviewAsync(userId, request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 
@@ -251,9 +253,9 @@ public class HadithController : ControllerBase
             var result = await _service.CreateAssessmentAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 

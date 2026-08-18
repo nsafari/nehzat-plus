@@ -31,6 +31,9 @@ public class User
     [Column(TypeName = "nvarchar(255)")]
     public string? ImageUrl { get; set; }
 
+    [Column(TypeName = "nvarchar(20)")]
+    public string? NationalCode { get; set; }
+
     public int? StudentId { get; set; }
 
     [Column(TypeName = "nvarchar(50)")]
@@ -42,6 +45,11 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    [Column(TypeName = "nvarchar(max)")]
+    public string? Biography { get; set; }
+
+    public DateTime? LastLoginAt { get; set; }
 
     [ForeignKey(nameof(StudentId))]
     public Student? Student { get; set; }

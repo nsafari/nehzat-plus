@@ -2,11 +2,14 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using EducationalPlatform.Nehzat.API.Hubs;
 using EducationalPlatform.Nehzat.API.Middleware;
 using EducationalPlatform.Nehzat.API.Security;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Infrastructure.BackgroundServices;
 using EducationalPlatform.Nehzat.Infrastructure.Clients;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
 using EducationalPlatform.Nehzat.Infrastructure.Services;
@@ -32,17 +35,18 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
-{
-    // Keep JWT claim names as-is (sub, role) instead of remapping to WIF URIs,
-    // so NameClaimType="sub" and RoleClaimType="role" match the OTUH2 token.
-    options.MapInboundClaims = false;
-    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateAudience = false,
-        ValidTypes = new[] { "at+jwt" },
-        NameClaimType = "sub",
-        RoleClaimType = "role"
-    };
+        // Keep JWT claim names as-is (sub, role) instead of remapping to WIF URIs,
+        // so NameClaimType="sub" and RoleClaimType="role" match the OTUH2 token.
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = true,
+            ValidAudience = "https://api.nehzat128.ir",
+            ValidTypes = new[] { "at+jwt" },
+            NameClaimType = "sub",
+            RoleClaimType = "role"
+        };
 
     // Production: validate tokens against the OTUH2 authority (JWKS).
     // Development: allow a local HMAC-issued token for the dev-only /auth/signin flow
@@ -88,7 +92,10 @@ builder.Services.AddAuthorization();
 
 var otuh2ClientConfig = builder.Configuration.GetSection("Otuh2Client");
 var otuh2BaseUrl = otuh2ClientConfig["BaseUrl"] ?? oidcConfig["Authority"] ?? "http://localhost:5000";
-builder.Services.AddOtuh2AuthClient(otuh2BaseUrl);
+var otuh2ClientId = otuh2ClientConfig["ClientId"] ?? "nehzat-plus-client";
+var otuh2ClientSecret = otuh2ClientConfig["ClientSecret"] ?? Environment.GetEnvironmentVariable("OTUH2_CLIENT_SECRET") ?? "";
+var otuh2ApiKey = otuh2ClientConfig["ApiKey"] ?? Environment.GetEnvironmentVariable("OTUH2_API_KEY") ?? "";
+builder.Services.AddOtuh2AuthClient(otuh2BaseUrl, otuh2ClientId, otuh2ClientSecret, otuh2ApiKey);
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
@@ -105,7 +112,6 @@ builder.Services.AddScoped<IMadrasahService, MadrasahService>();
 builder.Services.AddScoped<ICurriculumService, CurriculumService>();
 builder.Services.AddScoped<IRingService, RingService>();
 builder.Services.AddScoped<ISkillProgressService, SkillProgressService>();
-builder.Services.AddScoped<ITeacherService, TeacherService>();
     builder.Services.AddScoped<ISpiritualCatalogService, SpiritualCatalogService>();
     builder.Services.AddScoped<ISpiritualEntryService, SpiritualEntryService>();
     builder.Services.AddScoped<IDailyActivityService, DailyActivityService>();
@@ -134,9 +140,39 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
     builder.Services.AddScoped<HadithDataSeeder>();
     builder.Services.AddScoped<ISrsService, SrsService>();
     builder.Services.AddScoped<IXpService, XpService>();
+    builder.Services.AddScoped<IGamificationService, GamificationService>();
     builder.Services.AddScoped<XpDataSeeder>();
     builder.Services.AddScoped<TrainingDataSeeder>();
     builder.Services.AddScoped<ITrainingService, TrainingService>();
+    builder.Services.AddScoped<IMaktabService, MaktabService>();
+    builder.Services.AddScoped<IHalghehService, HalghehService>();
+    builder.Services.AddScoped<IHalghehMaktabService, HalghehMaktabService>();
+    builder.Services.AddScoped<IHalghehAssignmentService, HalghehAssignmentService>();
+    builder.Services.AddScoped<IConversationService, ConversationService>();
+    builder.Services.AddScoped<IMessageService, MessageService>();
+    builder.Services.AddScoped<IAiService, AiService>();
+    builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+    builder.Services.AddSingleton<ICalendarConverter, CalendarConverter>();
+    builder.Services.AddScoped<IProfileService, ProfileService>();
+    builder.Services.AddScoped<IProgressService, ProgressService>();
+    builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
+    builder.Services.AddScoped<IEvaluationService, EvaluationService>();
+    builder.Services.AddHttpClient<AiService>();
+
+builder.Services.AddScoped<IMapService, MapService>();
+builder.Services.AddHttpClient("OSRM", client =>
+{
+    var osrm = builder.Configuration["Osrm:BaseUrl"] ?? "https://router.project-osrm.org";
+    client.BaseAddress = new Uri(osrm);
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ICourierReportService, CourierReportService>();
+builder.Services.AddHostedService<LocationCleanupService>();
+builder.Services.AddHostedService<OrderExpiryService>();
+
+    builder.Services.AddSignalR();
 
     builder.Services.AddCors(options =>
 {
@@ -164,6 +200,11 @@ var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors();
 app.UseAuthentication();
 app.UseMiddleware<OidcSyncMiddleware>();
@@ -172,9 +213,24 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
         Path.Combine(Directory.GetCurrentDirectory(), "public")),
-    RequestPath = ""
+    RequestPath = "",
+    OnPrepareResponse = ctx =>
+    {
+        if (ctx.Context.User.Identity?.IsAuthenticated != true)
+        {
+            ctx.Context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            ctx.Context.Response.ContentType = "application/json";
+            ctx.Context.Response.Headers.WWWAuthenticate = "Bearer";
+            if (!ctx.Context.RequestAborted.IsCancellationRequested)
+            {
+                ctx.Context.Response.WriteAsync("{\"message\":\"دسترسی غیرمجاز\"}")
+                    .GetAwaiter().GetResult();
+            }
+        }
+    }
 });
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -185,7 +241,7 @@ using (var scope = app.Services.CreateScope())
         db.Database.EnsureDeleted();
     }
 
-    db.Database.Migrate();
+    db.Database.EnsureCreated();
 
     var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
     // Users are synced from OTUH2 via OidcSyncMiddleware on first request
@@ -229,19 +285,22 @@ using (var scope = app.Services.CreateScope())
     var trainingSeeder = scope.ServiceProvider.GetRequiredService<TrainingDataSeeder>();
     await trainingSeeder.SeedAsync();
 
-    var logService = scope.ServiceProvider.GetRequiredService<ILogService>();
-
-    // Seed Nehzat Plus roles in OTUH2 (non-blocking — failure is logged, not fatal)
+    // Seed Nehzat Plus roles in OTUH2 (non-blocking — failure is logged, not fatal).
+    // A dedicated scope is created inside the task so the startup scope can be
+    // disposed immediately without racing the background work.
     _ = Task.Run(async () =>
     {
+        using var taskScope = app.Services.CreateScope();
+        var taskLogService = taskScope.ServiceProvider.GetRequiredService<ILogService>();
+
         try
         {
-            await Otuh2RoleSeeder.SeedAsync(scope.ServiceProvider);
+            await Otuh2RoleSeeder.SeedAsync(taskScope.ServiceProvider);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"⚠️ OTUH2 role seeding failed: {ex.Message}");
-            await logService.LogErrorAsync("Otuh2RoleSeeder", ex);
+            await taskLogService.LogErrorAsync("Otuh2RoleSeeder", ex);
         }
     });
 }

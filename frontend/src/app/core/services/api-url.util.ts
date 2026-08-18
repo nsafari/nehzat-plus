@@ -22,6 +22,23 @@ export function resolveOtuh2BaseUrl(): string {
   return trimTrailingSlash(configuredOtuh2Url);
 }
 
+export function isSafeRedirectPath(value: string | null | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+  const raw = value.trim();
+  if (!raw.startsWith('/')) {
+    return false;
+  }
+  if (raw.startsWith('//') || /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(raw) || raw.includes('\\')) {
+    return false;
+  }
+  if (/[\u0000-\u0020]/.test(raw)) {
+    return false;
+  }
+  return true;
+}
+
 export function setOtuh2Url(url: string): void {
   (window as unknown as { __otuh2Base?: string }).__otuh2Base = url;
 }

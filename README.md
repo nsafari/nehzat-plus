@@ -15,7 +15,7 @@
 
 ```
 nehzat-plus/
-├─ backend/                 # سرویس بک‌اند ASP.NET Core 8 (EF Core + SQLite)
+├─ backend/                 # سرویس بک‌اند ASP.NET Core 10 (EF Core + SQL Server)
 │  └─ LessonPlanner.Api/
 │     ├─ Models/            # موجودیت‌های EF Core
 │     ├─ Data/              # AppDbContext
@@ -53,7 +53,7 @@ nehzat-plus/
 ### پیش‌نیازها
 - Node.js 18+
 - npm 9+
-- .NET 8 SDK
+- .NET 10 SDK
 - سیستم‌عامل سازگار (Linux/WSL توصیه می‌شود)
 
 ### اجرای بک‌اند ASP.NET Core (`backend/`)
@@ -62,10 +62,10 @@ cd backend/LessonPlanner.Api
 dotnet run
 ```
 - سرور روی `http://localhost:3000` اجرا می‌شود (پورت در `Properties/launchSettings.json`)
-- پایگاه‌داده SQLite `lesson-planner.db` با `EnsureCreated()` ساخته می‌شود
+- پایگاه‌داده SQL Server (`LessonPlanner_Dev`) با `EnsureCreated()` ساخته می‌شود
 - کاربر ادمین `test` / `password` و داده‌های نمونه به‌صورت خودکار ایجاد می‌شوند
 - CORS محدود به `http://localhost:4200` و `http://localhost:3000`
-- API کاملاً مشابه نسخه NestJS است (همان endpointها، همان رفتار)
+- API کاملاً مشابه نسخه قبلی است (همان endpointها، همان رفتار)
 
 ### اجرای فرانت‌اند Angular (`frontend/`)
 ```bash
@@ -191,7 +191,7 @@ npx cap open android
 - کاربران pending نمی‌توانند وارد شوند
 - فایل‌ها محدودیت نوع و حجم دارند
 - دسترسی‌ها بر اساس نوع کاربر کنترل می‌شود
-- **توجه**: توکن احراز هویت فعلی صرفاً یک `dummy-token` در localStorage است و امنیت واقعی ندارد — بک‌اند نیز middleware احراز هویت ندارد
+- **احراز هویت**: از طریق OTUH2 OIDC با توکن JWT (`at+jwt`) انجام می‌شود — توکن‌ها در `sessionStorage` ذخیره می‌شوند و بک‌اند آن‌ها را از طریق JWKS تأیید می‌کند
 
 ---
 

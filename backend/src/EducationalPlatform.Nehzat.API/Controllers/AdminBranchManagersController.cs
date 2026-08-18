@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
+using EducationalPlatform.Nehzat.Application.Constants;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -48,7 +49,7 @@ public class AdminBranchManagersController : ControllerBase
     public async Task<IActionResult> GetBranchManagerById(int id)
     {
         var bm = await _branchManagerService.FindByIdAsync(id);
-        if (bm == null) return NotFound(new { message = "مسئول شعبه پیدا نشد." });
+        if (bm == null) return NotFound(GenericErrorMessages.NotFound);
         return Ok(new
         {
             bm.Id,
@@ -137,9 +138,9 @@ public class AdminBranchManagersController : ControllerBase
                 bm.CreatedAt
             });
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -151,9 +152,9 @@ public class AdminBranchManagersController : ControllerBase
             await _branchManagerService.DeleteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }

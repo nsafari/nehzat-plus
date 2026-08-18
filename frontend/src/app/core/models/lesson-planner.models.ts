@@ -3039,6 +3039,20 @@ export interface UpdatePersLitQuizQuestionPayload {
   points?: number;
 }
 
+export interface QuizQuestion {
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface CreateQuizPayload {
+  courseId: string;
+  title: string;
+  questions: QuizQuestion[];
+  timeLimitMinutes?: number;
+  passingScore?: number;
+}
+
 export interface EnrollUserRequest {
   learningPathId: number;
 }
@@ -3635,3 +3649,458 @@ export interface PublicShowcase {
   likeCount: number;
   createdAt: string;
 }
+
+export interface ProfileDto {
+  id: number;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email?: string;
+  phoneNumber: string;
+  nationalCode: string;
+  imageUrl?: string;
+  biography?: string;
+  userType: string;
+  maktabName: string;
+  approvalStatus: string;
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  biography?: string;
+  imageUrl?: string;
+}
+
+export interface NotificationSettingsDto {
+  newAssignment: boolean;
+  submissionReviewed: boolean;
+  newMember: boolean;
+  sessionReminder: boolean;
+  systemAnnouncement: boolean;
+}
+
+export interface UpdateNotificationSettingsRequest {
+  newAssignment: boolean;
+  submissionReviewed: boolean;
+  newMember: boolean;
+  sessionReminder: boolean;
+  systemAnnouncement: boolean;
+}
+
+export interface MessagingConversationListDto {
+  id: number;
+  title?: string;
+  type: string;
+  unreadCount: number;
+  lastMessage?: MessagingMessageDto;
+  members: MemberBriefDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MessagingConversationDetailDto {
+  id: number;
+  title?: string;
+  type: string;
+  maktabId?: number;
+  createdBy: number;
+  members: MemberDetailDto[];
+  createdAt: string;
+}
+
+export interface CreateConversationRequest {
+  title?: string;
+  type: string;
+  maktabId?: number;
+  memberIds: number[];
+}
+
+export interface AddMemberRequest {
+  userId: number;
+  role: string;
+}
+
+export interface MemberBriefDto {
+  userId: number;
+  fullName: string;
+  avatarUrl?: string;
+  role: string;
+}
+
+export interface MemberDetailDto extends MemberBriefDto {
+  lastReadAt?: string;
+  joinedAt: string;
+}
+
+export interface MessagingMessageDto {
+  id: number;
+  conversationId: number;
+  senderId: number;
+  senderName: string;
+  senderAvatar?: string;
+  content: string;
+  messageType: string;
+  replyToId?: number;
+  replyTo?: MessagingMessageDto;
+  isEdited: boolean;
+  isDeleted: boolean;
+  attachments: AttachmentDto[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SendMessageRequest {
+  conversationId: number;
+  content: string;
+  messageType: string;
+  replyToId?: number;
+}
+
+export interface AttachmentDto {
+  id: number;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+}
+
+export interface MessagePagedResponse {
+  messages: MessagingMessageDto[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+export interface MarkReadRequest {
+  messageIds: number[];
+}
+
+export interface UnreadCountDto {
+  totalUnread: number;
+  perConversation: Record<number, number>;
+}
+
+// === Phase 16: Map & Geo ===
+export interface GeoPointDto {
+  lat: number;
+  lng: number;
+}
+
+export interface UserLocationDto {
+  userId: number;
+  fullName: string;
+  avatarUrl?: string;
+  role: string;
+  lat: number;
+  lng: number;
+  accuracy: number;
+  lastUpdated: string;
+}
+
+export interface UpdateLocationRequest {
+  lat: number;
+  lng: number;
+  accuracy?: number;
+}
+
+export interface MapOrderDto {
+  id: number;
+  customerName: string;
+  customerPhone: string;
+  pickupAddress: string;
+  pickupLat: number;
+  pickupLng: number;
+  dropoffAddress: string;
+  dropoffLat: number;
+  dropoffLng: number;
+  status: 'pending' | 'assigned' | 'accepted' | 'in_progress' | 'delivered' | 'cancelled';
+  courierId?: number;
+  courierName?: string;
+  notes?: string;
+  totalAmount: number;
+  createdAt: string;
+  updatedAt: string;
+  trackingPoints: OrderTrackingPointDto[];
+  route?: DeliveryRouteDto;
+}
+
+export interface CreateMapOrderRequest {
+  customerName: string;
+  customerPhone: string;
+  pickupAddress: string;
+  pickupLat: number;
+  pickupLng: number;
+  dropoffAddress: string;
+  dropoffLat: number;
+  dropoffLng: number;
+  notes?: string;
+  totalAmount: number;
+}
+
+export interface OrderTrackingPointDto {
+  id: number;
+  orderId: number;
+  lat: number;
+  lng: number;
+  status: string;
+  note?: string;
+  timestamp: string;
+}
+
+export interface UpdateOrderStatusRequest {
+  status: string;
+  note?: string;
+}
+
+export interface AssignOrderRequest {
+  courierId: number;
+}
+
+export interface RoutePointDto {
+  lat: number;
+  lng: number;
+  instruction: string;
+  distanceFromPrev: number;
+  durationFromPrev: number;
+}
+
+export interface DeliveryRouteDto {
+  id: number;
+  orderId: number;
+  totalDistanceKm: number;
+  totalDurationMin: number;
+  geometry: string;
+  steps: RoutePointDto[];
+  createdAt: string;
+}
+
+export interface PlanRouteRequest {
+  orderId: number;
+  pickupLat: number;
+  pickupLng: number;
+  dropoffLat: number;
+  dropoffLng: number;
+}
+
+export interface MapDashboardDto {
+  pendingOrders: number;
+  inProgressOrders: number;
+  completedToday: number;
+  activeCouriers: number;
+  orders: MapOrderDto[];
+}
+
+export interface QuestionDto {
+  id: number;
+  text: string;
+  category: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  type: 'multiple_choice' | 'true_false' | 'essay';
+  options: string[];
+  correctAnswer: string;
+  points: number;
+  createdAt: string;
+}
+
+export interface CreateQuestionRequest {
+  text: string;
+  category: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  type: 'multiple_choice' | 'true_false' | 'essay';
+  options: string[];
+  correctAnswer: string;
+  points: number;
+}
+
+export interface RandomEvaluationDto {
+  id: number;
+  studentId: number;
+  studentName: string;
+  title: string;
+  category: string;
+  startedAt: string;
+  completedAt?: string;
+  totalQuestions: number;
+  correctAnswers: number;
+  totalScore: number;
+  status: 'in_progress' | 'completed' | 'expired';
+  questions: EvaluationQuestionDto[];
+  answers: EvaluationAnswerDto[];
+}
+
+export interface EvaluationQuestionDto {
+  questionId: number;
+  text: string;
+  options: string[];
+  points: number;
+}
+
+export interface EvaluationAnswerDto {
+  questionId: number;
+  answerText: string;
+  isCorrect: boolean;
+  pointsEarned: number;
+}
+
+export interface StartEvaluationRequest {
+  studentId: number;
+  category: string;
+  questionCount: number;
+}
+
+export interface SubmitAnswersRequest {
+  randomEvaluationId: number;
+  answers: EvaluationAnswerDto[];
+}
+
+export interface EvaluationStatsDto {
+  totalEvaluations: number;
+  completedEvaluations: number;
+  totalQuestions: number;
+  categoryBreakdown: { [k: string]: number };
+  scoreTrend: EvaluationTrendPointDto[];
+}
+
+export interface EvaluationTrendPointDto {
+  date: string;
+  averageScore: number;
+}
+
+// === Phase 17: Notifications & Courier Reports ===
+export interface NotificationDto {
+  id: number;
+  type: 'info' | 'warning' | 'success' | 'error';
+  title: string;
+  body: string;
+  link?: string;
+  iconUrl?: string;
+  senderUserId?: number;
+  createdAt: string;
+  isRead: boolean;
+  readAt?: string;
+}
+
+export interface SendNotificationRequest {
+  userIds: number[];
+  type: 'info' | 'warning' | 'success' | 'error';
+  title: string;
+  body: string;
+  link?: string;
+}
+
+export interface NotificationSummaryDto {
+  totalCount: number;
+  unreadCount: number;
+  todayCount: number;
+  recent: NotificationDto[];
+}
+
+export interface RegisterDeviceRequest {
+  deviceToken: string;
+  platform: 'web' | 'android' | 'ios';
+  deviceName?: string;
+}
+
+export interface CourierStatsDto {
+  courierUserId: number;
+  courierName: string;
+  periodStart: string;
+  periodEnd: string;
+  totalDeliveries: number;
+  totalDistance: number;
+  totalEarnings: number;
+  dailyAverage: number;
+  dailyBreakdown: CourierDailyStatDto[];
+}
+
+export interface CourierDailyStatDto {
+  date: string;
+  deliveredCount: number;
+  distanceKm: number;
+  earningsAmount: number;
+  averageDeliveryMinutes: number;
+}
+
+export interface CourierLeaderboardDto {
+  entries: CourierLeaderboardEntryDto[];
+}
+
+export interface CourierLeaderboardEntryDto {
+  rank: number;
+  courierUserId: number;
+  courierName: string;
+  totalDeliveries: number;
+  totalEarnings: number;
+}
+
+// ===== Progress Module (Phase 10) =====
+export interface ProgressReportDto {
+  id: number; studentId: number; studentName: string;
+  periodStart: string; periodEnd: string;
+  overallScore: number; attendanceRate: number; assignmentCompletionRate: number;
+  completedAssignments: number; totalAssignments: number;
+  coachNote?: string; generatedAt: string;
+  metrics: ProgressMetricDto[];
+}
+export interface ProgressMetricDto {
+  id: number; metricKey: string; metricLabel: string;
+  score: number; target: number; rank: number; notes?: string;
+}
+export interface DashboardSummaryDto {
+  recentReports: ProgressReportDto[];
+  trend: ProgressTrendPointDto[];
+  pendingEvaluations: number;
+  unreadMessages: number;
+  openWorkflows: number;
+  totalXp: number;
+  leaderboard: LeaderboardEntryDto[];
+}
+export interface ProgressTrendPointDto { date: string; overallScore: number; attendanceRate: number; assignmentCompletionRate: number; }
+export interface LeaderboardEntryDto { studentId: number; studentName: string; overallScore: number; rank: number; }
+export interface GenerateReportRequest { studentId: number; periodStart: string; periodEnd: string; coachNote?: string; }
+
+export type CalendarEventType = 'personal' | 'work' | 'holiday' | 'session' | 'exam';
+export type CalendarResponseStatus = 'accepted' | 'declined' | 'tentative' | 'pending';
+
+export interface CalendarAttendeeDto {
+  userId: number;
+  fullName: string;
+  responseStatus: CalendarResponseStatus;
+}
+
+export interface CalendarEventDto {
+  id: number;
+  title: string;
+  description?: string;
+  start: string;
+  end: string;
+  allDay: boolean;
+  type: CalendarEventType;
+  color: string;
+  location?: string;
+  creatorUserId?: number;
+  isPublic: boolean;
+  attendees: CalendarAttendeeDto[];
+}
+
+export interface CreateCalendarEventRequest {
+  title: string;
+  description?: string;
+  start: string;
+  end: string;
+  allDay: boolean;
+  type: CalendarEventType;
+  color: string;
+  location?: string;
+  isPublic: boolean;
+  attendeeUserIds?: number[];
+}
+
+export type UpdateCalendarEventRequest = CreateCalendarEventRequest;
+
+

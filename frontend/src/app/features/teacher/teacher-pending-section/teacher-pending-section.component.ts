@@ -83,7 +83,7 @@ export class TeacherPendingSectionComponent implements OnInit {
         this.load();
         this.gradeSubmitted.emit();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.savingGrade.set(false);
         alert('خطا در ثبت نمره: ' + (err.error?.message || err.message));
       }

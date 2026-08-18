@@ -77,7 +77,7 @@ export class CourseListComponent implements OnInit {
   private loadCourses(): void {
     this.loading = true;
     this.api.getArabicCourses().subscribe({
-      next: (data) => {
+      next: (data: ArabicCourse[]) => {
         this.courses = data;
         this.loading = false;
       },
