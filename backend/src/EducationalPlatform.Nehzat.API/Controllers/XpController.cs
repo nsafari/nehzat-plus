@@ -30,6 +30,7 @@ public class XpController : ControllerBase
     }
 
     [HttpPost("award")]
+    [Authorize(Roles = "manager,headquarters")]
     public async Task<IActionResult> AwardXp([FromBody] AwardXpRequest request)
     {
         var userId = GetUserId();

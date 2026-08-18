@@ -10,7 +10,7 @@ public class Otuh2RoleSeeder
     private static readonly string[] RequiredRoles =
     [
         "manager", "headquarters", "branch_manager",
-        "coach", "parent", "evaluator", "trainee"
+        "coach", "parent", "evaluator", "trainee", "teacher"
     ];
 
     private static readonly Dictionary<string, string> RoleDescriptions = new()
@@ -21,7 +21,8 @@ public class Otuh2RoleSeeder
         ["coach"] = "مربی - ارزیابی متربیان",
         ["parent"] = "والدین - مشاهده وضعیت فرزند",
         ["evaluator"] = "ارزیاب - ارزیابی تخصصی",
-        ["trainee"] = "متربی - داشبورد شخصی"
+        ["trainee"] = "متربی - داشبورد شخصی",
+        ["teacher"] = "معلم - مدیریت کلاس‌ها"
     };
 
     public static async Task SeedAsync(IServiceProvider services)

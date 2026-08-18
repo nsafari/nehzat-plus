@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { LESSON_PLANNER_API } from '../../core/services/lesson-planner-api.token';
 import {
   TrainingCourse,
   TrainingStage,
@@ -18,194 +17,181 @@ import {
   providedIn: 'root'
 })
 export class TrainingService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/training`;
+  private api = inject(LESSON_PLANNER_API);
 
   getCourses(): Observable<TrainingCourse[]> {
-    return this.http.get<TrainingCourse[]>(`${this.apiUrl}/courses`);
+    return this.api.getTrainingCourses();
   }
 
   getCourseById(id: number): Observable<TrainingCourse> {
-    return this.http.get<TrainingCourse>(`${this.apiUrl}/courses/${id}`);
+    return this.api.getTrainingCourseById(id);
   }
 
   createCourse(course: Partial<TrainingCourse>): Observable<TrainingCourse> {
-    return this.http.post<TrainingCourse>(`${this.apiUrl}/courses`, course);
+    return this.api.createTrainingCourse(course);
   }
 
   updateCourse(id: number, course: Partial<TrainingCourse>): Observable<TrainingCourse> {
-    return this.http.put<TrainingCourse>(`${this.apiUrl}/courses/${id}`, course);
+    return this.api.updateTrainingCourse(id, course);
   }
 
   deleteCourse(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/courses/${id}`);
+    return this.api.deleteTrainingCourse(id);
   }
 
   searchCourses(query: string, page: number = 1, pageSize: number = 10): Observable<any> {
-    const params = new HttpParams()
-      .set('q', query)
-      .set('page', page.toString())
-      .set('pageSize', pageSize.toString());
-    return this.http.get<any>(`${this.apiUrl}/courses/search`, { params });
+    return this.api.searchCourses(query, page, pageSize);
   }
 
   filterCoursesByStatus(status: string): Observable<TrainingCourse[]> {
-    return this.http.get<TrainingCourse[]>(`${this.apiUrl}/courses/filter/status`, {
-      params: new HttpParams().set('status', status)
-    });
+    return this.api.filterCoursesByStatus(status);
   }
 
   filterCoursesByYear(academicYear: string): Observable<TrainingCourse[]> {
-    return this.http.get<TrainingCourse[]>(`${this.apiUrl}/courses/filter/year`, {
-      params: new HttpParams().set('academicYear', academicYear)
-    });
+    return this.api.filterCoursesByYear(academicYear);
   }
 
   getStagesByCourseId(courseId: number): Observable<TrainingStage[]> {
-    return this.http.get<TrainingStage[]>(`${this.apiUrl}/courses/${courseId}/stages`);
+    return this.api.getStagesByCourseId(courseId);
   }
 
   createStage(courseId: number, stage: Partial<TrainingStage>): Observable<TrainingStage> {
-    return this.http.post<TrainingStage>(`${this.apiUrl}/courses/${courseId}/stages`, stage);
+    return this.api.createStage(courseId, stage);
   }
 
   getStageById(id: number): Observable<TrainingStage> {
-    return this.http.get<TrainingStage>(`${this.apiUrl}/stages/${id}`);
+    return this.api.getStageById(id);
   }
 
   updateStage(id: number, stage: Partial<TrainingStage>): Observable<TrainingStage> {
-    return this.http.put<TrainingStage>(`${this.apiUrl}/stages/${id}`, stage);
+    return this.api.updateStage(id, stage);
   }
 
   deleteStage(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/stages/${id}`);
+    return this.api.deleteStage(id);
   }
 
   getSessionsByStageId(stageId: number): Observable<TrainingSession[]> {
-    return this.http.get<TrainingSession[]>(`${this.apiUrl}/stages/${stageId}/sessions`);
+    return this.api.getSessionsByStageId(stageId);
   }
 
   createSession(stageId: number, session: Partial<TrainingSession>): Observable<TrainingSession> {
-    return this.http.post<TrainingSession>(`${this.apiUrl}/stages/${stageId}/sessions`, session);
+    return this.api.createSession(stageId, session);
   }
 
   getSessionById(id: number): Observable<TrainingSession> {
-    return this.http.get<TrainingSession>(`${this.apiUrl}/sessions/${id}`);
+    return this.api.getSessionById(id);
   }
 
   updateSession(id: number, session: Partial<TrainingSession>): Observable<TrainingSession> {
-    return this.http.put<TrainingSession>(`${this.apiUrl}/sessions/${id}`, session);
+    return this.api.updateSession(id, session);
   }
 
   deleteSession(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/sessions/${id}`);
+    return this.api.deleteSession(id);
   }
 
   getContentsBySessionId(sessionId: number): Observable<TrainingContent[]> {
-    return this.http.get<TrainingContent[]>(`${this.apiUrl}/sessions/${sessionId}/contents`);
+    return this.api.getContentsBySessionId(sessionId);
   }
 
   createContent(sessionId: number, content: Partial<TrainingContent>): Observable<TrainingContent> {
-    return this.http.post<TrainingContent>(`${this.apiUrl}/sessions/${sessionId}/contents`, content);
+    return this.api.createContent(sessionId, content);
   }
 
   getContentById(id: number): Observable<TrainingContent> {
-    return this.http.get<TrainingContent>(`${this.apiUrl}/contents/${id}`);
+    return this.api.getContentById(id);
   }
 
   updateContent(id: number, content: Partial<TrainingContent>): Observable<TrainingContent> {
-    return this.http.put<TrainingContent>(`${this.apiUrl}/contents/${id}`, content);
+    return this.api.updateContent(id, content);
   }
 
   deleteContent(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/contents/${id}`);
+    return this.api.deleteContent(id);
   }
 
   uploadContent(sessionId: number, file: File): Observable<TrainingContent> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<TrainingContent>(`${this.apiUrl}/sessions/${sessionId}/upload`, formData);
+    return this.api.uploadContent(sessionId, file);
   }
 
   createEnrollment(enrollment: { userId: number; courseId: number }): Observable<TrainingEnrollment> {
-    return this.http.post<TrainingEnrollment>(`${this.apiUrl}/enrollments`, enrollment);
+    return this.api.createEnrollment(enrollment);
   }
 
   getEnrollmentById(id: number): Observable<TrainingEnrollment> {
-    return this.http.get<TrainingEnrollment>(`${this.apiUrl}/enrollments/${id}`);
+    return this.api.getEnrollmentById(id);
   }
 
   getEnrollmentsByCourseId(courseId: number): Observable<TrainingEnrollment[]> {
-    return this.http.get<TrainingEnrollment[]>(`${this.apiUrl}/courses/${courseId}/enrollments`);
+    return this.api.getEnrollmentsByCourseId(courseId);
   }
 
   getEnrollmentsByUserId(userId: number): Observable<TrainingEnrollment[]> {
-    return this.http.get<TrainingEnrollment[]>(`${this.apiUrl}/users/${userId}/enrollments`);
+    return this.api.getEnrollmentsByUserId(userId);
   }
 
   updateEnrollmentStatus(id: number, status: string): Observable<TrainingEnrollment> {
-    return this.http.put<TrainingEnrollment>(`${this.apiUrl}/enrollments/${id}/status`, JSON.stringify(status), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return this.api.updateEnrollmentStatus(id, status);
   }
 
   deleteEnrollment(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/enrollments/${id}`);
+    return this.api.deleteEnrollment(id);
   }
 
   updateProgress(enrollmentId: number, sessionId: number, progress: { status: string; score?: number; notes?: string }): Observable<TrainingProgress> {
-    return this.http.put<TrainingProgress>(`${this.apiUrl}/enrollments/${enrollmentId}/sessions/${sessionId}/progress`, progress);
+    return this.api.updateProgress(enrollmentId, sessionId, progress);
   }
 
   getProgressByEnrollmentId(enrollmentId: number): Observable<TrainingProgress[]> {
-    return this.http.get<TrainingProgress[]>(`${this.apiUrl}/enrollments/${enrollmentId}/progress`);
+    return this.api.getProgressByEnrollmentId(enrollmentId);
   }
 
   getProgressBySessionId(sessionId: number): Observable<TrainingProgress[]> {
-    return this.http.get<TrainingProgress[]>(`${this.apiUrl}/sessions/${sessionId}/progress`);
+    return this.api.getProgressBySessionId(sessionId);
   }
 
   getAssignmentsBySessionId(sessionId: number): Observable<TrainingAssignment[]> {
-    return this.http.get<TrainingAssignment[]>(`${this.apiUrl}/sessions/${sessionId}/assignments`);
+    return this.api.getAssignmentsBySessionId(sessionId);
   }
 
   createAssignment(sessionId: number, assignment: Partial<TrainingAssignment>): Observable<TrainingAssignment> {
-    return this.http.post<TrainingAssignment>(`${this.apiUrl}/sessions/${sessionId}/assignments`, assignment);
+    return this.api.createAssignment(sessionId, assignment);
   }
 
   getAssignmentById(id: number): Observable<TrainingAssignment> {
-    return this.http.get<TrainingAssignment>(`${this.apiUrl}/assignments/${id}`);
+    return this.api.getTrainingAssignmentById(id);
   }
 
   updateAssignment(id: number, assignment: Partial<TrainingAssignment>): Observable<TrainingAssignment> {
-    return this.http.put<TrainingAssignment>(`${this.apiUrl}/assignments/${id}`, assignment);
+    return this.api.updateAssignment(id, assignment);
   }
 
   deleteAssignment(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/assignments/${id}`);
+    return this.api.deleteAssignment(id);
   }
 
   createSubmission(assignmentId: number, submission: { content?: string; fileUrl?: string }): Observable<TrainingSubmission> {
-    return this.http.post<TrainingSubmission>(`${this.apiUrl}/assignments/${assignmentId}/submissions`, submission);
+    return this.api.createSubmission(assignmentId, submission);
   }
 
   getSubmissionsByAssignmentId(assignmentId: number): Observable<TrainingSubmission[]> {
-    return this.http.get<TrainingSubmission[]>(`${this.apiUrl}/assignments/${assignmentId}/submissions`);
+    return this.api.getSubmissionsByAssignmentId(assignmentId);
   }
 
   getSubmissionById(id: number): Observable<TrainingSubmission> {
-    return this.http.get<TrainingSubmission>(`${this.apiUrl}/submissions/${id}`);
+    return this.api.getSubmissionById(id);
   }
 
   gradeSubmission(id: number, grade: number, feedback?: string): Observable<TrainingSubmission> {
-    return this.http.put<TrainingSubmission>(`${this.apiUrl}/submissions/${id}/grade`, { grade, feedback });
+    return this.api.gradeTrainingSubmission(id, grade, feedback);
   }
 
   getStatistics(): Observable<TrainingStatistics> {
-    return this.http.get<TrainingStatistics>(`${this.apiUrl}/statistics`);
+    return this.api.getStatistics();
   }
 
   getCourseStatistics(courseId: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/courses/${courseId}/statistics`);
+    return this.api.getTrainingCourseStatistics(courseId);
   }
 }

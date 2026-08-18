@@ -1,3 +1,4 @@
+using EducationalPlatform.Nehzat.Application.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EducationalPlatform.Nehzat.Application.Interfaces;
@@ -45,7 +46,7 @@ public class SpiritualPathController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(GenericErrorMessages.BadRequest);
         }
     }
 
@@ -63,7 +64,7 @@ public class SpiritualPathController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(GenericErrorMessages.BadRequest);
         }
     }
 
@@ -81,7 +82,7 @@ public class SpiritualPathController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(GenericErrorMessages.BadRequest);
         }
     }
 

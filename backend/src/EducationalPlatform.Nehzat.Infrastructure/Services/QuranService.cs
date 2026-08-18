@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
@@ -10,10 +11,12 @@ namespace EducationalPlatform.Nehzat.Infrastructure.Services
     public class QuranService : IQuranService
     {
         private readonly AppDbContext _db;
+        private readonly IWebHostEnvironment _env;
 
-        public QuranService(AppDbContext db)
+        public QuranService(AppDbContext db, IWebHostEnvironment env)
         {
             _db = db;
+            _env = env;
         }
 
         // Surah operations
@@ -472,7 +475,7 @@ namespace EducationalPlatform.Nehzat.Infrastructure.Services
 
         public async Task<List<string>> GetLessonPlanFilesAsync()
         {
-            var plansDir = Path.Combine("D:", "nehzat-plus", "Quran", ".omo", "plans");
+            var plansDir = GetPlansDirectory();
             if (!Directory.Exists(plansDir))
                 return new List<string>();
 
@@ -484,13 +487,22 @@ namespace EducationalPlatform.Nehzat.Infrastructure.Services
 
         public async Task<string> GetLessonPlanContentAsync(string fileName)
         {
-            var plansDir = Path.Combine("D:", "nehzat-plus", "Quran", ".omo", "plans");
-            var filePath = Path.Combine(plansDir, fileName + ".md");
+            var plansDir = GetPlansDirectory();
+            var fullPlansDir = Path.GetFullPath(plansDir);
+            var filePath = Path.GetFullPath(Path.Combine(plansDir, fileName + ".md"));
+
+            if (!filePath.StartsWith(fullPlansDir, StringComparison.OrdinalIgnoreCase))
+                throw new UnauthorizedAccessException("Invalid file path.");
 
             if (!File.Exists(filePath))
                 throw new FileNotFoundException("Plan file not found", fileName);
 
             return await File.ReadAllTextAsync(filePath);
+        }
+
+        private string GetPlansDirectory()
+        {
+            return Path.Combine(_env.ContentRootPath, "Quran", ".omo", "plans");
         }
 
         public async Task<List<Ayah>> SearchAyahsAsync(string query, int maxResults = 50)

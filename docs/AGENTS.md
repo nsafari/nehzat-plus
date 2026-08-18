@@ -97,3 +97,36 @@ With `MockAuthHandler` enabled, any username/password works — the handler alwa
 - **One default branch**: multi-branch workflows are only partially implemented
 - **`EnsureCreated()`**: no migration history; schema changes require manual DB drops or `--seed`
 - **Backend csproj**: had `Microsoft.EntityFrameworkCore.Sqlite` — replaced with `SqlServer`. If you see Sqlite package added back, remove it.
+
+---
+
+## Version Archive System
+
+`docs/PROJECT_INVENTORY.md` auto-archives each tagged release with Persian commit grouping and section-level version labels.
+
+### How it works
+- **Pre-push hook** (`.git/hooks/pre-push`) triggers `scripts/archive-version.ps1` on every `git push`
+- Script detects **new tags** since the last archived version, groups commits by type (feature/fix/refactor/etc.) in Persian, computes file change stats, and updates section-level version labels via git diff path analysis
+- **Never blocks push** — silent no-op when no new tags exist
+
+### Install (one-time, per machine)
+```powershell
+.\scripts\install-hooks.ps1
+```
+
+### Manual run
+```powershell
+.\scripts\archive-version.ps1              # archive new tags
+.\scripts\archive-version.ps1 -WhatIf      # preview without writing
+```
+
+### Key files
+| File | Purpose |
+|------|---------|
+| `docs/PROJECT_INVENTORY.md` | The inventory document (15 sections, versioned labels) |
+| `scripts/archive-version.ps1` | Archive engine (Persian grouping, stats, section labels) |
+| `scripts/hooks/pre-push` | Trackable hook source (copied to `.git/hooks/` by installer) |
+| `scripts/install-hooks.ps1` | One-command hook installer (PS 5.1 compatible) |
+
+### Limitations
+- Commits are translated by **prefix only** (`feat:` → `ویژگی`); full sentence translation requires AI (ask "تحلیل کن" for a polished Persian version)

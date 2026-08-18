@@ -1,51 +1,12 @@
 <main class="student-page">
-  <header class="site-header">
-    <div class="brand-wrap">
-      @if (!logoHidden) {
-        <img
-          src="assets/nehzat.png"
-          alt="لوگو سایت"
-          class="site-logo"
-          (error)="logoHidden = true"
-        />
-      }
-      <div>
-        <h1>داشبورد متربی</h1>
-        <p class="muted">خوش آمدید {{ displayName }}</p>
-      </div>
-    </div>
-
-    <div class="header-nav">
-      <a class="nav-link" routerLink="/dashboard/spiritual" routerLinkActive="nav-link-active">مسیر معنوی</a>
-      <a class="nav-link" routerLink="/math/topics" routerLinkActive="nav-link-active">📐 ریاضیات</a>
-      <a class="nav-link" routerLink="/activity" routerLinkActive="nav-link-active">🏃 فعالیت بدنی</a>
-      <a class="nav-link" routerLink="/arts" routerLinkActive="nav-link-active">🎨 هنری</a>
-      <a class="nav-link" routerLink="/training-courses" routerLinkActive="nav-link-active">📚 تربیت مربی</a>
-    </div>
-
-    <div class="user-menu">
-      <button
-        type="button"
-        class="nudge-toggle"
-        [class.active]="nudgesEnabled()"
-        (click)="toggleNudgeNotifications()"
-        [title]="nudgesEnabled() ? 'غیرفعال کردن یادآورهای روزانه' : 'فعال کردن یادآورهای روزانه'"
-        aria-label="یادآورهای روزانه"
-      >
-        <i class="bi" [class.bi-bell]="!nudgesEnabled()" [class.bi-bell-fill]="nudgesEnabled()"></i>
-      </button>
-      <button type="button" class="menu-trigger" (click)="toggleUserMenu()">
-        <i class="bi bi-person-circle"></i>
-        <span>{{ currentUser?.username }}</span>
-      </button>
-      @if (isUserMenuOpen) {
-        <div class="menu-dropdown">
-          <button type="button" (click)="showUserModal()">نمایش جزئیات کاربر</button>
-          <button type="button" (click)="logout()">خروج</button>
-        </div>
-      }
-    </div>
-  </header>
+  <app-dashboard-header
+    [currentUser]="currentUser"
+    [nudgesEnabled]="nudgesEnabled"
+    (toggleUserMenu)="toggleUserMenu()"
+    (showUserModal)="showUserModal()"
+    (logout)="logout()"
+    (toggleNudge)="toggleNudgeNotifications()"
+  ></app-dashboard-header>
 
   @if (errorMessage) {
     <p class="lp-error">{{ errorMessage }}</p>
@@ -95,7 +56,7 @@
       <div class="timeline-container">
         <h4>تایم‌لاین تکالیف</h4>
         @if (loadingAssignments) {
-          <p class="muted">در حال دریافت تکالیف...</p>
+          <p class="muted">در حال دریافت تکلیف‌ها...</p>
         } @else if (!selectedCourse || assignments.length === 0) {
           <p class="muted">برای این درس هنوز تکلیفی ثبت نشده است.</p>
         } @else {
@@ -124,29 +85,11 @@
         }
       </div>
 
-      @if (loadingNudges) {
-        <p class="muted">در حال دریافت یادآورها...</p>
-      } @else if (dailyNudges.length > 0) {
-        <div class="smart-nudges">
-          <h5 class="smart-nudges__title"><i class="bi bi-bell-fill"></i> یادآورهای هوشمند</h5>
-          <div class="smart-nudges__list">
-            @for (nudge of dailyNudges; track nudge.id) {
-              <article [class]="'nudge-card nudge-card--' + nudge.domain">
-                <i class="bi" [class]="nudgeDomainIcon(nudge.domain)"></i>
-                <p class="nudge-card__message">{{ nudge.message }}</p>
-                <button
-                  type="button"
-                  class="nudge-card__dismiss"
-                  (click)="dismissDailyNudge(nudge.id)"
-                  aria-label="بستن یادآور"
-                >
-                  ×
-                </button>
-              </article>
-            }
-          </div>
-        </div>
-      }
+      <app-dashboard-nudge-panel
+        [dailyNudges]="dailyNudges"
+        [loadingNudges]="loadingNudges"
+        (dismiss)="dismissDailyNudge($event)"
+      ></app-dashboard-nudge-panel>
 
       <div class="chart-container">
         <h4>نمودار پیشرفت</h4>
@@ -155,10 +98,12 @@
         </div>
       </div>
 
+      <app-progress-summary></app-progress-summary>
+
       <app-dashboard-training-steps></app-dashboard-training-steps>
 
       <div class="audio-recorder">
-        <h4>ضبط صوت</h4>
+        <h4>ضبط صدا</h4>
         @if (selectedAssignment) {
           <p class="muted">تکلیف انتخاب‌شده: {{ selectedAssignment.title }}</p>
         } @else {
@@ -225,7 +170,7 @@
                 }
                 @if (resolveAudioUrl(submission.audioFileUrl); as submissionAudioUrl) {
                   <button type="button" class="btn-secondary" (click)="playAudio(submissionAudioUrl)">
-                    پخش صوت
+                    پخش صدا
                   </button>
                 }
               </article>
@@ -291,76 +236,13 @@
   </div>
 
   @if (isAssignmentModalOpen && selectedAssignment) {
-    <div class="modal-backdrop" (click)="closeAssignmentModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <header class="modal-header">
-          <h5>جزئیات تکلیف</h5>
-          <button type="button" class="btn-secondary" (click)="closeAssignmentModal()">بستن</button>
-        </header>
-
-        <div class="modal-body">
-          <h5>{{ selectedAssignment.title }}</h5>
-          <p><strong>تاریخ:</strong> {{ selectedAssignment.assignmentDate }}</p>
-          <p><strong>توضیحات:</strong> {{ selectedAssignment.description }}</p>
-          <p><strong>دستورالعمل:</strong> {{ selectedAssignment.instructions || '-' }}</p>
-
-          @if (selectedAssignment.attachments?.length) {
-            <div class="attachment-box">
-              <h6>فایل‌های ضمیمه:</h6>
-              <div class="attachment-list">
-                @for (attachment of selectedAssignment.attachments; track attachment.id) {
-                  <a
-                    [href]="resolveAttachmentUrl(attachment.url) || '#'"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="attachment-item"
-                  >
-                    <i class="bi" [class]="getAttachmentIcon(attachment.kind)"></i>
-                    {{ attachment.title }}
-                  </a>
-                }
-              </div>
-            </div>
-          }
-
-          @if (primaryInstructionAudioUrl) {
-            <div class="gate-box">
-              <h6>فایل راهنما (پیش‌نیاز ضبط)</h6>
-              <audio
-                #instructionAudio
-                controls
-                [src]="primaryInstructionAudioUrl"
-                (play)="onInstructionAudioPlay(instructionAudio)"
-                (timeupdate)="onInstructionAudioTimeUpdate(instructionAudio)"
-                (ended)="onInstructionAudioEnded(instructionAudio)"
-                (error)="onInstructionAudioError()"
-              ></audio>
-              <p class="muted">
-                گوش‌دادن کامل:
-                {{ assignmentProgress?.currentListenCount ?? 0 }}
-                /
-                {{ assignmentProgress?.requiredListenCount ?? 3 }}
-              </p>
-            </div>
-          }
-
-          @if (assignmentProgress) {
-            <div class="progress-box">
-              <p><strong>وضعیت:</strong> {{ assignmentProgress.hasSubmission ? 'تکمیل شده' : 'در انتظار تکمیل' }}</p>
-              <p><strong>نمره روزانه:</strong> {{ assignmentProgress.latestSubmission?.dailyScore ?? '-' }}</p>
-              <p><strong>نمره تجمعی:</strong> {{ assignmentProgress.latestSubmission?.cumulativeScore ?? '-' }}</p>
-              @if (assignmentProgress.latestSubmission?.feedback) {
-                <p><strong>بازخورد:</strong> {{ assignmentProgress.latestSubmission?.feedback }}</p>
-              }
-            </div>
-          }
-
-          <button type="button" class="btn-primary" (click)="startRecordingForAssignment(selectedAssignment)">
-            شروع ضبط صوت
-          </button>
-        </div>
-      </div>
-    </div>
+    <app-dashboard-assignment-modal
+      [assignment]="selectedAssignment"
+      [progress]="assignmentProgress"
+      [primaryInstructionAudioUrl]="primaryInstructionAudioUrl"
+      (close)="closeAssignmentModal()"
+      (startRecording)="startRecordingForAssignment($event)"
+    ></app-dashboard-assignment-modal>
   }
 
   @if (isUserModalOpen && currentUser) {
@@ -376,7 +258,7 @@
           <p><strong>ایمیل:</strong> {{ currentUser.studentInfo?.email ?? '-' }}</p>
           <p><strong>شماره تماس:</strong> {{ currentUser.studentInfo?.phoneNumber ?? '-' }}</p>
           <p><strong>نام کاربری:</strong> {{ currentUser.username }}</p>
-          <p><strong>نوع کاربر:</strong> {{ roleDisplayName }}</p>
+          <p><strong>نوع کاربر:</strong> متربی</p>
         </div>
       </div>
     </div>

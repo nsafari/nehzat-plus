@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using EducationalPlatform.Nehzat.Application.Constants;
 using EducationalPlatform.Nehzat.Domain.Entities;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
@@ -48,7 +49,7 @@ public class UserService : IUserService
             PhoneNumber = phoneNumber,
             ImageUrl = imageUrl,
             ApprovalStatus = "pending",
-            UserType = "trainee",
+            UserType = RoleNames.Trainee,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

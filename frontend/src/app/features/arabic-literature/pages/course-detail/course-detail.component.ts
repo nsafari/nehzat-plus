@@ -136,7 +136,7 @@ export class CourseDetailComponent implements OnInit {
   private loadData(courseId: number): void {
     this.loading = true;
     this.api.getArabicCourseById(courseId).subscribe({
-      next: (course) => {
+      next: (course: ArabicCourse) => {
         this.course = course;
         this.lessons = course.lessons ?? [];
         this.loadProgress();
@@ -147,7 +147,7 @@ export class CourseDetailComponent implements OnInit {
 
   private loadProgress(): void {
     this.api.getArabicUserProgress().subscribe({
-      next: (progress) => {
+      next: (progress: ArabicUserProgress[]) => {
         this.progress = progress;
         this.loading = false;
       },

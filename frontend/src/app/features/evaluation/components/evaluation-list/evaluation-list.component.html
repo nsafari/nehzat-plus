@@ -1,0 +1,152 @@
+<section class="eval-page">
+  <header class="eval-page__header">
+    <div class="eval-page__titles">
+      <h1>آزمون‌ها</h1>
+      <p>ارزیابی و سنجش دانسته‌های متربیان</p>
+    </div>
+    <div class="eval-page__toolbar">
+      <button class="btn-primary" type="button" (click)="openCreate()">＋ ایجاد آزمون</button>
+      <button class="btn-secondary" type="button" (click)="toggleQuestionBank()">
+        {{ showQuestionBank() ? 'بستن بانک سوالات' : 'مدیریت بانک سوالات' }}
+      </button>
+      <button class="btn-secondary" type="button" (click)="toggleResults()">
+        {{ showResults() ? 'بستن نتایج' : 'مشاهده نتایج' }}
+      </button>
+    </div>
+  </header>
+
+  <div class="eval-stats" *ngIf="showResults(); else compactStats">
+    <ng-container *ngIf="stats() as s">
+      <div class="stat-card">
+        <span class="stat-card__value">{{ faNum(s.totalEvaluations) }}</span>
+        <span class="stat-card__label">کل آزمون‌ها</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__value">{{ faNum(s.completedEvaluations) }}</span>
+        <span class="stat-card__label">تکمیل‌شده</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__value">{{ faNum(s.totalQuestions) }}</span>
+        <span class="stat-card__label">سوالات بانک</span>
+      </div>
+      <div class="stat-card stat-card--wide">
+        <span class="stat-card__label">پراکندگی موضوعی</span>
+        <div class="stat-card__chips">
+          <span class="lp-chip" *ngFor="let entry of s.categoryBreakdown | keyvalue">
+            {{ entry.key }} · {{ faNum(entry.value) }}
+          </span>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <ng-template #compactStats>
+    <div class="eval-stats eval-stats--compact">
+      <span class="compact-chip">{{ faNum(evaluations().length) }} آزمون</span>
+      <span class="compact-chip">{{ faNum(questions().length) }} سوال</span>
+    </div>
+  </ng-template>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>عنوان</th>
+          <th>موضوع</th>
+          <th>تاریخ شروع</th>
+          <th>سوالات</th>
+          <th>امتیاز</th>
+          <th>وضعیت</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let exam of evaluations(); trackBy: trackByEval">
+          <td data-label="عنوان">
+            <span class="exam-title">{{ exam.title }}</span>
+          </td>
+          <td data-label="موضوع">
+            <span class="lp-chip">{{ exam.category }}</span>
+          </td>
+          <td data-label="تاریخ شروع">{{ formatDate(exam.startedAt) }}</td>
+          <td data-label="سوالات">{{ faNum(exam.totalQuestions) }}</td>
+          <td data-label="امتیاز">
+            <span *ngIf="exam.status === 'completed'; else dashScore">
+              {{ faNum(exam.totalScore) }} <small class="muted-pct">(٪{{ faNum(scorePercent(exam)) }})</small>
+            </span>
+            <ng-template #dashScore>—</ng-template>
+          </td>
+          <td data-label="وضعیت">
+            <span class="status-badge" [class.status-badge--inprogress]="exam.status === 'in_progress'"
+              [class.status-badge--done]="exam.status === 'completed'">
+              {{ statusLabels[exam.status] }}
+            </span>
+          </td>
+          <td data-label="عملیات">
+            <button *ngIf="exam.status === 'in_progress'" class="btn-primary btn-sm" type="button" (click)="startExam(exam)">
+            شروع آزمون
+          </button>
+          <button *ngIf="exam.status !== 'in_progress'" class="btn-secondary btn-sm" type="button" (click)="startExam(exam)">
+            مشاهده
+          </button>
+          </td>
+        </tr>
+        <tr *ngIf="loading()">
+          <td colspan="7" class="table-empty">
+            <span class="spinner"></span> در حال بارگذاری…
+          </td>
+        </tr>
+        <tr *ngIf="!loading() && evaluations().length === 0">
+          <td colspan="7" class="table-empty">
+            <p>هنوز آزمونی برگزار نشده است.</p>
+            <ng-container *ngIf="!hasQuestions">
+              <p class="table-empty__hint">بانک سوالات خالی است؛ برای شروع چند سوال نمونه اضافه کنید.</p>
+              <button class="btn-primary" type="button" (click)="seedQuestions()" [disabled]="seeding()">
+                {{ seeding() ? 'در حال افزودن…' : 'اضافه کردن سوالات نمونه' }}
+              </button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Create exam modal -->
+<div *ngIf="showCreate() && categories().length" class="modal-backdrop" (click)="closeCreate()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <header class="modal-dialog__header">
+      <h3>ایجاد آزمون جدید</h3>
+      <button class="btn-icon" type="button" (click)="closeCreate()" title="بستن">✕</button>
+    </header>
+    <div class="modal-dialog__body">
+      <label class="lp-label">
+        <span>موضوع آزمون</span>
+        <select class="lp-input" [ngModel]="createCategory()" (ngModelChange)="setCreateCategory($event)">
+          <option *ngFor="let category of categories()" [value]="category">{{ category }}</option>
+        </select>
+      </label>
+      <label class="lp-label">
+        <span>تعداد سوالات</span>
+        <input class="lp-input" type="number" min="1" max="20" [ngModel]="createCount()"
+          (ngModelChange)="setCreateCount($event)" />
+      </label>
+    </div>
+    <footer class="modal-dialog__footer">
+      <button class="btn-primary" type="button" (click)="createExam()" [disabled]="creating()">
+        {{ creating() ? 'در حال ساخت…' : 'ساخت آزمون' }}
+      </button>
+      <button class="btn-secondary" type="button" (click)="closeCreate()">انصراف</button>
+    </footer>
+  </div>
+</div>
+
+<!-- Question bank modal -->
+<div *ngIf="showQuestionBank()" class="modal-backdrop">
+  <div class="modal-dialog modal-dialog--wide" (click)="$event.stopPropagation()">
+    <app-question-bank
+      (closed)="toggleQuestionBank()"
+      (changed)="onBankChangelog()"
+    ></app-question-bank>
+  </div>
+</div>

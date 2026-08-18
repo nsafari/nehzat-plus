@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Application.Constants;
+using EducationalPlatform.Nehzat.Application.Exceptions;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -27,7 +29,7 @@ public class CurriculumVersionController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var result = await _service.GetByIdAsync(id);
-        if (result == null) return NotFound(new { message = "نسخه برنامه درسی پیدا نشد." });
+        if (result == null) return NotFound(GenericErrorMessages.NotFound);
         return Ok(result);
     }
 
@@ -35,7 +37,7 @@ public class CurriculumVersionController : ControllerBase
     public async Task<IActionResult> GetActive()
     {
         var result = await _service.GetActiveVersionAsync();
-        if (result == null) return NotFound(new { message = "نسخه فعالی یافت نشد." });
+        if (result == null) return NotFound(GenericErrorMessages.NotFound);
         return Ok(result);
     }
 
@@ -47,9 +49,9 @@ public class CurriculumVersionController : ControllerBase
             var result = await _service.CreateAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 
@@ -61,9 +63,9 @@ public class CurriculumVersionController : ControllerBase
             var result = await _service.UpdateAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -75,9 +77,9 @@ public class CurriculumVersionController : ControllerBase
             await _service.DeleteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }

@@ -1,0 +1,45 @@
+<div class="admin-page">
+  <h1>مدیریت سفارش‌ها</h1>
+  <section class="stats">
+    <div class="stat-card"><span>در انتظار</span><strong>{{ pendingStats().pending }}</strong></div>
+    <div class="stat-card"><span>در جریان</span><strong>{{ pendingStats().inProgress }}</strong></div>
+    <div class="stat-card"><span>تحویل امروز</span><strong>{{ pendingStats().completed }}</strong></div>
+    <div class="stat-card"><span>پیک‌های فعال</span><strong>{{ pendingStats().activeCouriers }}</strong></div>
+  </section>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>شناسه</th>
+        <th>مشتری</th>
+        <th>مبدا → مقصد</th>
+        <th>وضعیت</th>
+        <th>تخصیص</th>
+        <th>عملیات</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of orders(); track order.id) {
+        <tr>
+          <td>{{ order.id }}</td>
+          <td>{{ order.customerName }}</td>
+          <td>{{ order.pickupAddress | slice:0:30 }} → {{ order.dropoffAddress | slice:0:30 }}</td>
+          <td>
+            <span class="lp-chip" [class.lp-chip-warning]="order.status === 'pending'">{{ order.status }}</span>
+          </td>
+          <td>
+            <input class="lp-input" type="number" placeholder="شناسه پیک" #cid />
+            <button class="lp-btn" (click)="assign(order.id, cid.valueAsNumber)">تخصیص</button>
+          </td>
+          <td>
+            <select class="lp-input" #sel (change)="updateStatus(order.id, sel.value)">
+              <option value="in_progress">in_progress</option>
+              <option value="delivered">delivered</option>
+              <option value="cancelled">cancelled</option>
+            </select>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

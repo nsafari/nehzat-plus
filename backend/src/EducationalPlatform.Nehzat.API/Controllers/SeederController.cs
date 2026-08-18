@@ -10,15 +10,20 @@ namespace EducationalPlatform.Nehzat.API.Controllers;
 public class SeederController : ControllerBase
 {
     private readonly SampleDataSeeder _seeder;
+    private readonly IWebHostEnvironment _env;
 
-    public SeederController(SampleDataSeeder seeder)
+    public SeederController(SampleDataSeeder seeder, IWebHostEnvironment env)
     {
         _seeder = seeder;
+        _env = env;
     }
 
     [HttpPost("seed")]
     public async Task<IActionResult> Seed()
     {
+        if (!_env.IsDevelopment())
+            return NotFound();
+
         try
         {
             await _seeder.SeedAsync();

@@ -61,6 +61,9 @@ public class AppDbContext : DbContext
     public DbSet<XpBadge> XpBadges => Set<XpBadge>();
     public DbSet<UserXp> UserXp => Set<UserXp>();
     public DbSet<UserXpTransaction> XpTransactions => Set<UserXpTransaction>();
+    public DbSet<Badge> Badges => Set<Badge>();
+    public DbSet<UserBadge> UserBadges => Set<UserBadge>();
+    public DbSet<PointTransaction> PointTransactions => Set<PointTransaction>();
     public DbSet<Artwork> Artworks => Set<Artwork>();
     public DbSet<MusicRecord> MusicRecords => Set<MusicRecord>();
     public DbSet<CalligraphySample> CalligraphySamples => Set<CalligraphySample>();
@@ -152,9 +155,70 @@ public class AppDbContext : DbContext
   public DbSet<TrainingAssignment> TrainingAssignments => Set<TrainingAssignment>();
   public DbSet<TrainingSubmission> TrainingSubmissions => Set<TrainingSubmission>();
 
+  public DbSet<Maktab> Maktabs => Set<Maktab>();
+  public DbSet<Halgheh> Halghehs => Set<Halgheh>();
+  public DbSet<HalghehMember> HalghehMembers => Set<HalghehMember>();
+  public DbSet<HalghehAssignment> HalghehAssignments => Set<HalghehAssignment>();
+  public DbSet<HalghehAssignmentSubmission> HalghehAssignmentSubmissions => Set<HalghehAssignmentSubmission>();
+  public DbSet<MaktabMember> MaktabMembers => Set<MaktabMember>();
+    public DbSet<RingMaktab> RingMaktabs => Set<RingMaktab>();
+
+    public DbSet<KnowledgeDocument> KnowledgeDocuments => Set<KnowledgeDocument>();
+    public DbSet<AiConversation> AiConversations => Set<AiConversation>();
+    public DbSet<AiMessage> AiMessages => Set<AiMessage>();
+
+    // Phase 2: Messaging
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<ConversationMember> ConversationMembers => Set<ConversationMember>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<MessageAttachment> MessageAttachments => Set<MessageAttachment>();
+
+    // Phase 3: Workflow
+    public DbSet<WorkflowDefinition> WorkflowDefinitions => Set<WorkflowDefinition>();
+    public DbSet<WorkflowStep> WorkflowSteps => Set<WorkflowStep>();
+    public DbSet<WorkflowRequest> WorkflowRequests => Set<WorkflowRequest>();
+    public DbSet<WorkflowAction> WorkflowActions => Set<WorkflowAction>();
+
+    // Phase 16: Map & Geo
+    public DbSet<UserLocation> UserLocations => Set<UserLocation>();
+    public DbSet<MapOrder> MapOrders => Set<MapOrder>();
+    public DbSet<OrderTrackingPoint> OrderTrackingPoints => Set<OrderTrackingPoint>();
+    public DbSet<DeliveryRoute> DeliveryRoutes => Set<DeliveryRoute>();
+    public DbSet<RoutePoint> RoutePoints => Set<RoutePoint>();
+
+    // Phase 11: Calendar
+    public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
+    public DbSet<CalendarEventAttendee> CalendarEventAttendees => Set<CalendarEventAttendee>();
+
+    // Phase 8: Profile
+    public DbSet<UserNotificationSettings> UserNotificationSettings => Set<UserNotificationSettings>();
+    public DbSet<Question> Questions => Set<Question>();
+    public DbSet<RandomEvaluation> RandomEvaluations => Set<RandomEvaluation>();
+    public DbSet<EvaluationAnswer> EvaluationAnswers => Set<EvaluationAnswer>();
+
+    // Phase 17: Notifications, Devices, Courier Reports
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<UserNotification> UserNotifications => Set<UserNotification>();
+    public DbSet<UserDevice> UserDevices => Set<UserDevice>();
+    public DbSet<CourierDailyStat> CourierDailyStats => Set<CourierDailyStat>();
+
+    // Phase 10: Progress
+    public DbSet<ProgressReport> ProgressReports => Set<ProgressReport>();
+    public DbSet<ProgressMetric> ProgressMetrics => Set<ProgressMetric>();
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("nehzat");
+
+        // Global: set ALL FKs to Restrict by default to prevent circular cascade
+        // constraint issues during EnsureCreated(). Individual configs can override.
+        foreach (var fk in modelBuilder.Model.GetEntityTypes()
+            .SelectMany(t => t.GetForeignKeys()))
+        {
+            fk.DeleteBehavior = DeleteBehavior.Restrict;
+        }
+
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>(entity =>
@@ -378,6 +442,90 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => new { e.ParentId, e.StudentId }).IsUnique();
         });
 
+        modelBuilder.Entity<Maktab>(entity =>
+        {
+            entity.HasIndex(e => e.InviteCode).IsUnique();
+            entity.HasIndex(e => e.OwnerUserId);
+            entity.HasQueryFilter(e => !e.IsDeleted);
+
+            entity.HasOne(e => e.Owner)
+                .WithMany()
+                .HasForeignKey(e => e.OwnerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<MaktabMember>(entity =>
+        {
+            entity.HasIndex(e => new { e.MaktabId, e.UserId }).IsUnique();
+
+            entity.HasOne(e => e.Maktab)
+                .WithMany(m => m.Members)
+                .HasForeignKey(e => e.MaktabId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Halgheh>(entity =>
+        {
+            entity.HasQueryFilter(e => !e.IsDeleted);
+            entity.HasIndex(e => e.MaktabId);
+            entity.HasOne(e => e.Moderator)
+                .WithMany()
+                .HasForeignKey(e => e.ModeratorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<HalghehMember>(entity =>
+        {
+            entity.HasIndex(e => new { e.HalghehId, e.UserId }).IsUnique();
+
+            entity.HasOne(e => e.Halgheh)
+                .WithMany(h => h.Members)
+                .HasForeignKey(e => e.HalghehId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<HalghehAssignment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+
+            entity.HasIndex(e => new { e.HalghehId, e.Status });
+
+            entity.HasOne(e => e.Halgheh)
+                .WithMany()
+                .HasForeignKey(e => e.HalghehId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<HalghehAssignmentSubmission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Feedback).HasMaxLength(2000);
+
+            entity.HasIndex(e => new { e.HalghehAssignmentId, e.UserId }).IsUnique();
+
+            entity.HasOne(e => e.HalghehAssignment)
+                .WithMany(a => a.Submissions)
+                .HasForeignKey(e => e.HalghehAssignmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<EvaluatorMadrasah>(entity =>
         {
             entity.HasOne(e => e.Evaluator)
@@ -560,6 +708,37 @@ public class AppDbContext : DbContext
                   .HasForeignKey(e => e.BadgeId)
                   .IsRequired(false)
                   .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Badge>(entity =>
+        {
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.HasMany(e => e.UserBadges)
+                  .WithOne(ub => ub.Badge)
+                  .HasForeignKey(ub => ub.BadgeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<UserBadge>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.BadgeId }).IsUnique();
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Badge)
+                  .WithMany(b => b.UserBadges)
+                  .HasForeignKey(e => e.BadgeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PointTransaction>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Artwork>(entity =>
@@ -1328,6 +1507,163 @@ public class AppDbContext : DbContext
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(e => new { e.AssignmentId, e.UserId }).IsUnique();
+        });
+
+        modelBuilder.Entity<KnowledgeDocument>(entity =>
+        {
+            entity.Property(e => e.Title).HasMaxLength(300).IsRequired();
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.DocumentType).HasMaxLength(50);
+            entity.Property(e => e.EmbeddingJson).HasColumnType("text");
+            entity.HasOne(e => e.Subject)
+                  .WithMany()
+                  .HasForeignKey(e => e.SubjectId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Maktab)
+                  .WithMany()
+                  .HasForeignKey(e => e.MaktabId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.MaktabId);
+            entity.HasIndex(e => e.SubjectId);
+        });
+
+        modelBuilder.Entity<AiConversation>(entity =>
+        {
+            entity.Property(e => e.Title).HasMaxLength(300);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.UserId);
+        });
+
+        modelBuilder.Entity<AiMessage>(entity =>
+        {
+            entity.Property(e => e.Role).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.SourcesJson).HasColumnType("text");
+            entity.HasOne(e => e.Conversation)
+                  .WithMany(c => c.Messages)
+                  .HasForeignKey(e => e.ConversationId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.ConversationId);
+        });
+
+        modelBuilder.Entity<WorkflowStep>(entity =>
+        {
+            entity.HasIndex(e => new { e.WorkflowId, e.StepOrder }).IsUnique();
+            entity.HasOne(e => e.Workflow)
+                  .WithMany(w => w.Steps)
+                  .HasForeignKey(e => e.WorkflowId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<WorkflowRequest>(entity =>
+        {
+            entity.HasOne(e => e.Workflow)
+                  .WithMany(w => w.Requests)
+                  .HasForeignKey(e => e.WorkflowId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.CurrentStep)
+                .WithMany()
+                .HasForeignKey(e => e.CurrentStepId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Creator)
+                  .WithMany()
+                  .HasForeignKey(e => e.CreatedBy)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.CreatedBy);
+        });
+
+        modelBuilder.Entity<WorkflowAction>(entity =>
+        {
+            entity.HasOne(e => e.Request)
+                  .WithMany(r => r.Actions)
+                  .HasForeignKey(e => e.RequestId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Step)
+                  .WithMany()
+                  .HasForeignKey(e => e.StepId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => e.RequestId);
+        });
+
+        modelBuilder.Entity<CalendarEvent>(entity =>
+        {
+            entity.HasOne(e => e.Creator)
+                  .WithMany()
+                  .HasForeignKey(e => e.CreatorUserId)
+                  .IsRequired(false);
+        });
+
+        modelBuilder.Entity<CalendarEventAttendee>(entity =>
+        {
+            entity.HasOne(e => e.CalendarEvent)
+                  .WithMany(e => e.Attendees)
+                  .HasForeignKey(e => e.CalendarEventId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId);
+            entity.HasIndex(e => new { e.CalendarEventId, e.UserId }).IsUnique();
+        });
+
+        modelBuilder.Entity<ProgressReport>(entity =>
+        {
+            entity.HasOne(e => e.Student)
+                  .WithMany()
+                  .HasForeignKey(e => e.StudentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProgressMetric>(entity =>
+        {
+            entity.HasOne(e => e.Report)
+                  .WithMany(r => r.Metrics)
+                  .HasForeignKey(e => e.ProgressReportId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasOne(x => x.Sender).WithMany().HasForeignKey(x => x.SenderUserId).IsRequired(false);
+        });
+
+        modelBuilder.Entity<UserNotification>(entity =>
+        {
+            entity.HasOne(x => x.Notification).WithMany(n => n.Recipients).HasForeignKey(x => x.NotificationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            entity.HasIndex(x => new { x.UserId, x.IsRead });
+        });
+
+        modelBuilder.Entity<UserDevice>(entity =>
+        {
+            entity.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            entity.HasIndex(x => x.DeviceToken).IsUnique();
+        });
+
+        modelBuilder.Entity<CourierDailyStat>(entity =>
+        {
+            entity.HasOne(x => x.Courier).WithMany().HasForeignKey(x => x.CourierUserId);
+            entity.HasIndex(x => new { x.CourierUserId, x.Date }).IsUnique();
+        });
+
+        modelBuilder.Entity<Question>(entity =>
+        {
+            entity.HasOne(e => e.CreatedBy).WithMany().HasForeignKey(e => e.CreatedByUserId);
+        });
+
+        modelBuilder.Entity<RandomEvaluation>(entity =>
+        {
+            entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId);
+        });
+
+        modelBuilder.Entity<EvaluationAnswer>(entity =>
+        {
+            entity.HasOne(e => e.RandomEvaluation).WithMany(r => r.Answers).HasForeignKey(e => e.RandomEvaluationId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Question).WithMany().HasForeignKey(e => e.QuestionId);
         });
     }
 }

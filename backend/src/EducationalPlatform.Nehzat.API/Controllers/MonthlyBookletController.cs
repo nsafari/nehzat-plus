@@ -1,3 +1,4 @@
+using EducationalPlatform.Nehzat.Application.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EducationalPlatform.Nehzat.Application.DTOs;
@@ -56,11 +57,11 @@ public class MonthlyBookletController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -75,7 +76,7 @@ public class MonthlyBookletController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -90,7 +91,7 @@ public class MonthlyBookletController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }

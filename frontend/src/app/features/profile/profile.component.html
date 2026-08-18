@@ -1,0 +1,137 @@
+<div class="profile-page">
+  <div class="profile-header">
+    <h1>پروفایل کاربری</h1>
+  </div>
+
+  <div class="profile-tabs">
+    <button
+      [class.active]="activeTab() === 'info'"
+      (click)="setTab('info')">
+      اطلاعات شخصی
+    </button>
+    <button
+      [class.active]="activeTab() === 'notifications'"
+      (click)="setTab('notifications')">
+      تنظیمات اعلان‌ها
+    </button>
+    <button
+      [class.active]="activeTab() === 'account'"
+      (click)="setTab('account')">
+      تنظیمات حساب
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+    @if (activeTab() === 'info' && profile()) {
+      <div class="profile-card">
+        <div class="profile-avatar">
+          @if (profile()?.imageUrl) {
+            <img [src]="profile()!.imageUrl" alt="عکس پروفایل" />
+          } @else {
+            <div class="avatar-placeholder">{{ profile()!.firstName.charAt(0) }}</div>
+          }
+        </div>
+        <div class="profile-info">
+          <div class="info-row">
+            <label>نام</label>
+            <span>{{ profile()!.firstName }} {{ profile()!.lastName }}</span>
+          </div>
+          @if (profile()!.email) {
+            <div class="info-row">
+              <label>ایمیل</label>
+              <span>{{ profile()!.email }}</span>
+            </div>
+          }
+          <div class="info-row">
+            <label>شماره تماس</label>
+            <span>{{ profile()!.phoneNumber }}</span>
+          </div>
+          @if (profile()!.nationalCode) {
+            <div class="info-row">
+              <label>کد ملی</label>
+              <span>{{ profile()!.nationalCode }}</span>
+            </div>
+          }
+          <div class="info-row">
+            <label>نوع کاربری</label>
+            <span class="lp-chip">{{ profile()!.userType }}</span>
+          </div>
+          @if (profile()!.maktabName) {
+            <div class="info-row">
+              <label>مکتب</label>
+              <span>{{ profile()!.maktabName }}</span>
+            </div>
+          }
+          @if (profile()!.biography) {
+            <div class="info-row">
+              <label>درباره من</label>
+              <span>{{ profile()!.biography }}</span>
+            </div>
+          }
+          <div class="info-row">
+            <label>تاریخ عضویت</label>
+            <span>{{ profile()!.createdAt | date:'yyyy/MM/dd' }}</span>
+          </div>
+          @if (profile()!.lastLoginAt) {
+            <div class="info-row">
+              <label>آخرین ورود</label>
+              <span>{{ profile()!.lastLoginAt | date:'yyyy/MM/dd' }}</span>
+            </div>
+          }
+        </div>
+        <button class="lp-btn lp-btn-primary" (click)="startEdit()">ویرایش پروفایل</button>
+      </div>
+    }
+
+    @if (activeTab() === 'notifications' && notifications()) {
+      <div class="profile-card">
+        <div class="notification-toggles">
+          <div class="toggle-row">
+            <label>تکلیف جدید</label>
+            <button [class.active]="notifications()!.newAssignment" (click)="toggleNotification('newAssignment')">
+              {{ notifications()!.newAssignment ? 'فعال' : 'غیرفعال' }}
+            </button>
+          </div>
+          <div class="toggle-row">
+            <label>بررسی ارسال</label>
+            <button [class.active]="notifications()!.submissionReviewed" (click)="toggleNotification('submissionReviewed')">
+              {{ notifications()!.submissionReviewed ? 'فعال' : 'غیرفعال' }}
+            </button>
+          </div>
+          <div class="toggle-row">
+            <label>عضو جدید</label>
+            <button [class.active]="notifications()!.newMember" (click)="toggleNotification('newMember')">
+              {{ notifications()!.newMember ? 'فعال' : 'غیرفعال' }}
+            </button>
+          </div>
+          <div class="toggle-row">
+            <label>یادآوری جلسه</label>
+            <button [class.active]="notifications()!.sessionReminder" (click)="toggleNotification('sessionReminder')">
+              {{ notifications()!.sessionReminder ? 'فعال' : 'غیرفعال' }}
+            </button>
+          </div>
+          <div class="toggle-row">
+            <label>اعلان سیستمی</label>
+            <button [class.active]="notifications()!.systemAnnouncement" (click)="toggleNotification('systemAnnouncement')">
+              {{ notifications()!.systemAnnouncement ? 'فعال' : 'غیرفعال' }}
+            </button>
+          </div>
+        </div>
+        <button class="lp-btn lp-btn-primary" [disabled]="saving()" (click)="saveNotifications()">
+          {{ saving() ? 'در حال ذخیره...' : 'ذخیره تنظیمات' }}
+        </button>
+      </div>
+    }
+
+    @if (activeTab() === 'account') {
+      <div class="profile-card">
+        <p class="muted">تنظیمات حساب کاربری از طریق OTUH2 مدیریت می‌شود.</p>
+        <p class="muted">برای تغییر رمز عبور، از سیستم احراز هویت مرکزی استفاده کنید.</p>
+      </div>
+    }
+  }
+</div>

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Application.Constants;
+using EducationalPlatform.Nehzat.Application.Exceptions;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -42,9 +44,9 @@ public class QuranController : ControllerBase
             var result = await _service.CreateSurahAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(new { message = GenericErrorMessages.Conflict });
         }
     }
 
@@ -56,9 +58,9 @@ public class QuranController : ControllerBase
             var result = await _service.UpdateSurahAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -70,9 +72,9 @@ public class QuranController : ControllerBase
             await _service.DeleteSurahAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -115,9 +117,9 @@ public class QuranController : ControllerBase
             var result = await _service.UpdateAyahAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -129,9 +131,9 @@ public class QuranController : ControllerBase
             await _service.DeleteAyahAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -160,9 +162,9 @@ public class QuranController : ControllerBase
             var result = await _service.CreateTajweedRuleAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(new { message = GenericErrorMessages.Conflict });
         }
     }
 
@@ -174,9 +176,9 @@ public class QuranController : ControllerBase
             var result = await _service.UpdateTajweedRuleAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -188,9 +190,9 @@ public class QuranController : ControllerBase
             await _service.DeleteTajweedRuleAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -219,9 +221,9 @@ public class QuranController : ControllerBase
             var result = await _service.CreateQuranStudentCourseAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(new { message = GenericErrorMessages.Conflict });
         }
     }
 
@@ -233,9 +235,9 @@ public class QuranController : ControllerBase
             var result = await _service.UpdateQuranStudentCourseAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -247,9 +249,9 @@ public class QuranController : ControllerBase
             await _service.DeleteQuranStudentCourseAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -278,9 +280,9 @@ public class QuranController : ControllerBase
             var result = await _service.CreateRecitationLevelAsync(request);
             return Ok(result);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(new { message = GenericErrorMessages.Conflict });
         }
     }
 
@@ -292,9 +294,9 @@ public class QuranController : ControllerBase
             var result = await _service.UpdateRecitationLevelAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -306,9 +308,9 @@ public class QuranController : ControllerBase
             await _service.DeleteRecitationLevelAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -344,9 +346,9 @@ public class QuranController : ControllerBase
             var result = await _service.UpdateQuranCurriculumAsync(id, request);
             return Ok(result);
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 
@@ -358,9 +360,9 @@ public class QuranController : ControllerBase
             await _service.DeleteQuranCurriculumAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(new { message = GenericErrorMessages.NotFound });
         }
     }
 

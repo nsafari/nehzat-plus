@@ -62,7 +62,7 @@ export class AuthService {
    *  interceptor attaches it to every subsequent API call. */
   signinLocal(username: string, password: string): Observable<AuthSigninResponse> {
     return this.lessonPlannerApi.signin({ username, password }).pipe(
-      tap(response => {
+      tap((response: AuthSigninResponse) => {
         if (response.token) {
           sessionStorage.setItem(ACCESS_TOKEN_KEY, response.token);
           sessionStorage.setItem(ID_TOKEN_KEY, response.token);
@@ -103,17 +103,32 @@ export class AuthService {
 
   logout(): void {
     const idToken = sessionStorage.getItem(ID_TOKEN_KEY);
+    const refreshToken = this.storage.getItem(REFRESH_TOKEN_KEY);
+
     sessionStorage.removeItem(ACCESS_TOKEN_KEY);
     sessionStorage.removeItem(ID_TOKEN_KEY);
     this.storage.removeItem(REFRESH_TOKEN_KEY);
 
-    // End OTUH2 session server-side, then redirect back to login
-    const otuh2LogoutUrl = `${resolveOtuh2BaseUrl()}/connect/logout`;
+    if (environment.useMockAuth) {
+      void this.router.navigateByUrl('/auth/login');
+      return;
+    }
+
+    if (idToken || refreshToken) {
+      this.endSession(idToken);
+    } else {
+      void this.router.navigateByUrl('/auth/login');
+    }
+  }
+
+  /** RP-initiated logout: ends the OTUH2 server-side session then returns to /auth/login. */
+  endSession(idToken: string | null = null): void {
+    const endSessionUrl = `${resolveOtuh2BaseUrl()}/connect/endsession`;
     const postLogoutUri = encodeURIComponent(`${window.location.origin}/auth/login`);
-    const logoutRedirect = idToken
-      ? `${otuh2LogoutUrl}?id_token_hint=${encodeURIComponent(idToken)}&post_logout_redirect_uri=${postLogoutUri}`
-      : `${otuh2LogoutUrl}?post_logout_redirect_uri=${postLogoutUri}`;
-    window.location.href = logoutRedirect;
+    const redirectUrl = idToken
+      ? `${endSessionUrl}?id_token_hint=${encodeURIComponent(idToken)}&post_logout_redirect_uri=${postLogoutUri}`
+      : `${endSessionUrl}?post_logout_redirect_uri=${postLogoutUri}`;
+    window.location.href = redirectUrl;
   }
 
   /** Try to refresh the access token using the stored refresh token. */

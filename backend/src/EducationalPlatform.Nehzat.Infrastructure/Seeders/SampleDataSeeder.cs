@@ -9,11 +9,19 @@ public class SampleDataSeeder
 {
     private readonly AppDbContext _db;
     private readonly IUserService _userService;
+    private readonly IParentService _parentService;
+    private readonly IBranchManagerService _branchManagerService;
+    private readonly IEvaluatorService _evaluatorService;
+    private readonly IBranchService _branchService;
 
-    public SampleDataSeeder(AppDbContext db, IUserService userService)
+    public SampleDataSeeder(AppDbContext db, IUserService userService, IParentService parentService, IBranchManagerService branchManagerService, IEvaluatorService evaluatorService, IBranchService branchService)
     {
         _db = db;
         _userService = userService;
+        _parentService = parentService;
+        _branchManagerService = branchManagerService;
+        _evaluatorService = evaluatorService;
+        _branchService = branchService;
     }
 
     public async Task SeedAsync()
@@ -37,6 +45,112 @@ public class SampleDataSeeder
         await SeedSpiritualOccasionsAsync();
         await SeedSpiritualPathsAsync();
         await new SurveyDataSeeder(_db).SeedAsync();
+        await SeedDevAccountsAsync();
+    }
+
+    private async Task SeedDevAccountsAsync()
+    {
+        if (await _db.Users.AnyAsync(u => u.UserType == "parent" || u.UserType == "branch_manager" || u.UserType == "headquarters" || u.UserType == "evaluator"))
+        {
+            Console.WriteLine("⚠️ حساب‌های توسعه برای نقش‌های parent, branch_manager, headquarters, evaluator قبلاً ایجاد شده‌اند");
+            return;
+        }
+
+        var branches = await _branchService.GetAllAsync();
+        var defaultBranchId = branches.FirstOrDefault()?.Id ?? 1;
+
+        // Parent account
+        var parent = new Parent
+        {
+            Username = "parent.dev",
+            FirstName = "والد",
+            LastName = "تست",
+            Email = "parent.dev@example.com",
+            PhoneNumber = "09124444444",
+            Address = "تهران، خیابان شریعتی",
+            NationalCode = "1234567890",
+            Status = "active",
+            BranchId = defaultBranchId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.Parents.Add(parent);
+        await _db.SaveChangesAsync();
+
+        await _userService.CreateUserAsync(
+            "parent.dev", "password123", null, null, "parent",
+            parent.FirstName, parent.LastName, parent.Email, parent.PhoneNumber);
+
+        // Link parent to first student
+        var firstStudent = await _db.Students.FirstOrDefaultAsync();
+        if (firstStudent != null)
+        {
+            _db.ParentStudents.Add(new ParentStudent
+            {
+                ParentId = parent.Id,
+                StudentId = firstStudent.Id
+            });
+            await _db.SaveChangesAsync();
+        }
+
+        // Branch Manager account
+        var branchManager = new BranchManager
+        {
+            Username = "branchmanager.dev",
+            FirstName = "مسئول",
+            LastName = "شعبه تست",
+            Email = "branchmanager.dev@example.com",
+            PhoneNumber = "09125555555",
+            Gender = "mixed",
+            NationalCode = "1234567891",
+            Status = "active",
+            BranchId = defaultBranchId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.BranchManagers.Add(branchManager);
+        await _db.SaveChangesAsync();
+
+        await _userService.CreateUserAsync(
+            "branchmanager.dev", "password123", null, null, "branch_manager",
+            branchManager.FirstName, branchManager.LastName, branchManager.Email, branchManager.PhoneNumber);
+
+        // Headquarters account (no separate entity, just User)
+        await _userService.CreateLocalUserAsync("headquarters.dev", "headquarters", "headquarters-dev-oidc");
+        var hqUser = await _userService.FindUserAsync("headquarters.dev");
+        if (hqUser != null)
+        {
+            hqUser.FirstName = "مقرب";
+            hqUser.LastName = "مرکز";
+            hqUser.Email = "headquarters.dev@example.com";
+            hqUser.PhoneNumber = "09126666666";
+            hqUser.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+        }
+
+        // Evaluator account
+        var evaluator = new Evaluator
+        {
+            Username = "evaluator.dev",
+            FirstName = "ارزیاب",
+            LastName = "تست",
+            Email = "evaluator.dev@example.com",
+            PhoneNumber = "09127777777",
+            Expertise = "قرآن و تجوید",
+            NationalCode = "1234567892",
+            Status = "active",
+            BranchId = defaultBranchId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.Evaluators.Add(evaluator);
+        await _db.SaveChangesAsync();
+
+        await _userService.CreateUserAsync(
+            "evaluator.dev", "password123", null, null, "evaluator",
+            evaluator.FirstName, evaluator.LastName, evaluator.Email, evaluator.PhoneNumber);
+
+        Console.WriteLine("✅ حساب‌های توسعه برای نقش‌های parent, branch_manager, headquarters, evaluator ایجاد شد");
     }
 
     private async Task<List<Student>> CreateStudentsAsync()

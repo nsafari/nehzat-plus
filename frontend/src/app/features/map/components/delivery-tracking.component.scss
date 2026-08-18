@@ -1,0 +1,42 @@
+.tracking-page {
+  padding: 1rem;
+
+  h1 {
+    color: var(--lp-text);
+    margin-bottom: 1rem;
+  }
+}
+
+.map-canvas {
+  width: 100%;
+  height: 480px;
+  border: 1px solid var(--lp-border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+
+  li {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--lp-border);
+    color: var(--lp-text);
+
+    strong {
+      color: var(--lp-primary);
+    }
+
+    time {
+      color: var(--lp-muted);
+    }
+  }
+}
+
+.muted {
+  color: var(--lp-muted);
+}

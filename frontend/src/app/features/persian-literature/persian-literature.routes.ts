@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
+import { roleGuard } from '../../core/guards/role.guard';
 
 export const PERSIAN_LITERATURE_ROUTES: Routes = [
   {
     path: '',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard('trainee')],
     children: [
       {
         path: 'learning',

@@ -1,3 +1,4 @@
+using Dtos = EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Domain.Entities;
 
 namespace EducationalPlatform.Nehzat.Application.Interfaces;
@@ -43,9 +44,9 @@ public interface IIssueSurveyService
     Task<IssueAction> UpdateActionStatusAsync(int id, string newStatus, int updatedById, string note, int? progressPercent);
 
     // Analytics
-    Task<object> GetSurveyAnalyticsAsync(int surveyId);
-    Task<List<object>> GetCategoryBreakdownAsync(int surveyId);
-    Task<List<object>> GetTopCriticalIssuesAsync(int surveyId, int limit);
+    Task<Dtos.SurveyAnalyticsResponse> GetSurveyAnalyticsAsync(int surveyId);
+    Task<List<Dtos.CategoryAnalytics>> GetCategoryBreakdownAsync(int surveyId);
+    Task<List<Dtos.QuestionAnalytics>> GetTopCriticalIssuesAsync(int surveyId, int limit);
     Task<object> GetIssueDashboardSummaryAsync();
     Task<List<object>> GetSurveyTrendsAsync(int? count = 5);
     Task<List<object>> ExportSurveyDataAsync(int surveyId, string format);

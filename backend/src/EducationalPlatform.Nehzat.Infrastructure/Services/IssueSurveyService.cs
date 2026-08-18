@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Dtos = EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Domain.Entities;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
@@ -404,7 +405,7 @@ public class IssueSurveyService : IIssueSurveyService
             .FirstOrDefaultAsync(a => a.Id == id))!;
     }
 
-    public async Task<object> GetSurveyAnalyticsAsync(int surveyId)
+    public async Task<Dtos.SurveyAnalyticsResponse> GetSurveyAnalyticsAsync(int surveyId)
     {
         var survey = await _db.Set<IssueSurvey>()
             .Include(s => s.Questions)
@@ -426,16 +427,15 @@ public class IssueSurveyService : IIssueSurveyService
             var stdDev = qResponses.Any()
                 ? Math.Sqrt(qResponses.Average(r => Math.Pow(r.Score - avg, 2)))
                 : 0;
-            return new
-            {
-                questionId = q.Id,
-                questionText = q.QuestionText,
-                category = q.Category,
-                averageScore = Math.Round(avg, 2),
-                standardDeviation = Math.Round(stdDev, 2),
-                responseCount = qResponses.Count,
-                severity = avg < 1.7 ? "critical" : avg < 2.5 ? "problem" : "solvable"
-            };
+            return new Dtos.QuestionAnalytics(
+                q.Id,
+                q.QuestionText,
+                q.Category,
+                Math.Round(avg, 2),
+                Math.Round(stdDev, 2),
+                qResponses.Count,
+                avg < 1.7 ? "critical" : avg < 2.5 ? "problem" : "solvable"
+            );
         }).ToList();
 
         var categoryBreakdown = questions
@@ -444,42 +444,40 @@ public class IssueSurveyService : IIssueSurveyService
             {
                 var catResponses = responses.Where(r => g.Any(q => q.Id == r.QuestionId)).ToList();
                 var avg = catResponses.Any() ? catResponses.Average(r => r.Score) : 0;
-                return new
-                {
-                    category = g.Key,
-                    averageScore = Math.Round(avg, 2),
-                    questionCount = g.Count(),
-                    severity = avg < 1.7 ? "critical" : avg < 2.5 ? "problem" : "solvable"
-                };
-            }).OrderBy(c => c.averageScore).ToList();
+                return new Dtos.CategoryAnalytics(
+                    g.Key,
+                    Math.Round(avg, 2),
+                    g.Count(),
+                    avg < 1.7 ? "critical" : avg < 2.5 ? "problem" : "solvable"
+                );
+            })
+            .OrderBy(c => c.AverageScore)
+            .ToList();
 
-        var avg = questionStats.Any() ? questionStats.Average(q => q.averageScore) : 0;
+        var avg = questionStats.Any() ? questionStats.Average(q => q.AverageScore) : 0;
 
-        return new
-        {
-            surveyId = survey.Id,
-            title = survey.Title,
-            totalRespondents = respondentIds,
-            totalQuestions = questions.Count,
-            overallAverage = Math.Round(avg, 2),
+        return new Dtos.SurveyAnalyticsResponse(
+            survey.Id,
+            survey.Title,
+            respondentIds,
+            questions.Count,
+            Math.Round(avg, 2),
             categoryBreakdown,
-            topCriticalIssues = questionStats.Where(q => q.severity == "critical").OrderBy(q => q.averageScore).Take(10).ToList(),
-            topStrengths = questionStats.Where(q => q.severity == "solvable").OrderByDescending(q => q.averageScore).Take(5).ToList()
-        };
+            questionStats.Where(q => q.Severity == "critical").OrderBy(q => q.AverageScore).Take(10).ToList(),
+            questionStats.Where(q => q.Severity == "solvable").OrderByDescending(q => q.AverageScore).Take(5).ToList()
+        );
     }
 
-    public async Task<List<object>> GetCategoryBreakdownAsync(int surveyId)
+    public async Task<List<Dtos.CategoryAnalytics>> GetCategoryBreakdownAsync(int surveyId)
     {
         var analytics = await GetSurveyAnalyticsAsync(surveyId);
-        var obj = (dynamic)analytics;
-        return obj.categoryBreakdown;
+        return analytics.CategoryBreakdown;
     }
 
-    public async Task<List<object>> GetTopCriticalIssuesAsync(int surveyId, int limit)
+    public async Task<List<Dtos.QuestionAnalytics>> GetTopCriticalIssuesAsync(int surveyId, int limit)
     {
         var analytics = await GetSurveyAnalyticsAsync(surveyId);
-        var obj = (dynamic)analytics;
-        return ((List<object>)obj.topCriticalIssues).Take(limit).ToList();
+        return analytics.TopCriticalIssues.Take(limit).ToList();
     }
 
     public async Task<object> GetIssueDashboardSummaryAsync()
@@ -497,7 +495,7 @@ public class IssueSurveyService : IIssueSurveyService
             openActions,
             completedActions,
             criticalIssuePercentage = Math.Round(criticalPercentage, 1),
-            improvingTrendPercentage = 0.0 // placeholder for trend calculation
+            improvingTrendPercentage = totalResponses > 0 ? Math.Round(100 - criticalPercentage, 1) : 0
         };
     }
 

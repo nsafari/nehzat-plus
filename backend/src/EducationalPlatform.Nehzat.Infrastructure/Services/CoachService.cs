@@ -35,7 +35,6 @@ public class CoachService : ICoachService
         var coach = new Coach
         {
             Username = request.Username.Trim(),
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             FirstName = request.FirstName.Trim(),
             LastName = request.LastName.Trim(),
             Email = request.Email.Trim(),

@@ -1,3 +1,4 @@
+using EducationalPlatform.Nehzat.Application.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EducationalPlatform.Nehzat.Application.DTOs;
@@ -43,7 +44,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { message = ex.Message });
+                return Conflict(GenericErrorMessages.Conflict);
             }
         }
 
@@ -57,7 +58,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(GenericErrorMessages.NotFound);
             }
         }
 
@@ -71,7 +72,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(GenericErrorMessages.NotFound);
             }
         }
 
@@ -108,7 +109,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(GenericErrorMessages.NotFound);
             }
         }
 
@@ -122,7 +123,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(GenericErrorMessages.NotFound);
             }
         }
 
@@ -136,7 +137,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(GenericErrorMessages.NotFound);
             }
         }
 
@@ -173,7 +174,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(GenericErrorMessages.NotFound);
             }
         }
 
@@ -187,7 +188,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(GenericErrorMessages.NotFound);
             }
         }
 
@@ -201,7 +202,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(GenericErrorMessages.NotFound);
             }
         }
 

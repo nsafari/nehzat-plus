@@ -35,7 +35,7 @@ import { PersLitQuiz, PersLitQuizQuestion } from '../../../../core/models/lesson
               <span class="q-points">{{ question.points }} امتیاز</span>
             </div>
             <p class="q-text">{{ question.questionText }}</p>
-            <div class="options" *ngIf="question.options?.length">
+            <div class="options" *ngIf="question.options.length">
               <label class="option" *ngFor="let opt of question.options; let oi = index"
                      [class.selected]="answers[question.id] === opt.id"
                      [class.correct]="submitted && opt.isCorrect"

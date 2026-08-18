@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Application.Constants;
+using EducationalPlatform.Nehzat.Application.Exceptions;
 
 namespace EducationalPlatform.Nehzat.API.Controllers
 {
@@ -29,7 +31,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
         public async Task<IActionResult> GetPathById(int id)
         {
             var result = await _service.FindPathByIdAsync(id);
-            if (result == null) return NotFound(new { message = "مسیر یادگیری یافت نشد." });
+            if (result == null) return NotFound(new { message = GenericErrorMessages.NotFound });
             return Ok(result);
         }
 
@@ -48,9 +50,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdatePathAsync(id, request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -62,9 +64,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 await _service.DeletePathAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -76,9 +78,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.GetPathTreeAsync(id);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -94,7 +96,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
         public async Task<IActionResult> GetLevelById(int id)
         {
             var result = await _service.FindLevelByIdAsync(id);
-            if (result == null) return NotFound(new { message = "سطح یادگیری یافت نشد." });
+            if (result == null) return NotFound(new { message = GenericErrorMessages.NotFound });
             return Ok(result);
         }
 
@@ -106,9 +108,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.CreateLevelAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -120,9 +122,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateLevelAsync(id, request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -134,9 +136,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 await _service.DeleteLevelAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -152,7 +154,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
         public async Task<IActionResult> GetModuleById(int id)
         {
             var result = await _service.FindModuleByIdAsync(id);
-            if (result == null) return NotFound(new { message = "ماژول آموزشی یافت نشد." });
+            if (result == null) return NotFound(new { message = GenericErrorMessages.NotFound });
             return Ok(result);
         }
 
@@ -164,9 +166,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.CreateModuleAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -178,9 +180,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateModuleAsync(id, request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -192,9 +194,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 await _service.DeleteModuleAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -210,7 +212,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
         public async Task<IActionResult> GetLessonById(int id)
         {
             var result = await _service.FindLessonByIdAsync(id);
-            if (result == null) return NotFound(new { message = "درس یافت نشد." });
+            if (result == null) return NotFound(new { message = GenericErrorMessages.NotFound });
             return Ok(result);
         }
 
@@ -222,9 +224,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.CreateLessonAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -236,9 +238,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateLessonAsync(id, request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -250,9 +252,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 await _service.DeleteLessonAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -272,9 +274,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.CreateContentBlockAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -286,9 +288,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateContentBlockAsync(id, request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -300,9 +302,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 await _service.DeleteContentBlockAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -318,7 +320,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
         public async Task<IActionResult> GetQuizById(int id)
         {
             var result = await _service.FindQuizByIdAsync(id);
-            if (result == null) return NotFound(new { message = "کوئیز یافت نشد." });
+            if (result == null) return NotFound(new { message = GenericErrorMessages.NotFound });
             return Ok(result);
         }
 
@@ -330,9 +332,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.CreateQuizAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -344,9 +346,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateQuizAsync(id, request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -358,9 +360,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 await _service.DeleteQuizAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -380,9 +382,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.CreateQuestionAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -394,9 +396,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateQuestionAsync(id, request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -408,9 +410,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 await _service.DeleteQuestionAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -424,9 +426,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.CreateOptionAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -438,9 +440,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateOptionAsync(id, request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -452,9 +454,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 await _service.DeleteOptionAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -468,13 +470,13 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.EnrollUserAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
-                return Conflict(new { message = ex.Message });
+                return Conflict(new { message = GenericErrorMessages.Conflict });
             }
         }
 
@@ -492,9 +494,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateEnrollmentStatusAsync(id, status);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -508,9 +510,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.CompleteLessonAsync(enrollmentId, lessonId);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -522,9 +524,9 @@ namespace EducationalPlatform.Nehzat.API.Controllers
                 var result = await _service.UpdateLessonProgressAsync(enrollmentId, lessonId, status, score);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
         }
 
@@ -534,20 +536,20 @@ namespace EducationalPlatform.Nehzat.API.Controllers
         public async Task<IActionResult> SubmitQuiz(int quizId, [FromBody] SubmitQuizRequest request)
         {
             if (request.QuizId != quizId)
-                return BadRequest(new { message = "شناسه کوئیز مطابقت ندارد." });
+                return BadRequest(new { message = GenericErrorMessages.BadRequest });
 
             try
             {
                 var result = await _service.SubmitQuizAsync(request);
                 return Ok(result);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return NotFound(new { message = ex.Message });
+                return NotFound(new { message = GenericErrorMessages.NotFound });
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = GenericErrorMessages.BadRequest });
             }
         }
 

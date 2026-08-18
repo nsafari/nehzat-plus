@@ -1,0 +1,32 @@
+<div class="map-page">
+  <h1>نقشه و ردیابی</h1>
+
+  @if (loading()) {
+    <div class="loading"><div class="spinner"></div></div>
+  } @else {
+    <div class="map-grid">
+      <aside class="orders-panel">
+        <h3>سفارش‌های فعال</h3>
+        @if (orders().length === 0) {
+          <p class="muted">سفارشی موجود نیست.</p>
+        }
+        @for (order of orders(); track order.id) {
+          <article class="order-card">
+            <header>
+              <strong>{{ order.customerName }}</strong>
+              <span class="lp-chip" [class.lp-chip-warning]="order.status === 'pending'">
+                {{ order.status }}
+              </span>
+            </header>
+            <p>تحویل: {{ order.dropoffAddress }}</p>
+            <p class="muted">مبلغ: {{ order.totalAmount | number }}</p>
+            @if (order.status === 'pending') {
+              <button class="lp-btn lp-btn-primary" (click)="acceptOrder(order.id)">پذیرش</button>
+            }
+          </article>
+        }
+      </aside>
+      <div #mapEl class="map-canvas" aria-label="نقشه"></div>
+    </div>
+  }
+</div>

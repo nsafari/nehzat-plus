@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EducationalPlatform.Nehzat.Application.Constants;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
@@ -48,7 +49,7 @@ public class AdminParentsController : ControllerBase
     public async Task<IActionResult> GetParentById(int id)
     {
         var parent = await _parentService.FindByIdAsync(id);
-        if (parent == null) return NotFound(new { message = "والد پیدا نشد." });
+        if (parent == null) return NotFound(GenericErrorMessages.NotFound);
         return Ok(new
         {
             parent.Id,
@@ -82,7 +83,7 @@ public class AdminParentsController : ControllerBase
                     request.Password,
                     null,
                     null,
-                    "parent",
+                    RoleNames.Parent,
                     request.FirstName,
                     request.LastName,
                     request.Email,
@@ -136,9 +137,9 @@ public class AdminParentsController : ControllerBase
                 parent.CreatedAt
             });
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -150,9 +151,9 @@ public class AdminParentsController : ControllerBase
             await _parentService.DeleteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -160,7 +161,7 @@ public class AdminParentsController : ControllerBase
     public async Task<IActionResult> GetParentStudents(int id)
     {
         var parent = await _parentService.FindByIdAsync(id);
-        if (parent == null) return NotFound(new { message = "والد پیدا نشد." });
+        if (parent == null) return NotFound(GenericErrorMessages.NotFound);
 
         var students = await _parentService.GetStudentsAsync(id);
         return Ok(students);

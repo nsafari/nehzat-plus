@@ -3,9 +3,11 @@ import {
   ChangeDetectorRef,
   Component,
   DestroyRef,
+  OnInit,
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize, switchMap } from 'rxjs';
 import {
   FormBuilder,
   FormsModule,
@@ -13,7 +15,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs';
 import {
   IssueSurvey,
   IssueSurveyQuestion,
@@ -25,16 +26,26 @@ import {
 } from '../../../core/models/lesson-planner.models';
 import { LESSON_PLANNER_API } from '../../../core/services/lesson-planner-api.token';
 import { NotificationService } from '../../../core/services/notification.service';
+import { SurveyQuestionsTabComponent } from './components/survey-questions-tab/survey-questions-tab.component';
+import { SurveyActionsTabComponent } from './components/survey-actions-tab/survey-actions-tab.component';
+import { SurveyAnalyticsComponent } from './components/survey-analytics/survey-analytics.component';
 
 @Component({
   selector: 'app-admin-surveys',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SurveyQuestionsTabComponent,
+    SurveyActionsTabComponent,
+    SurveyAnalyticsComponent,
+  ],
   templateUrl: './admin-surveys.component.html',
   styleUrls: ['./admin-surveys.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminSurveysComponent {
+export class AdminSurveysComponent implements OnInit {
   private readonly api = inject(LESSON_PLANNER_API);
   private readonly fb = inject(FormBuilder);
   private readonly notify = inject(NotificationService);
@@ -49,6 +60,12 @@ export class AdminSurveysComponent {
   surveyEditMode = false;
   detailTab: 'info' | 'questions' | 'actions' | 'analytics' = 'info';
 
+  loadingQuestions = false;
+  savingQuestion = false;
+  loadingActions = false;
+  savingAction = false;
+  loadingAnalytics = false;
+
   surveyForm = this.fb.nonNullable.group({
     title: ['', Validators.required],
     description: [''],
@@ -62,38 +79,17 @@ export class AdminSurveysComponent {
   });
 
   dashboardSummary: any = null;
-
-  // Questions
-  surveyQuestions: IssueSurveyQuestion[] = [];
-  loadingQuestions = false;
-  savingQuestion = false;
-  questionForm = this.fb.nonNullable.group({
-    questionText: ['', Validators.required],
-    category: ['', Validators.required],
-    subCategory: [''],
-    targetAudience: [''],
-    sortOrder: [0, Validators.required],
-  });
-
-  // Actions
-  surveyActions: IssueAction[] = [];
-  loadingActions = false;
-  savingAction = false;
-  actionForm = this.fb.nonNullable.group({
-    title: ['', Validators.required],
-    description: [''],
-    category: ['', Validators.required],
-    priority: ['medium'],
-    targetDate: [''],
-    kpiDefinition: [''],
-  });
-
-  // Analytics
-  analyticsData: any = null;
-  loadingAnalytics = false;
-
   errorMessage = '';
   successMessage = '';
+
+  private _questions: IssueSurveyQuestion[] = [];
+  private _actions: IssueAction[] = [];
+  private _analyticsData: any = null;
+
+  ngOnInit(): void {
+    this.loadSurveys();
+    this.loadDashboardSummary();
+  }
 
   get filteredSurveys(): IssueSurvey[] {
     const q = this.searchQuery.trim().toLowerCase();
@@ -109,6 +105,18 @@ export class AdminSurveysComponent {
   get selectedSurvey(): IssueSurvey | null {
     if (this.selectedSurveyId === null) return null;
     return this.surveys.find((s) => s.id === this.selectedSurveyId) ?? null;
+  }
+
+  get questionsForTab(): IssueSurveyQuestion[] {
+    return this._questions;
+  }
+
+  get actionsForTab(): IssueAction[] {
+    return this._actions;
+  }
+
+  get analyticsData(): any {
+    return this._analyticsData;
   }
 
   /* ─── Surveys ─── */
@@ -135,15 +143,8 @@ export class AdminSurveysComponent {
     this.selectedSurveyId = null;
     this.detailTab = 'info';
     this.surveyForm.reset({
-      title: '',
-      description: '',
-      surveyType: 'general',
-      targetRole: '',
-      startDate: '',
-      endDate: '',
-      isAnonymous: false,
-      scoreScaleMin: 0,
-      scoreScaleMax: 5,
+      title: '', description: '', surveyType: 'general', targetRole: '',
+      startDate: '', endDate: '', isAnonymous: false, scoreScaleMin: 0, scoreScaleMax: 5,
     });
   }
 
@@ -152,37 +153,35 @@ export class AdminSurveysComponent {
     this.surveyEditMode = true;
     this.detailTab = 'info';
     this.surveyForm.setValue({
-      title: survey.title,
-      description: survey.description ?? '',
-      surveyType: survey.surveyType,
-      targetRole: survey.targetRole,
-      startDate: survey.startDate,
-      endDate: survey.endDate,
-      isAnonymous: survey.isAnonymous,
-      scoreScaleMin: survey.scoreScaleMin,
-      scoreScaleMax: survey.scoreScaleMax,
+      title: survey.title, description: survey.description ?? '', surveyType: survey.surveyType,
+      targetRole: survey.targetRole, startDate: survey.startDate, endDate: survey.endDate,
+      isAnonymous: survey.isAnonymous, scoreScaleMin: survey.scoreScaleMin, scoreScaleMax: survey.scoreScaleMax,
     });
-    this.analyticsData = null;
-    this.surveyQuestions = [];
-    this.surveyActions = [];
+    this.cdr.markForCheck();
   }
 
   saveSurvey(): void {
     if (this.surveyForm.invalid) return;
-    const raw = this.surveyForm.getRawValue() as unknown as CreateIssueSurveyPayload;
+    const payload = this.surveyForm.getRawValue() as unknown as CreateIssueSurveyPayload;
     this.savingSurvey = true;
     const request$ =
       this.surveyEditMode && this.selectedSurveyId !== null
-        ? this.api.updateIssueSurvey(this.selectedSurveyId, raw)
-        : this.api.createIssueSurvey(raw);
+        ? this.api.updateIssueSurvey(this.selectedSurveyId, payload)
+        : this.api.createIssueSurvey(payload);
     request$
-      .pipe(finalize(() => (this.savingSurvey = false)), takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (saved) => {
-          this.setSuccess('نظرسنجی ذخیره شد.');
+      .pipe(
+        switchMap((saved) => {
           this.selectedSurveyId = saved.id;
           this.surveyEditMode = true;
-          this.loadSurveys();
+          return this.api.getIssueSurveys();
+        }),
+        finalize(() => (this.savingSurvey = false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (items) => {
+          this.surveys = items;
+          this.setSuccess('نظرسنجی ذخیره شد.');
           this.cdr.markForCheck();
         },
         error: () => {
@@ -197,16 +196,20 @@ export class AdminSurveysComponent {
     this.savingSurvey = true;
     this.api
       .deleteIssueSurvey(this.selectedSurveyId)
-      .pipe(finalize(() => (this.savingSurvey = false)), takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.setSuccess('نظرسنجی حذف شد.');
+      .pipe(
+        switchMap((response) => {
+          this.setSuccess(response.message);
           this.selectedSurveyId = null;
           this.surveyEditMode = false;
-          this.surveyQuestions = [];
-          this.surveyActions = [];
-          this.analyticsData = null;
-          this.loadSurveys();
+          return this.api.getIssueSurveys();
+        }),
+        finalize(() => (this.savingSurvey = false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (items) => {
+          this.surveys = items;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setError('حذف نظرسنجی با خطا مواجه شد.');
@@ -219,12 +222,18 @@ export class AdminSurveysComponent {
     this.savingSurvey = true;
     this.api
       .publishIssueSurvey(this.selectedSurveyId)
-      .pipe(finalize(() => (this.savingSurvey = false)), takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
+      .pipe(
+        switchMap(() => {
           this.setSuccess('نظرسنجی منتشر شد.');
-          this.loadSurveys();
-          this.refreshSelectedSurvey();
+          return this.api.getIssueSurveys();
+        }),
+        finalize(() => (this.savingSurvey = false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (items) => {
+          this.surveys = items;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setError('انتشار نظرسنجی با خطا مواجه شد.');
@@ -237,12 +246,18 @@ export class AdminSurveysComponent {
     this.savingSurvey = true;
     this.api
       .closeIssueSurvey(this.selectedSurveyId)
-      .pipe(finalize(() => (this.savingSurvey = false)), takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
+      .pipe(
+        switchMap(() => {
           this.setSuccess('نظرسنجی بسته شد.');
-          this.loadSurveys();
-          this.refreshSelectedSurvey();
+          return this.api.getIssueSurveys();
+        }),
+        finalize(() => (this.savingSurvey = false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (items) => {
+          this.surveys = items;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setError('بستن نظرسنجی با خطا مواجه شد.');
@@ -255,11 +270,18 @@ export class AdminSurveysComponent {
     this.savingSurvey = true;
     this.api
       .duplicateIssueSurvey(this.selectedSurveyId)
-      .pipe(finalize(() => (this.savingSurvey = false)), takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
+      .pipe(
+        switchMap(() => {
           this.setSuccess('نظرسنجی کپی شد.');
-          this.loadSurveys();
+          return this.api.getIssueSurveys();
+        }),
+        finalize(() => (this.savingSurvey = false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (items) => {
+          this.surveys = items;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setError('کپی‌گیری نظرسنجی با خطا مواجه شد.');
@@ -284,26 +306,12 @@ export class AdminSurveysComponent {
           this.setSuccess('خروجی JSON دانلود شد.');
         },
         error: () => {
-          this.setError('خروجی JSON با خطا مواجه شد.');
+          this.setError('خروجی JSON با خطا مواجع شد.');
         },
       });
   }
 
-  private refreshSelectedSurvey(): void {
-    if (this.selectedSurveyId === null) return;
-    this.api.getIssueSurveyById(this.selectedSurveyId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (survey) => {
-        const idx = this.surveys.findIndex((s) => s.id === survey.id);
-        if (idx !== -1) this.surveys[idx] = survey;
-        this.cdr.markForCheck();
-      },
-      error: () => {},
-    });
-  }
-
-  /* ─── Questions ─── */
-
-  loadSurveyQuestions(): void {
+  loadQuestions(): void {
     if (this.selectedSurveyId === null) return;
     this.loadingQuestions = true;
     this.api
@@ -311,31 +319,31 @@ export class AdminSurveysComponent {
       .pipe(finalize(() => (this.loadingQuestions = false)), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (items) => {
-          this.surveyQuestions = items;
+          this._questions = items;
           this.cdr.markForCheck();
         },
         error: () => {
-          this.setError('دریافت سوالات با خطا مواجه شد.');
+          this.setError('دریافت سؤالات با خطا مواجه شد.');
           this.cdr.markForCheck();
         },
       });
   }
 
-  addQuestion(): void {
-    if (this.selectedSurveyId === null || this.questionForm.invalid || this.savingQuestion) return;
-    const raw = this.questionForm.getRawValue() as unknown as CreateIssueQuestionPayload;
+  onAddQuestion(payload: CreateIssueQuestionPayload): void {
+    if (this.selectedSurveyId === null) return;
     this.savingQuestion = true;
     this.api
-      .createIssueSurveyQuestion(this.selectedSurveyId, {
-        ...raw,
-        surveyId: this.selectedSurveyId,
-      })
-      .pipe(finalize(() => (this.savingQuestion = false)), takeUntilDestroyed(this.destroyRef))
+      .createIssueSurveyQuestion(this.selectedSurveyId, { ...payload, surveyId: this.selectedSurveyId })
+      .pipe(
+        switchMap(() => this.api.getIssueSurveyQuestions(this.selectedSurveyId!)),
+        finalize(() => (this.savingQuestion = false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
-        next: () => {
+        next: (items) => {
+          this._questions = items;
           this.setSuccess('سوال اضافه شد.');
-          this.questionForm.reset({ questionText: '', category: '', subCategory: '', targetAudience: '', sortOrder: 0 });
-          this.loadSurveyQuestions();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setError('افزودن سوال با خطا مواجه شد.');
@@ -343,17 +351,20 @@ export class AdminSurveysComponent {
       });
   }
 
-  deleteQuestion(question: IssueSurveyQuestion): void {
-    if (this.selectedSurveyId === null || this.savingQuestion) return;
+  onDeleteQuestion(question: IssueSurveyQuestion): void {
+    if (this.selectedSurveyId === null) return;
     if (!confirm('آیا از حذف این سوال اطمینان دارید؟')) return;
-    this.savingQuestion = true;
     this.api
       .deleteIssueSurveyQuestion(this.selectedSurveyId, question.id)
-      .pipe(finalize(() => (this.savingQuestion = false)), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        switchMap(() => this.api.getIssueSurveyQuestions(this.selectedSurveyId!)),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
-        next: () => {
+        next: (items) => {
+          this._questions = items;
           this.setSuccess('سوال حذف شد.');
-          this.loadSurveyQuestions();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setError('حذف سوال با خطا مواجه شد.');
@@ -363,7 +374,7 @@ export class AdminSurveysComponent {
 
   /* ─── Actions ─── */
 
-  loadSurveyActions(): void {
+  loadActions(): void {
     if (this.selectedSurveyId === null) return;
     this.loadingActions = true;
     this.api
@@ -371,7 +382,7 @@ export class AdminSurveysComponent {
       .pipe(finalize(() => (this.loadingActions = false)), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (items) => {
-          this.surveyActions = items;
+          this._actions = items;
           this.cdr.markForCheck();
         },
         error: () => {
@@ -381,18 +392,21 @@ export class AdminSurveysComponent {
       });
   }
 
-  addAction(): void {
-    if (this.selectedSurveyId === null || this.actionForm.invalid || this.savingAction) return;
-    const raw = this.actionForm.getRawValue() as unknown as CreateIssueActionPayload;
+  onAddAction(payload: CreateIssueActionPayload): void {
+    if (this.selectedSurveyId === null) return;
     this.savingAction = true;
     this.api
-      .createSurveyAction(this.selectedSurveyId, { ...raw, surveyId: this.selectedSurveyId })
-      .pipe(finalize(() => (this.savingAction = false)), takeUntilDestroyed(this.destroyRef))
+      .createSurveyAction(this.selectedSurveyId, { ...payload, surveyId: this.selectedSurveyId })
+      .pipe(
+        switchMap(() => this.api.getSurveyActions(this.selectedSurveyId!)),
+        finalize(() => (this.savingAction = false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
-        next: () => {
+        next: (items) => {
+          this._actions = items;
           this.setSuccess('اقدام اضافه شد.');
-          this.actionForm.reset({ title: '', description: '', category: '', priority: 'medium', targetDate: '', kpiDefinition: '' });
-          this.loadSurveyActions();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setError('افزودن اقدام با خطا مواجه شد.');
@@ -400,17 +414,18 @@ export class AdminSurveysComponent {
       });
   }
 
-  updateActionStatus(action: IssueAction, status: string): void {
-    if (this.savingAction) return;
-    const updatedById = 1; // mock user id
-    this.savingAction = true;
+  onUpdateActionStatus(event: { action: IssueAction; status: string }): void {
     this.api
-      .updateIssueActionStatus(action.id, status, updatedById)
-      .pipe(finalize(() => (this.savingAction = false)), takeUntilDestroyed(this.destroyRef))
+      .updateIssueActionStatus(event.action.id, event.status, 1)
+      .pipe(
+        switchMap(() => this.api.getSurveyActions(this.selectedSurveyId!)),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
-        next: () => {
+        next: (items) => {
+          this._actions = items;
           this.setSuccess('وضعیت اقدام به‌روز شد.');
-          this.loadSurveyActions();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.setError('به‌روزرسانی وضعیت با خطا مواجه شد.');
@@ -420,7 +435,7 @@ export class AdminSurveysComponent {
 
   /* ─── Analytics ─── */
 
-  loadSurveyAnalytics(): void {
+  loadAnalytics(): void {
     if (this.selectedSurveyId === null) return;
     this.loadingAnalytics = true;
     this.api
@@ -428,11 +443,11 @@ export class AdminSurveysComponent {
       .pipe(finalize(() => (this.loadingAnalytics = false)), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
-          this.analyticsData = data;
+          this._analyticsData = data;
           this.cdr.markForCheck();
         },
         error: () => {
-          this.setError('دریافت تحلیل با خطا مواجه شد.');
+          this._analyticsData = null;
           this.cdr.markForCheck();
         },
       });
@@ -480,93 +495,29 @@ export class AdminSurveysComponent {
     }
   }
 
-  actionStatusClass(status: string): string {
-    switch (status) {
-      case 'proposed':
-        return 'status-chip--draft';
-      case 'approved':
-        return 'status-chip--active';
-      case 'in_progress':
-        return 'status-chip--active';
-      case 'completed':
-        return 'status-chip--closed';
-      case 'cancelled':
-        return 'status-chip--archived';
-      default:
-        return '';
-    }
-  }
-
-  actionStatusLabel(status: string): string {
-    switch (status) {
-      case 'proposed':
-        return 'پیشنهاد';
-      case 'approved':
-        return 'تایید';
-      case 'in_progress':
-        return 'در حال انجام';
-      case 'completed':
-        return 'تکمیل';
-      case 'cancelled':
-        return 'لغو';
-      default:
-        return status;
-    }
-  }
-
-  actionPriorityLabel(priority: string): string {
-    switch (priority) {
-      case 'critical':
-        return 'بحرانی';
-      case 'high':
-        return 'بالا';
-      case 'medium':
-        return 'متوسط';
-      case 'low':
-        return 'پایین';
-      default:
-        return priority;
-    }
-  }
-
-  severityClass(severity: string): string {
-    switch (severity) {
-      case 'critical':
-        return 'status-chip--active';
-      case 'problem':
-        return 'status-chip--closed';
-      default:
-        return '';
-    }
-  }
-
-  priorityClass(priority: string): string {
-    switch (priority) {
-      case 'critical':
-        return 'status-chip--active';
-      case 'high':
-        return 'status-chip--closed';
-      default:
-        return '';
-    }
-  }
-
-  private setSuccess(message: string): void {
+  setSuccess(message: string): void {
     this.successMessage = message;
     this.errorMessage = '';
     this.notify.show(message, 'success');
     this.cdr.markForCheck();
   }
 
-  private setError(message: string): void {
+  setError(message: string): void {
     this.errorMessage = message;
     this.successMessage = '';
     this.notify.show(message, 'error');
     this.cdr.markForCheck();
   }
 
-  ngOnInit(): void {
-    this.loadSurveys();
-    this.loadDashboardSummary();
+  private refreshSelectedSurvey(): void {
+    if (this.selectedSurveyId === null) return;
+    this.api.getIssueSurveyById(this.selectedSurveyId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (survey) => {
+        const idx = this.surveys.findIndex((s) => s.id === survey.id);
+        if (idx !== -1) this.surveys[idx] = survey;
+        this.cdr.markForCheck();
+      },
+      error: () => {},
+    });
   }
 }

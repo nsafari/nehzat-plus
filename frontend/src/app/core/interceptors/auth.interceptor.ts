@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, finalize, switchMap, take, throwError } from 'rxjs';
 
 import { AuthService } from '../services/auth.service';
 
@@ -27,12 +27,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       if (isRefreshing) {
-        // Another 401 is already refreshing — queue this request
+        // Another 401 is already refreshing — queue this request.
+        // If the refresh fails, null is emitted and every queued request
+        // is rejected instead of hanging forever waiting for a token.
         return refreshQueue.pipe(
-          filter(newToken => newToken !== null),
           take(1),
           switchMap(newToken =>
-            next(req.clone({ setHeaders: { Authorization: `Bearer ${newToken}` } }))
+            newToken === null
+              ? throwError(() => error)
+              : next(req.clone({ setHeaders: { Authorization: `Bearer ${newToken}` } }))
           )
         );
       }
@@ -40,7 +43,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       isRefreshing = true;
       return authService.refreshToken().pipe(
         switchMap(success => {
-          isRefreshing = false;
           if (success) {
             const newToken = authService.getAccessToken()!;
             refreshQueue.next(newToken);
@@ -51,10 +53,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           return throwError(() => error);
         }),
         catchError(() => {
-          isRefreshing = false;
           refreshQueue.next(null);
           authService.logout();
           return throwError(() => error);
+        }),
+        finalize(() => {
+          isRefreshing = false;
         })
       );
     })

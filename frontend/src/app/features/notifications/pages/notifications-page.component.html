@@ -1,0 +1,84 @@
+<div class="notifications-page">
+  <header class="page-header">
+    <h1 class="page-title">اعلان‌ها</h1>
+    <button
+      type="button"
+      class="lp-btn lp-btn-ghost"
+      (click)="markAllRead()"
+      *ngIf="summary()?.unreadCount"
+    >
+      خواندن همه
+    </button>
+  </header>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-label">کل اعلان‌ها</span>
+      <strong class="stat-value">{{ summary()?.totalCount ?? 0 }}</strong>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">خوانده‌نشده</span>
+      <strong class="stat-value">{{ summary()?.unreadCount ?? 0 }}</strong>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">امروز</span>
+      <strong class="stat-value">{{ summary()?.todayCount ?? 0 }}</strong>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="empty-state">در حال بارگذاری…</div>
+  <div *ngIf="!loading() && (!summary() || summary()!.recent.length === 0)" class="empty-state">
+    اعلانی وجود ندارد
+  </div>
+
+  <ul class="notification-list" *ngIf="!loading() && summary() && summary()!.recent.length > 0">
+    <li
+      *ngFor="let n of summary()!.recent"
+      class="notification-item"
+      [class.unread]="!n.isRead"
+      [class.clickable]="!!n.link"
+    >
+      <span
+        class="notification-icon"
+        [style.background]="
+          n.type === 'error'
+            ? 'var(--lp-danger, #dc2626)'
+            : n.type === 'warning'
+              ? 'var(--lp-gold, #f59e0b)'
+              : n.type === 'success'
+                ? 'var(--lp-success, #16a34a)'
+                : 'var(--lp-primary, #4f46e5)'
+        "
+      >
+        {{ typeIcons[n.type] }}
+      </span>
+      <div class="notification-content">
+        <div class="notification-top">
+          <strong class="notification-title">{{ n.title }}</strong>
+          <span class="notification-badge">{{ typeLabels[n.type] }}</span>
+        </div>
+        <p class="notification-body">{{ n.body }}</p>
+        <div class="notification-meta">
+          <time>{{ formatTime(n.createdAt) }}</time>
+        </div>
+      </div>
+      <div class="notification-actions">
+        <button
+          type="button"
+          class="lp-btn lp-btn-sm lp-btn-ghost"
+          *ngIf="!n.isRead"
+          (click)="markRead(n)"
+        >
+          خواندن
+        </button>
+        <button
+          type="button"
+          class="lp-btn lp-btn-sm lp-btn-danger-ghost"
+          (click)="deleteNotification(n)"
+        >
+          حذف
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>

@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.API.Helpers;
+using EducationalPlatform.Nehzat.Application.Constants;
+using EducationalPlatform.Nehzat.Application.Exceptions;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -39,19 +42,19 @@ public class TrainingController : ControllerBase
         return CreatedAtAction(nameof(GetCourseById), new { id = course.Id }, course);
     }
 
-    [HttpPut("courses/{id}")]
-    [Authorize(Roles = "admin,manager,headquarters")]
-    public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateTrainingCourseDto dto)
-    {
-        try
+[HttpPut("courses/{id}")]
+        [Authorize(Roles = "admin,manager,headquarters")]
+        public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateTrainingCourseDto dto)
         {
-            return Ok(await _trainingService.UpdateCourseAsync(id, dto));
+            try
+            {
+                return Ok(await _trainingService.UpdateCourseAsync(id, dto));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 
     [HttpDelete("courses/{id}")]
     [Authorize(Roles = "admin,manager,headquarters")]
@@ -101,19 +104,19 @@ public class TrainingController : ControllerBase
         return Ok(stage);
     }
 
-    [HttpPut("stages/{id}")]
-    [Authorize(Roles = "admin,manager,headquarters")]
-    public async Task<IActionResult> UpdateStage(int id, [FromBody] CreateTrainingStageDto dto)
-    {
-        try
+[HttpPut("stages/{id}")]
+        [Authorize(Roles = "admin,manager,headquarters")]
+        public async Task<IActionResult> UpdateStage(int id, [FromBody] CreateTrainingStageDto dto)
         {
-            return Ok(await _trainingService.UpdateStageAsync(id, dto));
+            try
+            {
+                return Ok(await _trainingService.UpdateStageAsync(id, dto));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 
     [HttpDelete("stages/{id}")]
     [Authorize(Roles = "admin,manager,headquarters")]
@@ -145,19 +148,19 @@ public class TrainingController : ControllerBase
         return Ok(session);
     }
 
-    [HttpPut("sessions/{id}")]
-    [Authorize(Roles = "admin,manager,headquarters,coach")]
-    public async Task<IActionResult> UpdateSession(int id, [FromBody] CreateTrainingSessionDto dto)
-    {
-        try
+[HttpPut("sessions/{id}")]
+        [Authorize(Roles = "admin,manager,headquarters,coach")]
+        public async Task<IActionResult> UpdateSession(int id, [FromBody] CreateTrainingSessionDto dto)
         {
-            return Ok(await _trainingService.UpdateSessionAsync(id, dto));
+            try
+            {
+                return Ok(await _trainingService.UpdateSessionAsync(id, dto));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 
     [HttpDelete("sessions/{id}")]
     [Authorize(Roles = "admin,manager,headquarters,coach")]
@@ -195,19 +198,19 @@ public class TrainingController : ControllerBase
         return Ok(content);
     }
 
-    [HttpPut("contents/{id}")]
-    [Authorize(Roles = "admin,manager,headquarters,coach")]
-    public async Task<IActionResult> UpdateContent(int id, [FromBody] CreateTrainingContentDto dto)
-    {
-        try
+[HttpPut("contents/{id}")]
+        [Authorize(Roles = "admin,manager,headquarters,coach")]
+        public async Task<IActionResult> UpdateContent(int id, [FromBody] CreateTrainingContentDto dto)
         {
-            return Ok(await _trainingService.UpdateContentAsync(id, dto));
+            try
+            {
+                return Ok(await _trainingService.UpdateContentAsync(id, dto));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 
     [HttpDelete("contents/{id}")]
     [Authorize(Roles = "admin,manager,headquarters,coach")]
@@ -224,24 +227,27 @@ public class TrainingController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "فایل آپلود نشده است" });
 
+        if (!FileUploadValidator.IsValidFile(file, out var validationError))
+            return BadRequest(new { message = validationError });
+
         using var stream = file.OpenReadStream();
         var content = await _trainingService.ProcessUploadedFileAsync(sessionId, stream, file.FileName);
         return CreatedAtAction(nameof(GetContentById), new { id = content.Id }, content);
     }
 
-    [HttpPost("enrollments")]
-    public async Task<IActionResult> CreateEnrollment([FromBody] CreateTrainingEnrollmentDto dto)
-    {
-        try
+[HttpPost("enrollments")]
+        public async Task<IActionResult> CreateEnrollment([FromBody] CreateTrainingEnrollmentDto dto)
         {
-            var enrollment = await _trainingService.CreateEnrollmentAsync(dto);
-            return CreatedAtAction(nameof(GetEnrollmentById), new { id = enrollment.Id }, enrollment);
+            try
+            {
+                var enrollment = await _trainingService.CreateEnrollmentAsync(dto);
+                return CreatedAtAction(nameof(GetEnrollmentById), new { id = enrollment.Id }, enrollment);
+            }
+            catch (InvalidOperationException)
+            {
+                return BadRequest(GenericErrorMessages.BadRequest);
+            }
         }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-    }
 
     [HttpGet("enrollments/{id}")]
     public async Task<IActionResult> GetEnrollmentById(int id)
@@ -263,19 +269,19 @@ public class TrainingController : ControllerBase
         return Ok(await _trainingService.GetEnrollmentsByUserIdAsync(userId));
     }
 
-    [HttpPut("enrollments/{id}/status")]
-    [Authorize(Roles = "admin,manager,headquarters")]
-    public async Task<IActionResult> UpdateEnrollmentStatus(int id, [FromBody] string status)
-    {
-        try
+[HttpPut("enrollments/{id}/status")]
+        [Authorize(Roles = "admin,manager,headquarters")]
+        public async Task<IActionResult> UpdateEnrollmentStatus(int id, [FromBody] string status)
         {
-            return Ok(await _trainingService.UpdateEnrollmentStatusAsync(id, status));
+            try
+            {
+                return Ok(await _trainingService.UpdateEnrollmentStatusAsync(id, status));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 
     [HttpDelete("enrollments/{id}")]
     [Authorize(Roles = "admin,manager,headquarters")]
@@ -319,19 +325,19 @@ public class TrainingController : ControllerBase
         return Ok(assignment);
     }
 
-    [HttpPut("assignments/{id}")]
-    [Authorize(Roles = "admin,manager,headquarters,coach")]
-    public async Task<IActionResult> UpdateAssignment(int id, [FromBody] CreateTrainingAssignmentDto dto)
-    {
-        try
+[HttpPut("assignments/{id}")]
+        [Authorize(Roles = "admin,manager,headquarters,coach")]
+        public async Task<IActionResult> UpdateAssignment(int id, [FromBody] CreateTrainingAssignmentDto dto)
         {
-            return Ok(await _trainingService.UpdateAssignmentAsync(id, dto));
+            try
+            {
+                return Ok(await _trainingService.UpdateAssignmentAsync(id, dto));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 
     [HttpDelete("assignments/{id}")]
     [Authorize(Roles = "admin,manager,headquarters,coach")]
@@ -344,7 +350,8 @@ public class TrainingController : ControllerBase
     [HttpPost("assignments/{assignmentId}/submissions")]
     public async Task<IActionResult> CreateSubmission(int assignmentId, [FromBody] CreateTrainingSubmissionDto dto)
     {
-        var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        if (!int.TryParse(User.FindFirst("userId")?.Value, out var userId))
+            return Unauthorized();
         var submission = await _trainingService.CreateSubmissionAsync(assignmentId, userId, dto);
         return CreatedAtAction(nameof(GetSubmissionsByAssignmentId), new { assignmentId }, submission);
     }
@@ -364,19 +371,19 @@ public class TrainingController : ControllerBase
         return Ok(submission);
     }
 
-    [HttpPut("submissions/{id}/grade")]
-    [Authorize(Roles = "admin,manager,headquarters,coach")]
-    public async Task<IActionResult> GradeSubmission(int id, [FromBody] GradeSubmissionDto dto)
-    {
-        try
+[HttpPut("submissions/{id}/grade")]
+        [Authorize(Roles = "admin,manager,headquarters,coach")]
+        public async Task<IActionResult> GradeSubmission(int id, [FromBody] GradeSubmissionDto dto)
         {
-            return Ok(await _trainingService.GradeSubmissionAsync(id, dto.Grade, dto.Feedback));
+            try
+            {
+                return Ok(await _trainingService.GradeSubmissionAsync(id, dto.Grade, dto.Feedback));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 
     [HttpGet("statistics")]
     [Authorize(Roles = "admin,manager,headquarters")]
@@ -385,19 +392,19 @@ public class TrainingController : ControllerBase
         return Ok(await _trainingService.GetStatisticsAsync());
     }
 
-    [HttpGet("courses/{courseId}/statistics")]
-    [Authorize(Roles = "admin,manager,headquarters")]
-    public async Task<IActionResult> GetCourseStatistics(int courseId)
-    {
-        try
+[HttpGet("courses/{courseId}/statistics")]
+        [Authorize(Roles = "admin,manager,headquarters")]
+        public async Task<IActionResult> GetCourseStatistics(int courseId)
         {
-            return Ok(await _trainingService.GetCourseStatisticsAsync(courseId));
+            try
+            {
+                return Ok(await _trainingService.GetCourseStatisticsAsync(courseId));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(GenericErrorMessages.NotFound);
+            }
         }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-    }
 }
 
 public record GradeSubmissionDto(decimal Grade, string? Feedback);

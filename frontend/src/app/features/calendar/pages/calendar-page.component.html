@@ -1,0 +1,172 @@
+<div class="calendar-page">
+  <header class="calendar-header">
+    <h1 class="calendar-title">تقویم رویدادها</h1>
+    <div class="calendar-nav">
+      <button type="button" class="lp-btn lp-btn-ghost" (click)="today()">امروز</button>
+      <button type="button" class="lp-btn lp-btn-icon" aria-label="ماه قبل" (click)="prevMonth()">&#8250;</button>
+      <span class="calendar-month">{{ monthLabel() }}</span>
+      <button type="button" class="lp-btn lp-btn-icon" aria-label="ماه بعد" (click)="nextMonth()">&#8249;</button>
+    </div>
+    <button type="button" class="lp-btn lp-btn-primary" (click)="openCreate(month())">
+      رویداد جدید
+    </button>
+  </header>
+
+  <div class="calendar-toolbar">
+    <label class="filter-label">
+      نوع رویداد
+      <select class="lp-select" [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
+        <option value="all">همه</option>
+        <option *ngFor="let t of types" [ngValue]="t" [value]="t === 'all' ? 'all' : t">
+          {{ t === 'all' ? 'همه' : typeLabels[t] }}
+        </option>
+      </select>
+    </label>
+  </div>
+
+  <div class="calendar-body">
+    <section class="calendar-grid-panel">
+      <div class="calendar-weekdays">
+        <span class="calendar-weekday" *ngFor="let w of weekdayLabels">{{ w }}</span>
+      </div>
+      <div class="calendar-grid" [class.loading]="loading()">
+        <div
+          *ngFor="let cell of gridCells(); trackBy: trackByDay"
+          class="calendar-cell"
+          [class.empty]="!cell.day"
+          [class.selected]="cell.day && selectedDay() && isSameDay(cell.day, selectedDay()!)"
+          [class.today]="cell.day && isToday(cell.day)"
+          (click)="cell.day && selectDay(cell.day)"
+        >
+          <ng-container *ngIf="cell.day">
+            <span class="cell-day">{{ cell.day.getDate() }}</span>
+            <div class="cell-events">
+              <span
+                *ngFor="let ev of cell.events"
+                class="cell-event-dot"
+                [style.background]="ev.color"
+                [title]="ev.title"
+              ></span>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </section>
+
+    <aside class="calendar-side">
+      <h2 class="side-title">
+        {{ selectedDay() ? dayLabel(selectedDay()!) : 'رویدادهای ماه' }}
+      </h2>
+
+      <button
+        type="button"
+        class="lp-btn lp-btn-secondary lp-btn-block"
+        *ngIf="selectedDay()"
+        (click)="openCreate(selectedDay()!)"
+      >
+        افزودن رویداد در این روز
+      </button>
+
+      <div *ngIf="loading()" class="side-empty">در حال بارگذاری…</div>
+      <div *ngIf="!loading() && selectedDayEvents().length === 0" class="side-empty">
+        رویدادی برای نمایش نیست
+      </div>
+
+      <ul class="event-list">
+        <li *ngFor="let ev of selectedDayEvents(); trackBy: trackByEventId" class="event-card">
+          <span class="event-color" [style.background]="ev.color"></span>
+          <div class="event-info">
+            <strong class="event-title">{{ ev.title }}</strong>
+            <span class="event-meta">
+              {{ typeLabels[ev.type] }} · {{ formatTime(ev.start) }}
+              <ng-container *ngIf="!ev.allDay">– {{ formatTime(ev.end) }}</ng-container>
+            </span>
+            <span class="event-meta" *ngIf="ev.location">📍 {{ ev.location }}</span>
+            <span class="event-meta" *ngIf="ev.description">{{ ev.description }}</span>
+            <span class="event-status" *ngIf="ev.isPublic">عمومی</span>
+          </div>
+          <div class="event-actions">
+            <button type="button" class="lp-btn lp-btn-ghost" (click)="openEdit(ev)">ویرایش</button>
+            <button type="button" class="lp-btn lp-btn-danger-ghost" (click)="deleteEvent(ev)">حذف</button>
+          </div>
+          <div class="event-respond" *ngIf="hasPendingAttendees(ev)">
+            <span class="respond-label">پاسخ شما:</span>
+            <button type="button" class="lp-btn lp-btn-sm lp-btn-success" (click)="respond(ev, 'accepted')">می‌پذیرم</button>
+            <button type="button" class="lp-btn lp-btn-sm lp-btn-ghost" (click)="respond(ev, 'tentative')">مردد</button>
+            <button type="button" class="lp-btn lp-btn-sm lp-btn-danger-ghost" (click)="respond(ev, 'declined')">رد می‌کنم</button>
+          </div>
+          <div class="event-attendees" *ngIf="ev.attendees.length > 0">
+            <span class="attendee" *ngFor="let a of ev.attendees">
+              {{ a.fullName }} ({{ responseLabels[a.responseStatus] }})
+            </span>
+          </div>
+        </li>
+      </ul>
+    </aside>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="formOpen()" (click)="closeForm()">
+    <form class="modal-card" (submit)="saveForm(); $event.preventDefault()" (click)="$event.stopPropagation()">
+      <h2 class="modal-title">{{ editingId() === null ? 'رویداد جدید' : 'ویرایش رویداد' }}</h2>
+
+      <label class="form-field">
+        عنوان *
+        <input type="text" class="lp-input" [ngModel]="form().title" (ngModelChange)="form.update(f => ({ ...f, title: $event }))" required />
+      </label>
+
+      <label class="form-field">
+        توضیحات
+        <textarea class="lp-input" rows="3" [ngModel]="form().description" (ngModelChange)="form.update(f => ({ ...f, description: $event }))"></textarea>
+      </label>
+
+      <div class="form-row">
+        <label class="form-field">
+          نوع
+          <select class="lp-select" [ngModel]="form().type" (ngModelChange)="form.update(f => ({ ...f, type: $event }))">
+            <option *ngFor="let t of types" [ngValue]="t" [value]="t === 'all' ? 'personal' : t">
+              {{ t === 'all' ? 'شخصی' : typeLabels[t] }}
+            </option>
+          </select>
+        </label>
+        <label class="form-field">
+          رنگ
+          <input type="color" class="lp-color" [ngModel]="form().color" (ngModelChange)="form.update(f => ({ ...f, color: $event }))" />
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label class="form-field">
+          شروع
+          <input type="datetime-local" class="lp-input" [ngModel]="form().start" (ngModelChange)="form.update(f => ({ ...f, start: $event }))" />
+        </label>
+        <label class="form-field" [class.disabled]="form().allDay">
+          پایان
+          <input type="datetime-local" class="lp-input" [ngModel]="form().end" [disabled]="form().allDay" (ngModelChange)="form.update(f => ({ ...f, end: $event }))" />
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label class="form-field">
+          مکان
+          <input type="text" class="lp-input" [ngModel]="form().location" (ngModelChange)="form.update(f => ({ ...f, location: $event }))" />
+        </label>
+      </div>
+
+      <div class="form-checks">
+        <label class="check-field">
+          <input type="checkbox" [checked]="form().allDay" (change)="onAllDayChange($event)" />
+          تمام‌روز
+        </label>
+        <label class="check-field">
+          <input type="checkbox" [checked]="form().isPublic" (change)="onPublicChange($event)" />
+          عمومی
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="lp-btn lp-btn-ghost" (click)="closeForm()">انصراف</button>
+        <button type="submit" class="lp-btn lp-btn-primary">ذخیره</button>
+      </div>
+    </form>
+  </div>
+</div>

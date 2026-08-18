@@ -3,6 +3,7 @@ using EducationalPlatform.Nehzat.API.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace EducationalPlatform.Nehzat.API.Controllers
 {
@@ -11,10 +12,12 @@ namespace EducationalPlatform.Nehzat.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IDevTokenService _devTokenService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IDevTokenService devTokenService)
+        public AuthController(IDevTokenService devTokenService, IConfiguration configuration)
         {
             _devTokenService = devTokenService;
+            _configuration = configuration;
         }
 
         // Sign-up is handled by OTUH2 — this endpoint is disabled in favor of centralized auth.
@@ -36,6 +39,12 @@ namespace EducationalPlatform.Nehzat.API.Controllers
         [AllowAnonymous]
         public IActionResult SignIn([FromBody] SignInRequest request)
         {
+            var useMockAuth = _configuration.GetValue<bool>("DevAuth:UseMockAuth", false);
+            if (!useMockAuth)
+            {
+                return NotFound();
+            }
+
             if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
                 return Unauthorized(new { message = "نام کاربری یا رمز عبور نامعتبر است" });
@@ -80,6 +89,11 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             new DevAccount("fateme.mohammadi",  "password123",   "trainee", 102, 102,  1, "/assets/avatars/fateme.png"),
             new DevAccount("mohammad.rezaei",     "password123",   "trainee", 103, 103,  1, "/assets/avatars/mohammad.png"),
             new DevAccount("coach",               "password123",   "coach",   200, null, 1, null),
+            new DevAccount("parent",              "password123",   "parent",   300, null, 1, null),
+            new DevAccount("branch.manager",      "password123",   "branch_manager", 400, null, 1, null),
+            new DevAccount("headquarters",        "password123",   "headquarters", 500, null, 1, null),
+            new DevAccount("evaluator",           "password123",   "evaluator", 600, null, 1, null),
+            new DevAccount("teacher",             "password123",   "teacher", 700, null, 1, null),
         };
 
         public static DevAccount? Lookup(string username, string password)

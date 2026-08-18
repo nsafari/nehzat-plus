@@ -197,7 +197,7 @@
   background: var(--lp-muted);
 }
 .timeline-dot.blue {
-  background: var(--accent-blue, #2d5a8a);
+  background: var(--lp-accent-blue);
 }
 .timeline-dot.green {
   background: var(--lp-primary);
@@ -328,7 +328,7 @@
 }
 .attachment-item {
   text-decoration: none;
-  color: var(--accent-blue, #2d5a8a);
+  color: var(--lp-accent-blue);
   display: flex;
   align-items: center;
   gap: 0.35rem;

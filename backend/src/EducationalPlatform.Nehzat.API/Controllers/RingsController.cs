@@ -1,3 +1,4 @@
+using EducationalPlatform.Nehzat.Application.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using EducationalPlatform.Nehzat.Application.DTOs;
@@ -41,11 +42,11 @@ public class RingsController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -59,7 +60,7 @@ public class RingsController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -73,7 +74,7 @@ public class RingsController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -94,7 +95,7 @@ public class RingsController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 
@@ -108,7 +109,7 @@ public class RingsController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -123,7 +124,7 @@ public class RingsController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 
@@ -137,7 +138,7 @@ public class RingsController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -152,7 +153,7 @@ public class RingsController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            return Conflict(GenericErrorMessages.Conflict);
         }
     }
 
@@ -166,7 +167,7 @@ public class RingsController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }

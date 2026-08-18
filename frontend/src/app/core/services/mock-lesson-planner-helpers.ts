@@ -8,7 +8,7 @@ export function createDummyToken(
   username: string,
   userType: UserType,
   studentId?: number,
-  branchId?: number
+  branchId?: number,
 ): string {
   const header = JSON.stringify({ alg: 'none', typ: 'JWT' });
   const payload = JSON.stringify({

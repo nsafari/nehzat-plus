@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EducationalPlatform.Nehzat.Application.Constants;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Infrastructure.Data;
@@ -49,7 +50,7 @@ public class AdminStudentsController : ControllerBase
     public async Task<IActionResult> GetStudentById(int id)
     {
         var student = await _studentService.FindByIdAsync(id);
-        if (student == null) return NotFound(new { message = "متربی پیدا نشد." });
+        if (student == null) return NotFound(GenericErrorMessages.NotFound);
         var user = await _userService.FindUserByStudentIdAsync(student.Id);
         return Ok(new
         {
@@ -94,7 +95,7 @@ public class AdminStudentsController : ControllerBase
                     request.Password,
                     null,
                     student.Id,
-                    "trainee",
+                    RoleNames.Trainee,
                     request.FirstName,
                     request.LastName,
                     request.Email,
@@ -132,7 +133,7 @@ public class AdminStudentsController : ControllerBase
         try
         {
             var existing = await _studentService.FindByIdAsync(id)
-                ?? throw new KeyNotFoundException("متربی پیدا نشد.");
+                ?? throw new KeyNotFoundException(GenericErrorMessages.NotFound);
 
             if (request.FirstName != null) existing.FirstName = request.FirstName.Trim();
             if (request.LastName != null) existing.LastName = request.LastName.Trim();
@@ -166,9 +167,9 @@ public class AdminStudentsController : ControllerBase
                 updated.CreatedAt
             });
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 
@@ -180,9 +181,9 @@ public class AdminStudentsController : ControllerBase
             await _studentService.DeleteAsync(id);
             return NoContent();
         }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
-            return NotFound(new { message = ex.Message });
+            return NotFound(GenericErrorMessages.NotFound);
         }
     }
 }
