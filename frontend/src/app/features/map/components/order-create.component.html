@@ -1,0 +1,46 @@
+<div class="order-create-page">
+  <h1>سفارش جدید</h1>
+  <form (submit)="submit(); $event.preventDefault()">
+    <div class="form-grid">
+      <label>
+        نام مشتری
+        <input class="lp-input" type="text" [(ngModel)]="model.customerName" name="customerName" required />
+      </label>
+      <label>
+        تلفن
+        <input class="lp-input" type="tel" [(ngModel)]="model.customerPhone" name="customerPhone" required />
+      </label>
+      <label class="span-full">
+        آدرس مبدا
+        <input class="lp-input" type="text" [(ngModel)]="model.pickupAddress" name="pickupAddress" required />
+      </label>
+      <label class="span-full">
+        آدرس مقصد
+        <input class="lp-input" type="text" [(ngModel)]="model.dropoffAddress" name="dropoffAddress" required />
+      </label>
+      <label>
+        یادداشت
+        <input class="lp-input" type="text" [(ngModel)]="model.notes" name="notes" />
+      </label>
+      <label>
+        مبلغ (تومان)
+        <input class="lp-input" type="number" [(ngModel)]="model.totalAmount" name="totalAmount" required min="0" />
+      </label>
+    </div>
+
+    <div class="coord-row">
+      <button type="button" class="lp-btn" (click)="togglePickupPick()" [class.lp-btn-primary]="pickupPick()">
+        {{ pickupPick() ? 'در حال انتخاب مبدا (کلیک کنید)' : 'انتخاب مبدا روی نقشه' }}
+      </button>
+      <span class="muted">مبدا: {{ model.pickupLat | number:'1.4-4' }}, {{ model.pickupLng | number:'1.4-4' }} · مقصد: {{ model.dropoffLat | number:'1.4-4' }}, {{ model.dropoffLng | number:'1.4-4' }}</span>
+    </div>
+
+    <div #mapEl class="map-canvas" aria-label="نقشه"></div>
+
+    <div class="actions">
+      <button type="submit" class="lp-btn lp-btn-primary" [disabled]="loading()">
+        {{ loading() ? 'در حال ثبت...' : 'ثبت سفارش' }}
+      </button>
+    </div>
+  </form>
+</div>

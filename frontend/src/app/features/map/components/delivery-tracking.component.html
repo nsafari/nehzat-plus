@@ -1,0 +1,17 @@
+<div class="tracking-page">
+  <h1>ردیابی سفارش #{{ orderId() }}</h1>
+  <div #mapEl class="map-canvas" aria-label="نقشه ردیابی"></div>
+  @if (points().length === 0) {
+    <p class="muted">هنوز نقطه‌ای ثبت نشده است.</p>
+  } @else {
+    <ol class="timeline">
+      @for (p of points(); track p.id) {
+        <li>
+          <strong>{{ p.status }}</strong>
+          <span>{{ p.note ?? 'بدون یادداشت' }}</span>
+          <time>{{ p.timestamp | date:'yyyy/MM/dd HH:mm' }}</time>
+        </li>
+      }
+    </ol>
+  }
+</div>

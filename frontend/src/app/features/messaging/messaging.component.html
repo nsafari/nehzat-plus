@@ -1,0 +1,218 @@
+<section class="messaging-page">
+  <!-- Column 1: Conversation list -->
+  <aside class="messaging-list">
+    <header class="messaging-list__header">
+      <h2>گفتگوها</h2>
+      <span class="messaging-list__unread" *ngIf="unreadTotal() > 0">
+        {{ unreadTotal() }}
+      </span>
+    </header>
+
+    <button class="btn-new" type="button" (click)="showCreate() ? cancelCreate() : startCreate()">
+      <span>{{ showCreate() ? 'بازگشت' : '＋ گفتگوی جدید' }}</span>
+    </button>
+
+    <div class="messaging-list__scroll">
+      <div class="messaging-list__loading" *ngIf="loading()">
+        <span class="spinner"></span>
+      </div>
+
+      <ng-container *ngIf="!loading()">
+        <button
+          *ngFor="let conv of conversations(); trackBy: trackByConversation"
+          class="conversation-item"
+          [class.active]="activeConversation()?.id === conv.id"
+          type="button"
+          (click)="selectConversation(conv.id)"
+        >
+          <span class="conversation-item__avatar">{{ (conv.title || '؟').charAt(0) }}</span>
+          <span class="conversation-item__body">
+            <span class="conversation-item__title">
+              {{ conv.title }}
+              <span class="conversation-item__type">{{ conv.type }}</span>
+            </span>
+            <span class="conversation-item__preview">{{ conv.lastMessage?.content }}</span>
+            <span class="conversation-item__meta">
+              <span>{{ conv.lastMessage?.createdAt ? formatTime(conv.lastMessage?.createdAt) : '' }}</span>
+              <span *ngIf="conv.unreadCount > 0" class="conversation-item__badge">
+                {{ conv.unreadCount }}
+              </span>
+            </span>
+          </span>
+          <span
+            class="conversation-item__delete"
+            (click)="$event.stopPropagation(); deleteConversation(conv.id)"
+            title="حذف گفتگو"
+          >✕</span>
+        </button>
+
+        <p class="messaging-list__empty" *ngIf="conversations().length === 0">
+          هیچ گفتگویی وجود ندارد.
+        </p>
+      </ng-container>
+    </div>
+  </aside>
+
+  <!-- Column 2: Message thread -->
+  <main class="messaging-thread">
+    <ng-container *ngIf="activeConversation() as conv; else noSelection">
+      <header class="messaging-thread__header">
+        <div class="messaging-thread__titles">
+          <h3>{{ conv.title }}</h3>
+          <span class="messaging-thread__meta">{{ conv.members.length }} عضو</span>
+        </div>
+      </header>
+
+      <div class="messaging-thread__messages">
+        <button
+          *ngIf="hasMore()"
+          class="btn-load-more"
+          type="button"
+          (click)="loadMoreMessages()"
+          [disabled]="loadingMore()"
+        >
+          {{ loadingMore() ? 'در حال بارگذاری…' : 'پیام‌های قدیمی‌تر' }}
+        </button>
+
+        <div class="messaging-thread__loading" *ngIf="loadingMessages()">
+          <span class="spinner"></span>
+        </div>
+
+        <ng-container *ngIf="!loadingMessages()">
+          <p class="messaging-thread__empty" *ngIf="messages().length === 0">
+            هنوز پیامی ارسال نشده است.
+          </p>
+
+          <div
+            *ngFor="let message of messages(); trackBy: trackByMessage"
+            class="message-row"
+            [class.own]="message.senderId === selfUserId"
+          >
+            <div class="message-bubble">
+              <div class="message-bubble__sender" *ngIf="message.senderId !== selfUserId">
+                {{ message.senderName }}
+              </div>
+
+              <ng-container *ngIf="editingMessageId() === message.id; else messageContent">
+                <textarea
+                  class="message-bubble__edit"
+                  [(ngModel)]="editDraft"
+                  rows="2"
+                ></textarea>
+                <div class="message-bubble__actions">
+                  <button class="btn-mini" type="button" (click)="saveEdit()">ذخیره</button>
+                  <button class="btn-mini" type="button" (click)="cancelEdit()">انصراف</button>
+                </div>
+              </ng-container>
+
+              <ng-template #messageContent>
+                <p class="message-bubble__text">{{ message.content }}</p>
+                <div class="message-bubble__attachments" *ngIf="message.attachments.length">
+                  <a
+                    *ngFor="let attachment of message.attachments"
+                    class="attachment-chip"
+                    [href]="attachment.fileUrl"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    📎 {{ attachment.fileName }}
+                  </a>
+                </div>
+                <span class="message-bubble__meta">
+                  {{ formatTime(message.createdAt) }}
+                  <span *ngIf="message.isEdited" class="message-bubble__edited">ویرایش‌شده</span>
+                </span>
+              </ng-template>
+
+              <div class="message-bubble__toolbar" *ngIf="message.senderId === selfUserId">
+                <button class="btn-icon" type="button" title="ویرایش" (click)="startEdit(message)">✎</button>
+                <button class="btn-icon" type="button" title="حذف" (click)="deleteMessage(message.id)">🗑</button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <ng-template #noSelection>
+      <div class="messaging-thread__placeholder">
+        <p>یک گفتگو را از فهرست انتخاب کنید</p>
+      </div>
+    </ng-template>
+  </main>
+
+  <!-- Column 3: Send box / composer -->
+  <aside class="messaging-composer">
+    <ng-container *ngIf="!showCreate(); else createForm">
+      <ng-container *ngIf="activeConversation() as conv">
+        <div class="messaging-composer__members">
+          <span class="member-chip" *ngFor="let member of conv.members">
+            {{ member.fullName }}
+          </span>
+        </div>
+
+        <div class="messaging-composer__box">
+          <textarea
+            class="composer-input"
+            [(ngModel)]="draft"
+            placeholder="پیام خود را بنویسید…"
+            rows="4"
+            (keydown.enter)="$event.preventDefault(); sendMessage()"
+          ></textarea>
+          <button
+            class="btn-send"
+            type="button"
+            (click)="sendMessage()"
+            [disabled]="sending() || !draft().trim()"
+          >
+            {{ sending() ? 'در حال ارسال…' : 'ارسال' }}
+          </button>
+          <p class="messaging-composer__hint">Enter برای ارسال · Shift+Enter برای خط جدید</p>
+        </div>
+      </ng-container>
+
+      <p class="messaging-composer__placeholder" *ngIf="!activeConversation()">
+        برای ارسال پیام، یک گفتگو را انتخاب کنید.
+      </p>
+    </ng-container>
+
+    <ng-template #createForm>
+      <form class="create-form" (ngSubmit)="createConversation()">
+        <h3>ایجاد گفتگوی جدید</h3>
+
+        <label class="create-form__field">
+          <span>عنوان</span>
+          <input type="text" [(ngModel)]="newTitle" name="title" placeholder="عنوان گفتگو" />
+        </label>
+
+        <label class="create-form__field">
+          <span>نوع</span>
+          <select [(ngModel)]="newType" name="type">
+            <option value="direct">خصوصی</option>
+            <option value="group">گروهی</option>
+            <option value="announcement">اعلامیه</option>
+          </select>
+        </label>
+
+        <div class="create-form__field">
+          <span>اعضا</span>
+          <label class="member-option" *ngFor="let member of candidateMembers">
+            <input
+              type="checkbox"
+              [checked]="selectedMemberIds().includes(member.userId)"
+              (change)="toggleMember(member.userId)"
+            />
+            {{ member.fullName }}
+          </label>
+        </div>
+
+        <div class="create-form__actions">
+          <button class="btn-primary" type="submit" [disabled]="creating()">
+            {{ creating() ? '…' : 'ایجاد' }}
+          </button>
+          <button class="btn-secondary" type="button" (click)="cancelCreate()">انصراف</button>
+        </div>
+      </form>
+    </ng-template>
+  </aside>
+</section>

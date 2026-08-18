@@ -1,0 +1,98 @@
+<section class="take-page">
+  <header class="take-header">
+    <div class="take-header__titles">
+      <h1>{{ exam()?.title ?? 'آزمون' }}</h1>
+      <span *ngIf="exam() as exam" class="lp-chip">{{ exam.category }}</span>
+    </div>
+    <div class="take-header__actions">
+      <span *ngIf="exam()?.status === 'in_progress'" class="timer-pill" [class.timer-pill--danger]="remainingSeconds() < 60">
+        ⏱ {{ remainingLabel() }}
+      </span>
+      <button class="btn-secondary btn-sm" type="button" (click)="backToList()">بازگشت</button>
+    </div>
+  </header>
+
+  <div *ngIf="loading()" class="take-loading">
+    <span class="spinner"></span> در حال بارگذاری آزمون…
+  </div>
+
+  <ng-container *ngIf="!loading() && exam() as exam">
+    <!-- Result view for completed/expired -->
+    <div *ngIf="exam.status !== 'in_progress'" class="result-card">
+      <h2 class="result-card__headline">نتیجه آزمون</h2>
+      <p class="result-card__score">
+        امتیاز شما:
+        <strong>{{ faNum(exam.totalScore) }}</strong>
+        <span class="result-card__percent">{{ faPercent(scorePercent(exam.totalScore, exam.totalQuestions)) }}</span>
+      </p>
+      <div class="result-card__row">
+        <span class="result-badge result-badge--ok">✓ {{ faNum(exam.correctAnswers) }} پاسخ درست</span>
+      </div>
+      <div class="result-card__list">
+        <div class="result-item" *ngFor="let a of exam.answers; let i = index">
+          <span class="result-item__status" [class.result-item__status--ok]="a.isCorrect"
+            [class.result-item__status--bad]="!a.isCorrect">
+            {{ a.isCorrect ? '✓' : '✕' }}
+          </span>
+          <span class="result-item__num">سوال {{ faNum(i + 1) }}</span>
+          <span class="result-item__points">{{ faNum(a.pointsEarned) }} امتیاز</span>
+        </div>
+      </div>
+      <button class="btn-primary" type="button" (click)="backToList()">بازگشت به آزمون‌ها</button>
+    </div>
+
+    <!-- Active exam -->
+    <div *ngIf="exam.status === 'in_progress'" class="take-body">
+      <div class="progress-track">
+        <div class="progress-fill" [style.width.%]="progressPercent()"></div>
+      </div>
+      <p class="take-body__progress-label">
+        {{ faNum(answeredCount()) }} از {{ faNum(exam.questions.length) }} پاسخ‌داده‌شده
+      </p>
+
+      <div class="nav-list">
+        <button *ngFor="let q of exam.questions; let i = index" class="nav-chip"
+          [class.nav-chip--answered]="isAnswered(q.questionId)"
+          [class.nav-chip--current]="currentIndex() === i"
+          type="button" (click)="selectQuestion(i)">
+          {{ faNum(i + 1) }}
+        </button>
+      </div>
+
+      <article class="question-card" *ngIf="currentQuestion() as q">
+        <p class="question-card__points">{{ faNum(q.points) }} امتیاز</p>
+        <h2 class="question-card__text">{{ q.text }}</h2>
+
+        <div *ngIf="q.options.length > 0" class="option-list">
+          <label class="option-card" *ngFor="let option of q.options"
+            [class.option-card--selected]="isSelected(q.questionId, option)">
+            <input type="radio" class="option-card__input" [name]="'q' + q.questionId"
+              [checked]="isSelected(q.questionId, option)"
+              (change)="selectOption(q.questionId, option)" />
+            <span>{{ option }}</span>
+          </label>
+        </div>
+
+        <label *ngIf="q.options.length === 0" class="essay-field">
+          <span>پاسخ تشریحی:</span>
+          <textarea class="lp-input" rows="5" placeholder="پاسخ خود را بنویسید…"
+            [ngModel]="essayValue(q.questionId)"
+            (ngModelChange)="onEssayInput(q.questionId, $event)"></textarea>
+        </label>
+      </article>
+
+      <div class="take-nav">
+        <button class="btn-secondary" type="button" (click)="prev()" [disabled]="currentIndex() === 0">
+          → قبلی
+        </button>
+        <button *ngIf="currentIndex() < exam.questions.length - 1" class="btn-primary" type="button" (click)="next()">
+          بعدی ←
+        </button>
+        <button *ngIf="currentIndex() === exam.questions.length - 1" class="btn-primary" type="button"
+          (click)="submit()" [disabled]="submitting()">
+          {{ submitting() ? 'در حال ثبت…' : 'ثبت نهایی' }}
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</section>

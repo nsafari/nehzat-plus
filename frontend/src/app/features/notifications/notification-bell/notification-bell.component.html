@@ -1,0 +1,50 @@
+<div class="notification-bell" (click)="toggle()" [class.open]="open()">
+  <span class="bell-icon" [class.unread]="unread() > 0" (click)="$event.stopPropagation()"
+    >&#128276;</span
+  >
+  <span class="bell-count" *ngIf="unread() > 0">{{ unread() }}</span>
+
+  <div class="bell-dropdown" *ngIf="open()" (click)="$event.stopPropagation()">
+    <header class="bell-header">
+      <strong>اعلان‌ها</strong>
+      <button type="button" class="bell-action" (click)="markAllRead()" *ngIf="unread() > 0">
+        خواندن همه
+      </button>
+    </header>
+
+    <div class="bell-body" [class.loading]="loading()">
+      <div *ngIf="loading()" class="bell-empty">در حال بارگذاری…</div>
+      <div *ngIf="!loading() && items().length === 0" class="bell-empty">اعلانی ندارید</div>
+
+      <a
+        *ngFor="let n of items()"
+        class="bell-item"
+        [class.unread]="!n.isRead"
+        [href]="n.link || null"
+        (click)="!n.isRead && markRead(n.id); $event.stopPropagation()"
+      >
+        <span
+          class="bell-item-icon"
+          [style.background]="
+            n.type === 'error'
+              ? 'var(--lp-danger, #dc2626)'
+              : n.type === 'warning'
+                ? 'var(--lp-gold, #f59e0b)'
+                : 'var(--lp-primary, #4f46e5)'
+          "
+        >
+          {{ typeIcons[n.type] }}
+        </span>
+        <span class="bell-item-text">
+          <strong>{{ n.title }}</strong>
+          <span>{{ n.body }}</span>
+        </span>
+        <time class="bell-item-time">{{ formatTime(n.createdAt) }}</time>
+      </a>
+    </div>
+
+    <footer class="bell-footer" *ngIf="items().length > 0">
+      <a routerLink="/notifications" (click)="toggle()">مشاهده همه</a>
+    </footer>
+  </div>
+</div>

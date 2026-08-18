@@ -1,0 +1,104 @@
+<div class="courier-report-page">
+  <header class="page-header">
+    <h1 class="page-title">گزارش پیک‌ها</h1>
+  </header>
+
+  <div class="toolbar">
+    <label class="toolbar-field">
+      بازه زمانی
+      <select class="lp-select" [ngModel]="selectedRange()" (ngModelChange)="selectRange($event)">
+        <option *ngFor="let r of ranges" [ngValue]="r" [disabled]="r.limited">{{ r.label }}</option>
+      </select>
+    </label>
+    <label class="toolbar-field">
+      پیک
+      <select
+        class="lp-select"
+        [value]="courierId()"
+        (change)="selectCourier($any($event.target).value)"
+      >
+        <option [value]="101">محمد رضایی</option>
+        <option [value]="102">علی احمدی</option>
+        <option [value]="103">فاطمه محمدی</option>
+        <option [value]="104">حسین کریمی</option>
+      </select>
+    </label>
+    <div class="toolbar-spacer"></div>
+    <button type="button" class="lp-btn lp-btn-secondary" (click)="loadLeaderboard()">
+      به‌روزرسانی رتبه‌بندی
+    </button>
+  </div>
+
+  <div *ngIf="loading()" class="empty-state">در حال بارگذاری…</div>
+
+  <ng-container *ngIf="!loading() && stats()">
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">تحویل موفق</span>
+        <strong class="stat-value">{{ stats()!.totalDeliveries }}</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">مسافت طی‌شده</span>
+        <strong class="stat-value">{{ stats()!.totalDistance.toLocaleString('fa-IR') }}</strong>
+        <span class="stat-unit">کیلومتر</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">درآمد دوره</span>
+        <strong class="stat-value">{{ currency(stats()!.totalEarnings) }}</strong>
+        <span class="stat-unit">تومان</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">میانگین روزانه</span>
+        <strong class="stat-value">{{ currency(stats()!.dailyAverage) }}</strong>
+        <span class="stat-unit">تومان</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">جزئیات روزانه — {{ stats()!.courierName }}</h2>
+      <div class="panel-meta">
+        {{ formatDate(stats()!.periodStart) }} تا {{ formatDate(stats()!.periodEnd) }}
+      </div>
+      <div class="table-wrap">
+        <table class="lp-table">
+          <thead>
+            <tr>
+              <th>تاریخ</th>
+              <th>تحویل</th>
+              <th>مسافت (کیلومتر)</th>
+              <th>درآمد (تومان)</th>
+              <th>میانگین زمان (دقیقه)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of stats()!.dailyBreakdown">
+              <td>{{ formatDate(d.date) }}</td>
+              <td>{{ d.deliveredCount }}</td>
+              <td>{{ d.distanceKm.toLocaleString('fa-IR') }}</td>
+              <td>{{ currency(d.earningsAmount) }}</td>
+              <td>{{ d.averageDeliveryMinutes }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+
+  <section class="panel" *ngIf="leaderboard()">
+    <h2 class="panel-title">رتبه‌بندی پیک‌ها</h2>
+    <ul class="leaderboard">
+      <li
+        *ngFor="let e of leaderboard()!.entries"
+        class="leaderboard-item"
+        [class.top]="e.rank === 1"
+      >
+        <span class="leaderboard-rank">{{ e.rank.toLocaleString('fa-IR') }}</span>
+        <span class="leaderboard-name">{{ e.courierName }}</span>
+        <span class="leaderboard-deliveries"
+          >تعداد تحویل: {{ e.totalDeliveries.toLocaleString('fa-IR') }}</span
+        >
+        <span class="leaderboard-earnings">{{ currency(e.totalEarnings) }} ↑</span>
+      </li>
+    </ul>
+  </section>
+</div>

@@ -1,0 +1,107 @@
+<div class="progress-dashboard">
+  <header class="page-header">
+    <h1>داشبورد پیشرفت</h1>
+    <p class="page-subtitle">نمای کلی عملکرد متربیان و روند پیشرفت در دوره‌های اخیر</p>
+  </header>
+
+  @if (loading() || error() || !summary()) {
+    <div class="empty-state">{{ loading() ? 'در حال بارگذاری…' : 'داده‌ای برای نمایش وجود ندارد' }}</div>
+  } @else if (summary(); as s) {
+    <section class="kpi-grid" aria-label="شاخص‌های کلیدی">
+      <div class="kpi-card kpi-card--gold">
+        <span class="kpi-icon" aria-hidden="true">⭐</span>
+        <span class="kpi-label">امتیاز تجربه</span>
+        <span class="kpi-value">{{ number(s.totalXp) }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon" aria-hidden="true">📋</span>
+        <span class="kpi-label">ارزیابی‌های در انتظار</span>
+        <span class="kpi-value">{{ number(s.pendingEvaluations) }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon" aria-hidden="true">💬</span>
+        <span class="kpi-label">پیام‌های خوانده‌نشده</span>
+        <span class="kpi-value">{{ number(s.unreadMessages) }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon" aria-hidden="true">🔄</span>
+        <span class="kpi-label">گردش‌کارهای باز</span>
+        <span class="kpi-value">{{ number(s.openWorkflows) }}</span>
+      </div>
+    </section>
+
+    <section class="charts-grid">
+      <div class="panel">
+        <h2 class="panel-title">روند پیشرفت</h2>
+        @if (s.trend.length) {
+          <div class="trend-chart" role="img" aria-label="نمودار روند نمره‌های کلی">
+            @for (point of s.trend; track $index) {
+              <div class="trend-col">
+                <span class="trend-value">{{ percent(point.overallScore) }}</span>
+                <div class="trend-bar" [style.height.%]="barHeight(point.overallScore)"></div>
+                <span class="trend-date">{{ trendDate(point.date) }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">هیچ داده‌ای برای نمودار موجود نیست</div>
+        }
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">جدول برترین‌ها</h2>
+        @if (s.leaderboard.length) {
+          <ul class="leaderboard">
+            @for (entry of s.leaderboard; track entry.studentId) {
+              <li class="leaderboard-row" [class.leaderboard-row--top]="entry.rank === 1">
+                <span class="rank">{{ number(entry.rank) }}</span>
+                <span class="name">{{ entry.studentName }}</span>
+                <span class="score">{{ percent(entry.overallScore) }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="empty-state">جدولی موجود نیست</div>
+        }
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">آخرین گزارش‌های پیشرفت</h2>
+      @if (s.recentReports.length) {
+        <div class="reports-grid">
+          @for (report of s.recentReports; track report.id) {
+            <article class="report-card">
+              <div class="report-head">
+                <span class="report-student">{{ report.studentName }}</span>
+                <span class="report-overall">{{ percent(report.overallScore) }}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" [style.width.%]="report.assignmentCompletionRate"></div>
+              </div>
+              <div class="report-meta">
+                <span>تکالیف: {{ number(report.completedAssignments) }} از {{ number(report.totalAssignments) }}</span>
+                <span>حضور: {{ percent(report.attendanceRate) }}</span>
+              </div>
+              @if (report.metrics.length) {
+                <ul class="metric-list">
+                  @for (metric of report.metrics; track metric.id) {
+                    <li>
+                      <span class="metric-label">{{ metric.metricLabel }}</span>
+                      <div class="bar-track bar-track--sm">
+                        <div class="bar-fill" [style.width.%]="metric.score"></div>
+                      </div>
+                      <span class="metric-score">{{ percent(metric.score) }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">گزارشی ثبت نشده است</div>
+      }
+    </section>
+  }
+</div>
