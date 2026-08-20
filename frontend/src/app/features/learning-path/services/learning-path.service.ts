@@ -1,0 +1,55 @@
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+export interface LearningPathDto {
+  id: number;
+  title: string;
+  description: string | null;
+  slug: string;
+  ageRangeMin: number;
+  ageRangeMax: number;
+  iconUrl: string | null;
+  colorHex: string | null;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface StudyLessonSummaryDto {
+  id: number;
+  title: string;
+  estimatedMinutes: number;
+}
+
+export interface StudyModuleTreeDto {
+  id: number;
+  title: string;
+  sortOrder: number;
+  lessons: StudyLessonSummaryDto[];
+}
+
+export interface LearningLevelTreeDto {
+  id: number;
+  title: string;
+  sortOrder: number;
+  modules: StudyModuleTreeDto[];
+}
+
+export interface LearningPathTreeDto {
+  path: LearningPathDto;
+  levels: LearningLevelTreeDto[];
+}
+
+@Injectable({ providedIn: 'root' })
+export class LearningPathService {
+  private http = inject(HttpClient);
+  private base = '/api/learning';
+
+  getLearningPaths(): Observable<LearningPathDto[]> {
+    return this.http.get<LearningPathDto[]>(`${this.base}/paths`);
+  }
+
+  getLearningPathTree(pathId: number): Observable<LearningPathTreeDto> {
+    return this.http.get<LearningPathTreeDto>(`${this.base}/paths/${pathId}/tree`);
+  }
+}

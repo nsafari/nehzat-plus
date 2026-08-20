@@ -9,10 +9,12 @@ namespace EducationalPlatform.Nehzat.Infrastructure.Services;
 public class ParentService : IParentService
 {
     private readonly AppDbContext _db;
+    private readonly IMaktabLookupService _maktabLookup;
 
-    public ParentService(AppDbContext db)
+    public ParentService(AppDbContext db, IMaktabLookupService maktabLookup)
     {
         _db = db;
+        _maktabLookup = maktabLookup;
     }
 
     public async Task<List<Parent>> GetAllAsync()
@@ -86,5 +88,80 @@ public class ParentService : IParentService
             .Include(ps => ps.Student)
             .Select(ps => ps.Student!)
             .ToListAsync();
+    }
+
+    public async Task<List<ParentStudentInfo>> GetStudentsInfoAsync(int parentId)
+    {
+        var students = await _db.ParentStudents
+            .Where(ps => ps.ParentId == parentId)
+            .Include(ps => ps.Student)
+            .Select(ps => ps.Student!)
+            .ToListAsync();
+
+        var result = new List<ParentStudentInfo>();
+
+        foreach (var student in students)
+        {
+            var info = new ParentStudentInfo
+            {
+                StudentId = student.Id,
+                StudentName = $"{student.FirstName} {student.LastName}",
+                StudentCode = student.StudentId,
+                Age = 0,
+                Phase = "A"
+            };
+
+            if (student.DateOfBirth.HasValue && !string.IsNullOrEmpty(student.Gender))
+            {
+                var lookup = await _maktabLookup.DetermineMaktabAsync(student.DateOfBirth.Value, student.Gender);
+                info.Age = lookup.Age;
+                info.Phase = lookup.Phase;
+            }
+
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.StudentId == student.Id);
+            if (user != null)
+            {
+                var enrollment = await _db.UserEnrollments
+                    .Where(e => e.UserId == user.Id && e.Status == "active")
+                    .Include(e => e.LearningPath)
+                    .Include(e => e.LessonProgress)
+                    .FirstOrDefaultAsync();
+
+                if (enrollment != null)
+                {
+                    info.ActivePathId = enrollment.LearningPathId;
+                    info.ActivePathTitle = enrollment.LearningPath?.Title;
+
+                    var totalLessons = await _db.StudyLessons
+                        .Where(l => l.StudyModule!.LearningLevel!.LearningPathId == enrollment.LearningPathId)
+                        .CountAsync();
+
+                    var completedLessons = enrollment.LessonProgress
+                        .Count(lp => lp.Status == "completed");
+
+                    var totalLevels = await _db.LearningLevels
+                        .Where(l => l.LearningPathId == enrollment.LearningPathId)
+                        .CountAsync();
+
+                    var completedLevels = await _db.LearningLevels
+                        .Where(l => l.LearningPathId == enrollment.LearningPathId)
+                        .Where(l => l.Modules.Any(m => m.Lessons.All(les =>
+                            enrollment.LessonProgress.Any(lp => lp.StudyLessonId == les.Id && lp.Status == "completed"))))
+                        .CountAsync();
+
+                    info.TotalLessons = totalLessons;
+                    info.CompletedLessons = completedLessons;
+                    info.TotalLevels = totalLevels;
+                    info.CompletedLevels = completedLevels;
+                    info.LastActivityDate = enrollment.LessonProgress
+                        .Where(lp => lp.CompletedAt.HasValue)
+                        .Max(lp => (DateTime?)lp.CompletedAt);
+                }
+            }
+
+            result.Add(info);
+        }
+
+        return result;
     }
 }

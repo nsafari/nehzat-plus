@@ -9,8 +9,13 @@ namespace EducationalPlatform.Nehzat.Infrastructure.Services;
 public class ProfileService : IProfileService
 {
     private readonly AppDbContext _db;
+    private readonly IMaktabLookupService _maktabLookup;
 
-    public ProfileService(AppDbContext db) => _db = db;
+    public ProfileService(AppDbContext db, IMaktabLookupService maktabLookup)
+    {
+        _db = db;
+        _maktabLookup = maktabLookup;
+    }
 
     public async Task<ProfileDto> GetProfileAsync(int userId)
     {
@@ -24,6 +29,26 @@ public class ProfileService : IProfileService
         if (maktabMember?.Maktab != null)
             maktabName = maktabMember.Maktab.Name;
 
+        string? maktabNameEn = null, phase = null, ageCluster = null;
+        int? ringNumber = null, age = null;
+
+        if (user.StudentId.HasValue)
+        {
+            var student = await _db.Students.FindAsync(user.StudentId.Value);
+            if (student?.DateOfBirth != null && !string.IsNullOrEmpty(student.Gender) && student.Gender != "mixed")
+            {
+                var lookup = await _maktabLookup.DetermineMaktabAsync(student.DateOfBirth.Value, student.Gender);
+                if (lookup != null)
+                {
+                    maktabNameEn = lookup.MaktabNameEn;
+                    phase = lookup.Phase;
+                    ageCluster = lookup.AgeCluster;
+                    ringNumber = lookup.RingNumber;
+                    age = lookup.Age;
+                }
+            }
+        }
+
         return new ProfileDto
         {
             Id = user.Id,
@@ -36,6 +61,11 @@ public class ProfileService : IProfileService
             Biography = user.Biography,
             UserType = user.UserType,
             MaktabName = maktabName,
+            MaktabNameEn = maktabNameEn,
+            Phase = phase,
+            AgeCluster = ageCluster,
+            RingNumber = ringNumber,
+            Age = age,
             ApprovalStatus = user.ApprovalStatus,
             CreatedAt = user.CreatedAt,
             LastLoginAt = user.LastLoginAt

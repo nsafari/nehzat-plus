@@ -13,6 +13,11 @@ public class ProfileDto
     public string? Biography { get; set; }
     public string UserType { get; set; } = string.Empty;
     public string? MaktabName { get; set; }
+    public string? MaktabNameEn { get; set; }
+    public string? Phase { get; set; }
+    public string? AgeCluster { get; set; }
+    public int? RingNumber { get; set; }
+    public int? Age { get; set; }
     public string ApprovalStatus { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }

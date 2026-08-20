@@ -138,6 +138,7 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
     builder.Services.AddScoped<ExperimentalScienceDataSeeder>();
     builder.Services.AddScoped<IHadithService, HadithService>();
     builder.Services.AddScoped<HadithDataSeeder>();
+    builder.Services.AddScoped<IStudyPathService, StudyPathService>();
     builder.Services.AddScoped<ISrsService, SrsService>();
     builder.Services.AddScoped<IXpService, XpService>();
     builder.Services.AddScoped<IGamificationService, GamificationService>();
@@ -145,6 +146,10 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
     builder.Services.AddScoped<TrainingDataSeeder>();
     builder.Services.AddScoped<ITrainingService, TrainingService>();
     builder.Services.AddScoped<IMaktabService, MaktabService>();
+    builder.Services.AddScoped<IMaktabLookupService, MaktabLookupService>();
+    builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+    builder.Services.AddScoped<IPhaseTransitionService, PhaseTransitionService>();
+    builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IHalghehService, HalghehService>();
     builder.Services.AddScoped<IHalghehMaktabService, HalghehMaktabService>();
     builder.Services.AddScoped<IHalghehAssignmentService, HalghehAssignmentService>();
@@ -152,6 +157,7 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
     builder.Services.AddScoped<IMessageService, MessageService>();
     builder.Services.AddScoped<IAiService, AiService>();
     builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+    builder.Services.AddScoped<IEducationalProcessService, EducationalProcessService>();
     builder.Services.AddSingleton<ICalendarConverter, CalendarConverter>();
     builder.Services.AddScoped<IProfileService, ProfileService>();
     builder.Services.AddScoped<IProgressService, ProgressService>();
@@ -169,6 +175,7 @@ builder.Services.AddHttpClient("OSRM", client =>
 
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICourierReportService, CourierReportService>();
+builder.Services.AddScoped<IStudyPathService, StudyPathService>();
 builder.Services.AddHostedService<LocationCleanupService>();
 builder.Services.AddHostedService<OrderExpiryService>();
 

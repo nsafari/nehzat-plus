@@ -90,7 +90,7 @@ import { NotificationService } from '../../../core/services/notification.service
             <p class="muted">این والد فرزندی ثبت‌نام نشده دارد.</p>
           } @else {
             <div class="branch-list">
-              @for (student of parentStudents; track student.studentId + student.courseName) {
+              @for (student of parentStudents; track student.studentId + (student.courseName ?? '')) {
                 <div class="branch-item">
                   <span class="branch-name">{{ student.studentName }}</span>
                   <span class="list-meta">کد: {{ student.studentCode }}</span>

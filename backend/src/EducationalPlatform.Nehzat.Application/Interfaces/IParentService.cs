@@ -11,4 +11,5 @@ public interface IParentService
     Task<Parent> UpdateAsync(int id, UpdateParentRequest request);
     Task DeleteAsync(int id);
     Task<List<Student>> GetStudentsAsync(int parentId);
+    Task<List<ParentStudentInfo>> GetStudentsInfoAsync(int parentId);
 }

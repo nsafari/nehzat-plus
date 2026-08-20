@@ -40,6 +40,8 @@ public class AdminStudentsController : ControllerBase
                 x.Student.BranchId,
                 x.Student.StudentId,
                 x.Student.Status,
+                x.Student.DateOfBirth,
+                x.Student.Gender,
                 x.Student.CreatedAt
             })
             .ToListAsync();
@@ -63,6 +65,8 @@ public class AdminStudentsController : ControllerBase
             student.BranchId,
             student.StudentId,
             student.Status,
+            student.DateOfBirth,
+            student.Gender,
             student.CreatedAt
         });
     }

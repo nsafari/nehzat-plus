@@ -9,19 +9,33 @@
   color-scheme: light;
   font-family: "myNeirizi", "Vazirmatn", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
+  /* Base */
   --lp-bg: #f6f3ed;
   --lp-surface: #ffffff;
-  --lp-text: #1e1b14;
-  --lp-muted: #7a7468;
   --lp-border: #ddd5c5;
-  --lp-primary: #1a6b3c;
-  --lp-primary-hover: #14522d;
   --lp-danger: #b91c1c;
   --lp-success: #1a6b3c;
   --lp-gold: #b8942e;
   --lp-gold-hover: #9e7d25;
   --lp-gold-light: #faf3e0;
   --lp-accent-blue: #2d5a8a;
+
+  /* Theme (overridden by appDynamicTheme directive) */
+  --lp-primary: #1a6b3c;
+  --lp-primary-light: #e8f5e9;
+  --lp-primary-hover: #14522d;
+  --lp-bg-card: #ffffff;
+  --lp-bg-page: #f6f3ed;
+  --lp-text: #1e1b14;
+  --lp-text-muted: #7a7468;
+  --lp-accent: #b8942e;
+  --lp-radius-card: 20px;
+  --lp-radius-button: 12px;
+  --lp-radius-input: 12px;
+  --lp-font-family: "myNeirizi", "Vazirmatn", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --lp-font-size-base: 14px;
+  --lp-font-size-heading: 20px;
+  --lp-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -607,6 +621,41 @@ hr {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Global RTL overrides */
+[dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: 0; margin-left: auto; }
+[dir="rtl"] .text-left { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }
+[dir="rtl"] .float-left { float: right; }
+[dir="rtl"] .float-right { float: left; }
+[dir="rtl"] .border-left { border-left: none; border-right: var(--lp-border); }
+[dir="rtl"] .border-right { border-right: none; border-left: var(--lp-border); }
+
+/* Flip directional icons */
+[dir="rtl"] .icon-flip {
+  transform: scaleX(-1);
+}
+
+/* RTL overrides for feedback components */
+[dir="rtl"] .bar-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .bar-value {
+  text-align: left;
+}
+
+[dir="rtl"] .suggestions-box ul {
+  padding-left: 0;
+  padding-right: 1.5rem;
+}
+
+[dir="rtl"] .close-btn,
+[dir="rtl"] .close {
+  right: auto;
+  left: 1rem;
 }
 
 /* Role selection grid for dev login */

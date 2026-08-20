@@ -34,6 +34,17 @@ public class WorkflowRequest
     [ForeignKey(nameof(CreatedBy))]
     public User Creator { get; set; } = null!;
 
+    /// <summary>
+    /// نوع موجودیت آموزشی (Course, Enrollment, Submission, Content, Grade)
+    /// </summary>
+    [Column(TypeName = "nvarchar(50)")]
+    public string? EntityType { get; set; }
+
+    /// <summary>
+    /// شناسه موجودیت آموزشی
+    /// </summary>
+    public int? EntityId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

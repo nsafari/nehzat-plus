@@ -73,6 +73,12 @@ public class AppDbContext : DbContext
     public DbSet<StudentPathRanking> StudentPathRankings => Set<StudentPathRanking>();
     public DbSet<StudentPathHistory> StudentPathHistory => Set<StudentPathHistory>();
 
+    public DbSet<StudyPath> StudyPaths => Set<StudyPath>();
+    public DbSet<StudyPathStep> StudyPathSteps => Set<StudyPathStep>();
+    public DbSet<StudentStudyPath> StudentStudyPaths => Set<StudentStudyPath>();
+    public DbSet<Accommodation> Accommodations => Set<Accommodation>();
+    public DbSet<StudyPathAccommodation> StudyPathAccommodations => Set<StudyPathAccommodation>();
+
     public DbSet<CurriculumVersion> CurriculumVersions => Set<CurriculumVersion>();
     public DbSet<MonthlyBooklet> MonthlyBooklets => Set<MonthlyBooklet>();
 
@@ -160,8 +166,14 @@ public class AppDbContext : DbContext
   public DbSet<HalghehMember> HalghehMembers => Set<HalghehMember>();
   public DbSet<HalghehAssignment> HalghehAssignments => Set<HalghehAssignment>();
   public DbSet<HalghehAssignmentSubmission> HalghehAssignmentSubmissions => Set<HalghehAssignmentSubmission>();
-  public DbSet<MaktabMember> MaktabMembers => Set<MaktabMember>();
+    public DbSet<MaktabMember> MaktabMembers => Set<MaktabMember>();
     public DbSet<RingMaktab> RingMaktabs => Set<RingMaktab>();
+    public DbSet<MaktabLookup> MaktabLookups => Set<MaktabLookup>();
+
+    public DbSet<GamificationProfile> GamificationProfiles => Set<GamificationProfile>();
+    public DbSet<StudentBadge> StudentBadges => Set<StudentBadge>();
+    public DbSet<UserMessageRead> UserMessageReads => Set<UserMessageRead>();
+    public DbSet<QrSession> QrSessions => Set<QrSession>();
 
     public DbSet<KnowledgeDocument> KnowledgeDocuments => Set<KnowledgeDocument>();
     public DbSet<AiConversation> AiConversations => Set<AiConversation>();
@@ -178,6 +190,7 @@ public class AppDbContext : DbContext
     public DbSet<WorkflowStep> WorkflowSteps => Set<WorkflowStep>();
     public DbSet<WorkflowRequest> WorkflowRequests => Set<WorkflowRequest>();
     public DbSet<WorkflowAction> WorkflowActions => Set<WorkflowAction>();
+    public DbSet<EducationalProcess> EducationalProcesses => Set<EducationalProcess>();
 
     // Phase 16: Map & Geo
     public DbSet<UserLocation> UserLocations => Set<UserLocation>();
@@ -467,6 +480,11 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<MaktabLookup>(entity =>
+        {
+            entity.HasIndex(e => new { e.Gender, e.AgeMin, e.AgeMax });
         });
 
         modelBuilder.Entity<Halgheh>(entity =>
@@ -791,6 +809,68 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<SpiritualPath>(entity =>
         {
             entity.HasIndex(e => e.Key).IsUnique();
+        });
+
+        modelBuilder.Entity<StudyPath>(entity =>
+        {
+            entity.HasIndex(e => e.Key).IsUnique();
+            entity.HasOne(e => e.AgeGroup)
+                  .WithMany()
+                  .HasForeignKey(e => e.AgeGroupId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.SubjectArea)
+                  .WithMany()
+                  .HasForeignKey(e => e.SubjectAreaId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StudyPathStep>(entity =>
+        {
+            entity.HasOne(e => e.StudyPath)
+                  .WithMany(p => p.Steps)
+                  .HasForeignKey(e => e.StudyPathId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Assessment)
+                  .WithMany()
+                  .HasForeignKey(e => e.AssessmentId)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StudentStudyPath>(entity =>
+        {
+            entity.HasIndex(e => new { e.StudentId, e.StudyPathId }).IsUnique();
+            entity.HasOne(e => e.Student)
+                  .WithMany()
+                  .HasForeignKey(e => e.StudentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.StudyPath)
+                  .WithMany()
+                  .HasForeignKey(e => e.StudyPathId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.CurrentStep)
+                  .WithMany()
+                  .HasForeignKey(e => e.CurrentStepId)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Accommodation>(entity =>
+        {
+            entity.HasIndex(e => e.Code).IsUnique();
+        });
+
+        modelBuilder.Entity<StudyPathAccommodation>(entity =>
+        {
+            entity.HasIndex(e => new { e.StudyPathId, e.AccommodationId }).IsUnique();
+            entity.HasOne(e => e.StudyPath)
+                  .WithMany(p => p.Accommodations)
+                  .HasForeignKey(e => e.StudyPathId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Accommodation)
+                  .WithMany(a => a.StudyPaths)
+                  .HasForeignKey(e => e.AccommodationId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<StudentPathSelection>(entity =>

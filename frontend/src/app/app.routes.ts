@@ -172,11 +172,17 @@ export const routes: Routes = [
         (m) => m.TRAINING_COURSES_ROUTES,
       ),
   },
-  {
-    path: 'ai',
+{
+    path: 'quizzes',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/ai-assistant/chat/chat.component').then((m) => m.AiChatComponent),
+    loadChildren: () =>
+      import('./features/quizzes/quizzes.routes').then((m) => m.QUIZ_ROUTES),
+  },
+  {
+    path: 'courses',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/courses/courses.routes').then((m) => m.COURSE_ROUTES),
   },
   {
     path: 'map',

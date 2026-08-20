@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using EducationalPlatform.Nehzat.API.Security;
+using EducationalPlatform.Nehzat.Application.DTOs;
+using EducationalPlatform.Nehzat.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,20 +15,69 @@ namespace EducationalPlatform.Nehzat.API.Controllers
     {
         private readonly IDevTokenService _devTokenService;
         private readonly IConfiguration _configuration;
+        private readonly IAuthService _authService;
 
-        public AuthController(IDevTokenService devTokenService, IConfiguration configuration)
+        public AuthController(IDevTokenService devTokenService, IConfiguration configuration, IAuthService authService)
         {
             _devTokenService = devTokenService;
             _configuration = configuration;
+            _authService = authService;
         }
 
-        // Sign-up is handled by OTUH2 — this endpoint is disabled in favor of centralized auth.
-        [HttpPost("signup")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public IActionResult SignUp()
-        {
-            return BadRequest(new { message = "ثبت‌نام از طریق سامانه احراز هویت مرکزی (OTUH2) انجام می‌شود" });
-        }
+    [HttpPost("login")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
+    {
+        var result = await _authService.LoginAsync(request);
+        if (result is null)
+            return Unauthorized(new { message = "نام کاربری یا رمز عبور اشتباه است" });
+        return Ok(result);
+    }
+
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
+    {
+        var result = await _authService.RegisterAsync(request);
+        if (result is null)
+            return BadRequest(new { message = "نام کاربری تکراری است" });
+        return Ok(result);
+    }
+
+    [HttpGet("qr/generate")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GenerateQr([FromQuery] string deviceInfo = "web")
+    {
+        var result = await _authService.GenerateQrCodeAsync(deviceInfo);
+        if (result is null) return BadRequest(new { message = "خطا در ایجاد QR" });
+        return Ok(result);
+    }
+
+    [HttpGet("qr/poll")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PollQr([FromQuery] string sessionId)
+    {
+        var result = await _authService.PollQrStatusAsync(sessionId);
+        if (result is null) return NotFound(new { message = "جلسه یافت نشد" });
+        return Ok(result);
+    }
+
+    [HttpPost("qr/scan")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ScanQr([FromBody] QrScanRequest request)
+    {
+        var result = await _authService.ScanAndConfirmQrAsync(request.SessionId, request.Username);
+        if (result is null) return BadRequest(new { message = "QR نامعتبر یا منقضی شده" });
+        return Ok(result);
+    }
+
+    // Sign-up is handled by OTUH2 — this endpoint is disabled in favor of centralized auth.
+    [HttpPost("signup")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public IActionResult SignUp()
+    {
+        return BadRequest(new { message = "ثبت‌نام از طریق سامانه احراز هویت مرکزی (OTUH2) انجام می‌شود" });
+    }
 
         /// <summary>
         /// Development-only centralized sign-in. Validates a fixed set of dev accounts
@@ -107,4 +158,5 @@ namespace EducationalPlatform.Nehzat.API.Controllers
     internal record DevAccount(string Username, string Secret, string Role, int UserId, int? StudentId, int BranchId, string? ImageUrl);
 
     public record SignInRequest(string Username, string Password);
+    public record QrScanRequest(string SessionId, string Username);
 }

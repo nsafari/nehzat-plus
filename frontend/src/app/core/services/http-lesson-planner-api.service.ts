@@ -32,8 +32,9 @@ import { WithCalendar } from './http-domain/http-calendar.mixin';
 import { WithMessaging } from './http-domain/http-messaging.mixin';
 import { WithTeacherGrading } from './http-domain/http-teacher-grading.mixin';
 import { WithTraining } from './http-domain/http-training.mixin';
+import { WithStudyPath } from './http-domain/http-study-path.mixin';
 
-const HttpMixed = WithTraining(WithTeacherGrading(WithCalendar(
+const HttpMixed = WithStudyPath(WithTraining(WithTeacherGrading(WithCalendar(
   WithEvaluation(
     WithCourierReport(
       WithNotification(
@@ -75,7 +76,7 @@ const HttpMixed = WithTraining(WithTeacherGrading(WithCalendar(
       ),
     ),
   ),
-)));
+))));
 
 @Injectable()
 export class HttpLessonPlannerApi extends HttpMixed {

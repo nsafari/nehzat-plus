@@ -581,6 +581,11 @@ export interface CurrentUser {
   studentInfo?: StudentInfo;
   imageUrl?: string;
   branchId?: number;
+  phase?: string;
+  ageCluster?: string;
+  ringNumber?: number;
+  maktabNameEn?: string;
+  age?: number;
 }
 
 export type CurrentUserSession = CurrentUser;
@@ -705,9 +710,19 @@ export interface ParentStudentInfo {
   studentId: number;
   studentName: string;
   studentCode: string;
-  courseName: string;
+  courseName?: string;
   latestGrade?: number;
   attendanceRate?: number;
+
+  age: number;
+  phase: string;
+  activePathId?: number;
+  activePathTitle?: string;
+  completedLevels: number;
+  totalLevels: number;
+  completedLessons: number;
+  totalLessons: number;
+  lastActivityDate?: string;
 }
 
 export interface Evaluator {
@@ -2834,6 +2849,7 @@ export interface PersLitQuiz {
   passingScore: number;
   maxAttempts: number;
   timeLimitMinutes?: number;
+  phase?: string;
   questions?: PersLitQuizQuestion[];
   createdAt: string;
   updatedAt: string;
@@ -3662,6 +3678,11 @@ export interface ProfileDto {
   biography?: string;
   userType: string;
   maktabName: string;
+  maktabNameEn?: string;
+  phase?: string;
+  ageCluster?: string;
+  ringNumber?: number;
+  age?: number;
   approvalStatus: string;
   createdAt: string;
   lastLoginAt?: string;
@@ -4103,4 +4124,185 @@ export interface CreateCalendarEventRequest {
 
 export type UpdateCalendarEventRequest = CreateCalendarEventRequest;
 
+// ===== Educational Process Module =====
+export type EducationalEntityType = 'Course' | 'Enrollment' | 'Submission' | 'Content' | 'Grade';
+
+export interface EducationalProcessDto {
+  id: number;
+  name: string;
+  description?: string;
+  workflowDefinitionId: number;
+  workflowDefinitionName?: string;
+  entityType: EducationalEntityType;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateEducationalProcessRequest {
+  name: string;
+  description?: string;
+  workflowDefinitionId: number;
+  entityType: EducationalEntityType;
+  isActive?: boolean;
+}
+
+export interface UpdateEducationalProcessRequest {
+  name?: string;
+  description?: string;
+  workflowDefinitionId?: number;
+  entityType?: EducationalEntityType;
+  isActive?: boolean;
+}
+
+export interface ProcessTriggerResultDto {
+  success: boolean;
+  workflowRequestId?: number;
+  message?: string;
+}
+
+export type CognitiveLevel = 'awareness' | 'understanding' | 'application' | 'analysis' | 'synthesis' | 'evaluation';
+
+export interface Accommodation {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface StudyPathAccommodation {
+  id: number;
+  studyPathId: number;
+  accommodationId: number;
+}
+
+export interface StudyPathStep {
+  id: number;
+  studyPathId: number;
+  stepOrder: number;
+  title: string;
+  description?: string;
+  cognitiveLevel: CognitiveLevel;
+  estimatedDurationMinutes: number;
+  prerequisitesJson?: string;
+  contentUrl?: string;
+  resourceId?: number;
+  assessmentId?: number;
+  assessmentTitle?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface StudyPath {
+  id: number;
+  key: string;
+  title: string;
+  description?: string;
+  ageGroupId: number;
+  ageGroupName: string;
+  subjectAreaId: number;
+  subjectAreaName: string;
+  cognitiveLevel: CognitiveLevel;
+  isActive: boolean;
+  sortOrder: number;
+  accommodations: Accommodation[];
+  steps: StudyPathStep[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface StudentStudyPath {
+  id: number;
+  studentId: number;
+  studyPathId: number;
+  studyPathTitle?: string;
+  enrollmentDate: string;
+  currentStepId?: number;
+  currentStep?: StudyPathStep;
+  status: string;
+  progressPercentage: number;
+  startedAt?: string;
+  completedAt?: string;
+  steps?: StudyPathStep[];
+  completedStepsCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateAccommodationRequest {
+  code: string;
+  name: string;
+  description?: string;
+  icon?: string;
+}
+
+export interface CreateStudyPathStepRequest {
+  stepOrder: number;
+  title: string;
+  description?: string;
+  cognitiveLevel?: CognitiveLevel;
+  estimatedDurationMinutes?: number;
+  prerequisitesJson?: string;
+  contentUrl?: string;
+  resourceId?: number;
+  assessmentId?: number;
+}
+
+export interface UpdateStudyPathStepRequest {
+  stepOrder?: number;
+  title?: string;
+  description?: string;
+  cognitiveLevel?: CognitiveLevel;
+  estimatedDurationMinutes?: number;
+  prerequisitesJson?: string;
+  contentUrl?: string;
+  resourceId?: number;
+  assessmentId?: number;
+}
+
+export interface CreateStudyPathRequest {
+  key: string;
+  title: string;
+  ageGroupId: number;
+  subjectAreaId: number;
+  description?: string;
+  cognitiveLevel?: CognitiveLevel;
+  isActive?: boolean;
+  sortOrder?: number;
+  steps?: CreateStudyPathStepRequest[];
+  accommodationIds?: number[];
+}
+
+export interface UpdateStudyPathRequest {
+  key?: string;
+  title?: string;
+  description?: string;
+  ageGroupId?: number;
+  subjectAreaId?: number;
+  cognitiveLevel?: CognitiveLevel;
+  isActive?: boolean;
+  sortOrder?: number;
+  accommodationIds?: number[];
+}
+
+export interface ReorderStepsRequest {
+  stepIds: number[];
+}
+
+export interface CompleteStepRequest {
+  studyPathId: number;
+  stepId: number;
+}
+
+export interface SkipStepRequest {
+  studyPathId: number;
+  stepId: number;
+}
+
+export interface EnrollRequest {
+  studyPathId: number;
+}
 

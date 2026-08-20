@@ -34,6 +34,8 @@ import { MockEvaluationService } from './mock/evaluation.service';
 import { MockMessagingService } from './mock/messaging.service';
 import { MockTeacherGradingService } from './mock/teacher-grading.service';
 import { MockTrainingService } from './mock/training.service';
+import { MockEducationalProcessService } from './mock/educational-process.service';
+import { MockStudyPathService } from './mock/study-path.service';
 
 export type MockApiCtor<T = MockLessonPlannerApiBase> = new (...args: any[]) => T;
 
@@ -82,6 +84,8 @@ export class MockLessonPlannerApiBase {
     public evaluation: MockEvaluationService,
      public messaging: MockMessagingService,
      public teacherGrading: MockTeacherGradingService,
-     public training: MockTrainingService,
-  ) {}
+  public training: MockTrainingService,
+  public educationalProcess: MockEducationalProcessService,
+  public studyPath: MockStudyPathService,
+) {}
 }

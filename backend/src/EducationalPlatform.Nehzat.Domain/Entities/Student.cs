@@ -41,6 +41,9 @@ public class Student
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    [Column(TypeName = "nvarchar(5)")]
+    public string? Phase { get; set; }
+
     public int? BranchId { get; set; }
 
     [ForeignKey(nameof(BranchId))]

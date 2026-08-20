@@ -1,14 +1,35 @@
 <article class="student-card student-card--clickable" (click)="navigateToDetail()" (keydown.enter)="navigateToDetail()" tabindex="0" role="link" [attr.aria-label]="'مشاهده جزئیات ' + studentName">
   <header class="student-header">
     <div class="student-info">
-      <h3>{{ studentName }}</h3>
+      <div class="name-row">
+        <h3>{{ studentName }}</h3>
+        @if (phase) {
+          <span class="phase-badge" [style.background]="phaseColor">
+            فاز {{ phase }}
+          </span>
+        }
+      </div>
       <p class="muted">{{ studentCode }}</p>
-      <p class="course-name">{{ courseName }}</p>
+      @if (courseName) {
+        <p class="course-name">{{ courseName }}</p>
+      }
     </div>
     @if (latestGrade !== undefined) {
       <div class="grade-badge">{{ latestGrade }}</div>
     }
   </header>
+
+  @if (activePathTitle) {
+    <div class="path-progress">
+      <div class="path-header">
+        <span class="path-title">{{ activePathTitle }}</span>
+        <span class="path-count">{{ completedLevels }}/{{ totalLevels }} سطح</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="levelProgress"></div>
+      </div>
+    </div>
+  }
 
   @if (progressSummary$ | async; as summary) {
     <div class="progress-summary">

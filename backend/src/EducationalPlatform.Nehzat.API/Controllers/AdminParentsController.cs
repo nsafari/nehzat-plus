@@ -163,7 +163,7 @@ public class AdminParentsController : ControllerBase
         var parent = await _parentService.FindByIdAsync(id);
         if (parent == null) return NotFound(GenericErrorMessages.NotFound);
 
-        var students = await _parentService.GetStudentsAsync(id);
+        var students = await _parentService.GetStudentsInfoAsync(id);
         return Ok(students);
     }
 }

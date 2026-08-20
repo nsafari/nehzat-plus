@@ -25,6 +25,19 @@
   margin-bottom: 1rem;
 }
 .student-info h3 { margin: 0; font-size: 1.1rem; }
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.phase-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
 .course-name { font-size: 0.85rem; color: var(--lp-primary, #2563eb); }
 .grade-badge {
   background: var(--lp-primary, #2563eb);
@@ -33,6 +46,27 @@
   padding: 0.25rem 0.75rem;
   font-weight: bold;
   font-size: 0.9rem;
+}
+.path-progress { margin-bottom: 1rem; }
+.path-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+}
+.path-title { font-weight: 500; }
+.path-count { color: var(--lp-text-secondary, #6b7280); }
+.progress-bar {
+  height: 6px;
+  background: var(--lp-border, #e5e7eb);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--lp-primary, #2563eb);
+  border-radius: 3px;
+  transition: width 0.3s ease;
 }
 .progress-summary { margin-top: 1rem; }
 .summary-row {
@@ -67,3 +101,4 @@
 .skill-level.in_progress { background: #dbeafe; color: #2563eb; }
 .skill-level.achieved { background: #dcfce7; color: #16a34a; }
 .skill-level.mastered { background: #a78bfa; color: #fff; }
+

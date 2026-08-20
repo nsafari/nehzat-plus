@@ -5,10 +5,12 @@ import type { Student, Branch, Course, Assignment, AssignmentAttachment, Assignm
   AssignmentGrading, Competition, CompetitionParticipant, League, LeagueRanking, IssueSurvey,
   IssueSurveyQuestion, IssueItemPool, IssueSurveyResponse, IssueSurveyComment, IssueAction,
   SpiritualPracticeItem, SpiritualOccasion, SpiritualPath, DailySpiritualEntry,
-  UserOccasionProgress, StudentPathSelection, ServiceSurvey, ServiceSurveyQuestion,
-  ServiceSurveyResponse, XpBadge, DailyActivity, SpacedRepetitionCard, UserXp, DailyNudge,
-  Artwork, MusicRecord, CalligraphySample, CollaborationProject, DiscussionThread,
-  DiscussionPost, PeerReview, PortfolioItem, SkillCertificate, SkillBasket,
+   UserOccasionProgress, StudentPathSelection, ServiceSurvey, ServiceSurveyQuestion,
+   ServiceSurveyResponse, XpBadge, DailyActivity, SpacedRepetitionCard, UserXp, DailyNudge,
+   Artwork, MusicRecord, CalligraphySample, CollaborationProject, DiscussionThread,
+   DiscussionPost, PeerReview, PortfolioItem, SkillCertificate, SkillBasket,
+   Accommodation, StudyPath, StudyPathStep, StudentStudyPath, StudyPathAccommodation,
+   AgeGroup,
 } from '../../models/lesson-planner.models';
 import { MockUser, initialUsers, initialStudents, initialBranches, initialCourses,
   initialAssignments, initialAttachments, initialSubmissions, initialCoaches,
@@ -64,6 +66,13 @@ export abstract class MockDataContextState {
   madrasahs: Madrasah[] = [...initialMadrasahs];
   maktabBranches: MaktabBranch[] = [...initialMaktabBranches];
   subjectAreas: SubjectArea[] = [...initialSubjectAreas];
+  ageGroups: AgeGroup[] = [
+    { id: 1, key: 'children-6-8', name: '۶ تا هشت سال', description: 'کودکان ۶ تا ۸ سال', minAge: 6, maxAge: 8, sortOrder: 1 },
+    { id: 2, key: 'children-9-11', name: '۹ تا یازده سال', description: 'کودکان ۹ تا ۱۱ سال', minAge: 9, maxAge: 11, sortOrder: 2 },
+    { id: 3, key: 'teens-12-14', name: '۱۲ تا چهارده سال', description: 'نوجوانان ۱۲ تا ۱۴ سال', minAge: 12, maxAge: 14, sortOrder: 3 },
+    { id: 4, key: 'teens-15-17', name: '۱۵ تا هفده سال', description: 'نوجوانان ۱۵ تا ۱۷ سال', minAge: 15, maxAge: 17, sortOrder: 4 },
+    { id: 5, key: 'youth-18-21', name: '۱۸ تا بیست و یک سال', description: 'جوانان ۱۸ تا ۲۱ سال', minAge: 18, maxAge: 21, sortOrder: 5 },
+  ];
   teachingMethods: TeachingMethod[] = [...initialTeachingMethods];
   rings: Ring[] = [...initialRings];
   ringStudents: RingStudent[] = [...initialRingStudents];
@@ -207,6 +216,19 @@ export abstract class MockDataContextState {
   careerPaths: any[] = [...initialCareerPaths];
   pathwayRecommendations: any[] = [...initialPathwayRecommendations];
 
+  // ── Study Path System ──
+  studyPaths: StudyPath[] = [];
+  studyPathSteps: StudyPathStep[] = [];
+  accommodations: Accommodation[] = [
+    { id: 1, code: 'auditory', name: 'شنوایی', description: 'مناسب برای یادگیری شنوایی', icon: '🎧' },
+    { id: 2, code: 'visual', name: 'بصری', description: 'مناسب برای یادگیری بصری', icon: '👁️' },
+    { id: 3, code: 'kinesthetic', name: 'حس‌پذیر', description: 'مناسب برای یادگیری عملی', icon: '✋' },
+  ];
+  studyPathAccommodations: StudyPathAccommodation[] = [];
+  studentStudyPaths: StudentStudyPath[] = [];
+
+  currentUsername: string | null = null;
+
   /** Restores every state collection to its initial seed values. */
   resetState(): void {
     this.users = [...initialUsers];
@@ -223,6 +245,13 @@ export abstract class MockDataContextState {
     this.madrasahs = [...initialMadrasahs];
     this.maktabBranches = [...initialMaktabBranches];
     this.subjectAreas = [...initialSubjectAreas];
+    this.ageGroups = [
+      { id: 1, key: 'children-6-8', name: '۶ تا هشت سال', description: 'کودکان ۶ تا ۸ سال', minAge: 6, maxAge: 8, sortOrder: 1 },
+      { id: 2, key: 'children-9-11', name: '۹ تا یازده سال', description: 'کودکان ۹ تا ۱۱ سال', minAge: 9, maxAge: 11, sortOrder: 2 },
+      { id: 3, key: 'teens-12-14', name: '۱۲ تا چهارده سال', description: 'نوجوانان ۱۲ تا ۱۴ سال', minAge: 12, maxAge: 14, sortOrder: 3 },
+      { id: 4, key: 'teens-15-17', name: '۱۵ تا هفده سال', description: 'نوجوانان ۱۵ تا ۱۷ سال', minAge: 15, maxAge: 17, sortOrder: 4 },
+      { id: 5, key: 'youth-18-21', name: '۱۸ تا بیست و یک سال', description: 'جوانان ۱۸ تا ۲۱ سال', minAge: 18, maxAge: 21, sortOrder: 5 },
+    ];
     this.teachingMethods = [...initialTeachingMethods];
     this.rings = [...initialRings];
     this.ringStudents = [...initialRingStudents];
@@ -325,5 +354,11 @@ export abstract class MockDataContextState {
     this.defenseSchedule = [...initialDefenseSchedule];
     this.careerPaths = [...initialCareerPaths];
     this.pathwayRecommendations = [...initialPathwayRecommendations];
+    this.studyPaths = [];
+    this.studyPathSteps = [];
+    this.accommodations = [];
+    this.studyPathAccommodations = [];
+    this.studentStudyPaths = [];
+    this.currentUsername = null;
   }
 }

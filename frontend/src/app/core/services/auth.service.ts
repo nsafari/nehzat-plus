@@ -1,4 +1,4 @@
-import { Injectable, inject, InjectionToken } from '@angular/core';
+import { Injectable, inject, InjectionToken, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, of, switchMap, tap } from 'rxjs';
 
@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { OTUH2_API } from './otuh2-api.token';
 import { LESSON_PLANNER_API } from './lesson-planner-api.token';
 import { AuthTokenResponse, RegisterPayload, ApiMessageResponse } from '../models/otuh2.models';
-import { AuthSigninPayload, AuthSigninResponse, CurrentUser } from '../models/lesson-planner.models';
+import { AuthSigninPayload, AuthSigninResponse, CurrentUser, ProfileDto } from '../models/lesson-planner.models';
 import { resolveOtuh2BaseUrl } from './api-url.util';
 
 const ACCESS_TOKEN_KEY = 'otuh2_access_token';
@@ -42,6 +42,29 @@ export class AuthService {
   private readonly lessonPlannerApi = inject(LESSON_PLANNER_API);
   private readonly router = inject(Router);
   private readonly storage = inject(LOCAL_STORAGE);
+
+  readonly #enrichedUser = signal<Partial<Pick<CurrentUser, 'phase' | 'ageCluster' | 'ringNumber' | 'maktabNameEn' | 'age'>> | null>(null);
+
+  readonly phase = computed(() => this.#enrichedUser()?.phase ?? null);
+  readonly age = computed(() => this.#enrichedUser()?.age ?? null);
+  readonly ageCluster = computed(() => this.#enrichedUser()?.ageCluster ?? null);
+  readonly ringNumber = computed(() => this.#enrichedUser()?.ringNumber ?? null);
+  readonly maktabNameEn = computed(() => this.#enrichedUser()?.maktabNameEn ?? null);
+  readonly isProfileLoaded = computed(() => this.#enrichedUser() !== null);
+
+  enrichCurrentUser(profile: ProfileDto): void {
+    this.#enrichedUser.set({
+      phase: profile.phase,
+      ageCluster: profile.ageCluster,
+      ringNumber: profile.ringNumber,
+      maktabNameEn: profile.maktabNameEn,
+      age: profile.age,
+    });
+  }
+
+  clearEnrichedUser(): void {
+    this.#enrichedUser.set(null);
+  }
 
   signin(username: string, password: string): Observable<AuthTokenResponse> {
     return this.api.signin(username, password).pipe(
@@ -102,6 +125,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.clearEnrichedUser();
     const idToken = sessionStorage.getItem(ID_TOKEN_KEY);
     const refreshToken = this.storage.getItem(REFRESH_TOKEN_KEY);
 

@@ -44,6 +44,9 @@ public class SampleDataSeeder
         await SeedSpiritualPracticeItemsAsync();
         await SeedSpiritualOccasionsAsync();
         await SeedSpiritualPathsAsync();
+        await SeedAgeGroupsAsync();
+        await SeedMaktabLookupAsync();
+        await SeedEducationalProcessesAsync();
         await new SurveyDataSeeder(_db).SeedAsync();
         await SeedDevAccountsAsync();
     }
@@ -543,5 +546,328 @@ public class SampleDataSeeder
         }
         await _db.SaveChangesAsync();
         Console.WriteLine($"✅ {paths.Length} مسیر آینده‌سازی ایجاد شد");
+    }
+
+    private async Task SeedAgeGroupsAsync()
+    {
+        if (await _db.AgeGroups.AnyAsync())
+        {
+            Console.WriteLine("⚠️ گروه‌های سنی قبلاً ایجاد شده‌اند");
+            return;
+        }
+
+        var ageGroups = new[]
+        {
+            new AgeGroup { Key = "A", Name = "خردسال", Description = "گروه سنی ۵ تا ۶ سال", MinAge = 5, MaxAge = 6, SortOrder = 1, CreatedAt = DateTime.UtcNow },
+            new AgeGroup { Key = "B", Name = "کودک", Description = "گروه سنی ۷ تا ۸ سال", MinAge = 7, MaxAge = 8, SortOrder = 2, CreatedAt = DateTime.UtcNow },
+            new AgeGroup { Key = "C", Name = "نوجوان کوچک", Description = "گروه سنی ۹ تا ۱۱ سال", MinAge = 9, MaxAge = 11, SortOrder = 3, CreatedAt = DateTime.UtcNow },
+            new AgeGroup { Key = "D", Name = "نوجوان", Description = "گروه سنی ۱۲ تا ۱۳ سال", MinAge = 12, MaxAge = 13, SortOrder = 4, CreatedAt = DateTime.UtcNow },
+            new AgeGroup { Key = "E", Name = "جوان", Description = "گروه سنی ۱۴ تا ۲۱ سال", MinAge = 14, MaxAge = 21, SortOrder = 5, CreatedAt = DateTime.UtcNow }
+        };
+
+        _db.AgeGroups.AddRange(ageGroups);
+        await _db.SaveChangesAsync();
+        Console.WriteLine("✅ ۵ گروه سنی (A-E) ایجاد شد");
+    }
+
+    private async Task SeedMaktabLookupAsync()
+    {
+        if (await _db.MaktabLookups.AnyAsync())
+        {
+            Console.WriteLine("⚠️ جدول مکتب قبلاً ایجاد شده است");
+            return;
+        }
+
+        var lookups = new[]
+        {
+            new MaktabLookup { Gender = "female", AgeMin = 5, AgeMax = 6, MaktabName = "حضرت رقیه سلام الله علیها", MaktabNameEn = "Hazrat Roqayya (SA)", Phase = "A", Description = "مکتب دختران ۵-۶ سال", CreatedAt = DateTime.UtcNow },
+            new MaktabLookup { Gender = "male", AgeMin = 5, AgeMax = 6, MaktabName = "حضرت علی اصغر علیه السلام", MaktabNameEn = "Hazrat Ali Asghar (AS)", Phase = "A", Description = "مکتب پسران ۵-۶ سال", CreatedAt = DateTime.UtcNow },
+
+            new MaktabLookup { Gender = "female", AgeMin = 7, AgeMax = 8, MaktabName = "حضرت سکینه سلام الله علیها", MaktabNameEn = "Hazrat Sakina (SA)", Phase = "B", Description = "مکتب دختران ۷-۸ سال", CreatedAt = DateTime.UtcNow },
+            new MaktabLookup { Gender = "male", AgeMin = 7, AgeMax = 8, MaktabName = "حضرت قاسم علیه السلام", MaktabNameEn = "Hazrat Qasim (AS)", Phase = "B", Description = "مکتب پسران ۷-۸ سال", CreatedAt = DateTime.UtcNow },
+
+            new MaktabLookup { Gender = "female", AgeMin = 9, AgeMax = 11, MaktabName = "حضرت سکینه سلام الله علیها", MaktabNameEn = "Hazrat Sakina (SA)", Phase = "C", Description = "مکتب دختران ۹-۱۱ سال", CreatedAt = DateTime.UtcNow },
+            new MaktabLookup { Gender = "male", AgeMin = 9, AgeMax = 11, MaktabName = "حضرت قاسم علیه السلام", MaktabNameEn = "Hazrat Qasim (AS)", Phase = "C", Description = "مکتب پسران ۹-۱۱ سال", CreatedAt = DateTime.UtcNow },
+
+            new MaktabLookup { Gender = "female", AgeMin = 12, AgeMax = 13, MaktabName = "حضرت سکینه سلام الله علیها", MaktabNameEn = "Hazrat Sakina (SA)", Phase = "D", Description = "مکتب دختران ۱۲-۱۳ سال", CreatedAt = DateTime.UtcNow },
+            new MaktabLookup { Gender = "male", AgeMin = 12, AgeMax = 13, MaktabName = "حضرت قاسم علیه السلام", MaktabNameEn = "Hazrat Qasim (AS)", Phase = "D", Description = "مکتب پسران ۱۲-۱۳ سال", CreatedAt = DateTime.UtcNow },
+
+            new MaktabLookup { Gender = "female", AgeMin = 14, AgeMax = 21, MaktabName = "حضرت فاطمه بنت الحسین سلام الله علیهما", MaktabNameEn = "Hazrat Fatima bint al-Husayn (SA)", Phase = "E", Description = "مکتب دختران ۱۴-۲۱ سال (حلقه = سن - ۱۳)", CreatedAt = DateTime.UtcNow },
+            new MaktabLookup { Gender = "male", AgeMin = 14, AgeMax = 21, MaktabName = "حضرت علی اکبر علیه السلام", MaktabNameEn = "Hazrat Ali Akbar (AS)", Phase = "E", Description = "مکتب پسران ۱۴-۲۱ سال (حلقه = سن - ۱۳)", CreatedAt = DateTime.UtcNow }
+        };
+
+        _db.MaktabLookups.AddRange(lookups);
+        await _db.SaveChangesAsync();
+        Console.WriteLine("✅ ۱۰ ردیف مکتب (۶ مکتب × خوشه‌های سنی) ایجاد شد");
+    }
+
+    private async Task SeedEducationalProcessesAsync()
+    {
+        if (await _db.EducationalProcesses.AnyAsync())
+        {
+            Console.WriteLine("⚠️ فرآیندهای آموزشی قبلاً ایجاد شده‌اند");
+            return;
+        }
+
+        // First ensure workflow definitions exist
+        var courseApprovalWorkflow = await _db.WorkflowDefinitions
+            .Include(w => w.Steps)
+            .FirstOrDefaultAsync(w => w.Code == "course_approval");
+
+        if (courseApprovalWorkflow == null)
+        {
+            courseApprovalWorkflow = new WorkflowDefinition
+            {
+                Name = "فرآیند تایید دوره آموزشی",
+                Code = "course_approval",
+                Description = "فرآیند تایید دوره‌های آموزشی جدید توسط مدیر",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Steps = new List<WorkflowStep>
+                {
+                    new WorkflowStep
+                    {
+                        StepOrder = 1,
+                        Name = "بررسی محتوای دوره",
+                        RoleRequired = "manager",
+                        ActionType = "approve",
+                        IsFinalStep = false
+                    },
+                    new WorkflowStep
+                    {
+                        StepOrder = 2,
+                        Name = "تایید نهایی مدیر",
+                        RoleRequired = "manager",
+                        ActionType = "approve",
+                        IsFinalStep = true
+                    }
+                }
+            };
+            _db.WorkflowDefinitions.Add(courseApprovalWorkflow);
+        }
+
+        var enrollmentApprovalWorkflow = await _db.WorkflowDefinitions
+            .Include(w => w.Steps)
+            .FirstOrDefaultAsync(w => w.Code == "enrollment_approval");
+
+        if (enrollmentApprovalWorkflow == null)
+        {
+            enrollmentApprovalWorkflow = new WorkflowDefinition
+            {
+                Name = "فرآیند تایید ثبت‌نام متربی",
+                Code = "enrollment_approval",
+                Description = "فرآیند تایید ثبت‌نام متربی در دوره توسط مدیر",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Steps = new List<WorkflowStep>
+                {
+                    new WorkflowStep
+                    {
+                        StepOrder = 1,
+                        Name = "بررسی پیش‌نیازها",
+                        RoleRequired = "manager",
+                        ActionType = "approve",
+                        IsFinalStep = false
+                    },
+                    new WorkflowStep
+                    {
+                        StepOrder = 2,
+                        Name = "تایید ثبت‌نام",
+                        RoleRequired = "manager",
+                        ActionType = "approve",
+                        IsFinalStep = true
+                    }
+                }
+            };
+            _db.WorkflowDefinitions.Add(enrollmentApprovalWorkflow);
+        }
+
+        var submissionReviewWorkflow = await _db.WorkflowDefinitions
+            .Include(w => w.Steps)
+            .FirstOrDefaultAsync(w => w.Code == "submission_review");
+
+        if (submissionReviewWorkflow == null)
+        {
+            submissionReviewWorkflow = new WorkflowDefinition
+            {
+                Name = "فرآیند بررسی تکلیف ارسال شده",
+                Code = "submission_review",
+                Description = "فرآیند بررسی و نمره‌دهی تکالیف ارسال شده توسط ارزیاب",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Steps = new List<WorkflowStep>
+                {
+                    new WorkflowStep
+                    {
+                        StepOrder = 1,
+                        Name = "بررسی محتوای تکلیف",
+                        RoleRequired = "evaluator",
+                        ActionType = "approve",
+                        IsFinalStep = false
+                    },
+                    new WorkflowStep
+                    {
+                        StepOrder = 2,
+                        Name = "نمره‌دهی و بازخورد",
+                        RoleRequired = "evaluator",
+                        ActionType = "approve",
+                        IsFinalStep = false
+                    },
+                    new WorkflowStep
+                    {
+                        StepOrder = 3,
+                        Name = "تایید نهایی مدیر",
+                        RoleRequired = "manager",
+                        ActionType = "approve",
+                        IsFinalStep = true
+                    }
+                }
+            };
+            _db.WorkflowDefinitions.Add(submissionReviewWorkflow);
+        }
+
+        var contentApprovalWorkflow = await _db.WorkflowDefinitions
+            .Include(w => w.Steps)
+            .FirstOrDefaultAsync(w => w.Code == "content_approval");
+
+        if (contentApprovalWorkflow == null)
+        {
+            contentApprovalWorkflow = new WorkflowDefinition
+            {
+                Name = "فرآیند تایید محتوای آموزشی",
+                Code = "content_approval",
+                Description = "فرآیند تایید محتوای آموزشی جدید توسط مدیر",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Steps = new List<WorkflowStep>
+                {
+                    new WorkflowStep
+                    {
+                        StepOrder = 1,
+                        Name = "بررسی کیفیت محتوا",
+                        RoleRequired = "manager",
+                        ActionType = "approve",
+                        IsFinalStep = false
+                    },
+                    new WorkflowStep
+                    {
+                        StepOrder = 2,
+                        Name = "تایید انتشار",
+                        RoleRequired = "manager",
+                        ActionType = "approve",
+                        IsFinalStep = true
+                    }
+                }
+            };
+            _db.WorkflowDefinitions.Add(contentApprovalWorkflow);
+        }
+
+        var gradeApprovalWorkflow = await _db.WorkflowDefinitions
+            .Include(w => w.Steps)
+            .FirstOrDefaultAsync(w => w.Code == "grade_approval");
+
+        if (gradeApprovalWorkflow == null)
+        {
+            gradeApprovalWorkflow = new WorkflowDefinition
+            {
+                Name = "فرآیند تایید نمره نهایی",
+                Code = "grade_approval",
+                Description = "فرآیند تایید نمرات نهایی دوره توسط مدیر",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Steps = new List<WorkflowStep>
+                {
+                    new WorkflowStep
+                    {
+                        StepOrder = 1,
+                        Name = "بررسی نمرات توسط ارزیاب",
+                        RoleRequired = "evaluator",
+                        ActionType = "approve",
+                        IsFinalStep = false
+                    },
+                    new WorkflowStep
+                    {
+                        StepOrder = 2,
+                        Name = "تایید نهایی مدیر",
+                        RoleRequired = "manager",
+                        ActionType = "approve",
+                        IsFinalStep = true
+                    }
+                }
+            };
+            _db.WorkflowDefinitions.Add(gradeApprovalWorkflow);
+        }
+
+        await _db.SaveChangesAsync();
+
+        // Now create educational processes linking to workflows
+        var processes = new[]
+        {
+            new EducationalProcess
+            {
+                WorkflowId = courseApprovalWorkflow.Id,
+                EntityType = "Course",
+                Name = "تایید دوره آموزشی",
+                Description = "وقتی دوره آموزشی جدید ایجاد می‌شود، باید توسط مدیر تایید شود",
+                IsActive = true,
+                AutoTrigger = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new EducationalProcess
+            {
+                WorkflowId = enrollmentApprovalWorkflow.Id,
+                EntityType = "Enrollment",
+                Name = "تایید ثبت‌نام متربی",
+                Description = "وقتی متربی در دوره ثبت‌نام می‌کند، نیاز به تایید مدیر دارد",
+                IsActive = true,
+                AutoTrigger = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new EducationalProcess
+            {
+                WorkflowId = submissionReviewWorkflow.Id,
+                EntityType = "Submission",
+                Name = "بررسی تکلیف ارسال شده",
+                Description = "تکالیف ارسال شده توسط متربی باید توسط ارزیاب بررسی و نمره‌دهی شود",
+                IsActive = true,
+                AutoTrigger = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new EducationalProcess
+            {
+                WorkflowId = contentApprovalWorkflow.Id,
+                EntityType = "Content",
+                Name = "تایید محتوای آموزشی",
+                Description = "محتوای آموزشی جدید (درس، ویدئو، فایل) نیاز به تایید مدیر دارد",
+                IsActive = true,
+                AutoTrigger = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new EducationalProcess
+            {
+                WorkflowId = gradeApprovalWorkflow.Id,
+                EntityType = "Grade",
+                Name = "تایید نمره نهایی",
+                Description = "نمرات نهایی دوره متربیان نیاز به تایید مدیر دارد",
+                IsActive = true,
+                AutoTrigger = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+
+        _db.EducationalProcesses.AddRange(processes);
+        await _db.SaveChangesAsync();
+
+        Console.WriteLine($"✅ {processes.Length} فرآیند آموزشی از پیش تعریف شده ایجاد شد");
     }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService } from '../../../../core/services/auth.service';
+import { LESSON_PLANNER_API } from '../../../../core/services/lesson-planner-api.token';
 import { isSafeRedirectPath } from '../../../../core/services/api-url.util';
 
 @Component({
@@ -13,6 +14,7 @@ export class AuthCallbackComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly api = inject(LESSON_PLANNER_API);
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -36,28 +38,44 @@ export class AuthCallbackComponent implements OnInit {
 
         console.log('[AuthCallback] tokens stored in sessionStorage');
 
-        // Redirect to original destination or dashboard
-        let decodedReturnTo: string | null = null;
-        if (returnTo) {
-          try {
-            decodedReturnTo = decodeURIComponent(returnTo);
-          } catch {
-            decodedReturnTo = null;
-          }
-        }
-        console.log('[AuthCallback] decodedReturnTo:', decodedReturnTo);
+        const navigateToTarget = (targetPath: string) => {
+          void this.router.navigateByUrl(targetPath);
+        };
 
-        if (decodedReturnTo && isSafeRedirectPath(decodedReturnTo) && decodedReturnTo !== '/' && decodedReturnTo !== '/auth/login') {
-          console.log('[AuthCallback] navigating to:', decodedReturnTo);
-          void this.router.navigateByUrl(decodedReturnTo);
-        } else {
+        const resolveTarget = (): string => {
+          let decodedReturnTo: string | null = null;
+          if (returnTo) {
+            try {
+              decodedReturnTo = decodeURIComponent(returnTo);
+            } catch {
+              decodedReturnTo = null;
+            }
+          }
+          console.log('[AuthCallback] decodedReturnTo:', decodedReturnTo);
+
+          if (decodedReturnTo && isSafeRedirectPath(decodedReturnTo) && decodedReturnTo !== '/' && decodedReturnTo !== '/auth/login') {
+            return decodedReturnTo;
+          }
           const user = this.authService.getCurrentUser();
-          const target = user
+          return user
             ? this.authService.getDashboardPathForRole(user.userType)
             : '/dashboard';
-          console.log('[AuthCallback] fallback — user:', user, 'navigating to:', target);
-          void this.router.navigateByUrl(target);
-        }
+        };
+
+        const target = resolveTarget();
+        console.log('[AuthCallback] target:', target);
+
+        this.api.getProfile().subscribe({
+          next: (profile) => {
+            this.authService.enrichCurrentUser(profile);
+            console.log('[AuthCallback] profile enriched — phase:', profile.phase);
+            navigateToTarget(target);
+          },
+          error: (err) => {
+            console.warn('[AuthCallback] getProfile failed, continuing without enrichment:', err);
+            navigateToTarget(target);
+          },
+        });
       } else {
         console.warn('[AuthCallback] NO access_token in URL — redirecting to login');
         // No token - redirect to login

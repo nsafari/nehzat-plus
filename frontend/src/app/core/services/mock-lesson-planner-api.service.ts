@@ -73,6 +73,10 @@ import { withEvaluation } from './mock-evaluation.delegations';
 import { withMessaging } from './mock-messaging.delegations';
 import { withTeacherGrading } from './mock-teacher-grading.delegations';
 import { withTraining } from './mock-training.delegations';
+import { withStudyPath } from './mock-study-path.delegations';
+import { withEducationalProcess } from './mock-educational-process.delegations';
+import { MockStudyPathService } from './mock/study-path.service';
+import { MockEducationalProcessService } from './mock/educational-process.service';
 import { MockEvaluationService } from './mock/evaluation.service';
 import { MockMessagingService } from './mock/messaging.service';
 import { MockTeacherGradingService } from './mock/teacher-grading.service';
@@ -86,44 +90,52 @@ import { MockTrainingService } from './mock/training.service';
  */
 @Injectable({ providedIn: 'root' })
 export class MockLessonPlannerApi
-  extends withTraining(withTeacherGrading(withMessaging(
-    withEvaluation(
-    withCalendar(
-      withNotification(
-        withCourierReport(
-          withProgress(
-            withMap(
-              withProfile(
-                withStudentProgress(
-                  withCourses(
-                    withTeachers(
-                      withHeadquarters(
-                        withCommunity(
-                          withCompetitions(
-                            withLearningDefenses(
-                              withLearning(
-                                withSciences(
-                                  withMath(
-                                    withLiteratureArabic(
-                                      withLiterature(
-                                        withHadith(
-                                          withQuran(
-                                            withSurveys(
-                                              withArts(
-                                                withDaily(
-                                                  withSpiritual(
-                                                    withAssessments(
-                                                      withAdminEvaluators(
-                                                        withAdminParents(
-                                                          withAdminCurriculumBooklets(
-                                                            withAdminCurriculum(
-                                                              withAdminBranches(
-                                                                withAdminCoaches(
-                                                                  withAdminCourses(
-                                                                    withAdminUsers(
-                                                                      withAdminStatistics(
-                                                                        withAuth(
-                                                                          MockLessonPlannerApiBase,
+  extends withEducationalProcess(
+    withStudyPath(
+      withTraining(
+      withTeacherGrading(
+        withMessaging(
+          withEvaluation(
+            withCalendar(
+              withNotification(
+                withCourierReport(
+                  withProgress(
+                    withMap(
+                      withProfile(
+                        withStudentProgress(
+                          withCourses(
+                            withTeachers(
+                              withHeadquarters(
+                                withCommunity(
+                                  withCompetitions(
+                                    withLearningDefenses(
+                                      withLearning(
+                                        withSciences(
+                                          withMath(
+                                            withLiteratureArabic(
+                                              withLiterature(
+                                                withHadith(
+                                                  withQuran(
+                                                    withSurveys(
+                                                      withArts(
+                                                        withDaily(
+                                                          withSpiritual(
+                                                            withAssessments(
+                                                              withAdminEvaluators(
+                                                                withAdminParents(
+                                                                  withAdminCurriculumBooklets(
+                                                                    withAdminCurriculum(
+                                                                      withAdminBranches(
+                                                                        withAdminCoaches(
+                                                                          withAdminCourses(
+                                                                            withAdminUsers(
+                                                                              withAdminStatistics(
+                                                                                withAuth(
+                                                                                  MockLessonPlannerApiBase,
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ),
                                                                         ),
                                                                       ),
                                                                     ),
@@ -158,11 +170,10 @@ export class MockLessonPlannerApi
           ),
         ),
       ),
-    ),
-    ),
-  ),
-  ))
-  implements LessonPlannerApi
+     ),
+   ),
+  )
+   implements LessonPlannerApi
 {
   constructor(
     auth: MockAuthService,
@@ -200,7 +211,9 @@ export class MockLessonPlannerApi
     evaluation: MockEvaluationService,
     messaging: MockMessagingService,
     teacherGrading: MockTeacherGradingService,
-    training: MockTrainingService,
+     training: MockTrainingService,
+    educationalProcess: MockEducationalProcessService,
+    studyPath: MockStudyPathService,
   ) {
     super(
       auth,
@@ -238,7 +251,9 @@ export class MockLessonPlannerApi
       evaluation,
       messaging,
       teacherGrading,
-      training,
+       training,
+      educationalProcess,
+      studyPath,
     );
   }
 }
