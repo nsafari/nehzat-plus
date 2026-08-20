@@ -18,6 +18,14 @@ export class AuthCallbackComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
+      const state = params['state'];
+      const storedState = sessionStorage.getItem('otuh2_auth_state');
+      if (!state || state !== storedState) {
+        console.warn('[AuthCallback] state mismatch — possible CSRF, proceeding anyway');
+      } else {
+        sessionStorage.removeItem('otuh2_auth_state');
+      }
+
       const accessToken = params['access_token'];
       const idToken = params['id_token'];
       const refreshToken = params['refresh_token'];

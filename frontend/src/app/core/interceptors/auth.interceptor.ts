@@ -49,12 +49,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             return next(req.clone({ setHeaders: { Authorization: `Bearer ${newToken}` } }));
           }
           refreshQueue.next(null);
-          authService.logout();
+          authService.logoutToLogin();
           return throwError(() => error);
         }),
         catchError(() => {
           refreshQueue.next(null);
-          authService.logout();
+          authService.logoutToLogin();
           return throwError(() => error);
         }),
         finalize(() => {

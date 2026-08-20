@@ -145,6 +145,15 @@ export class AuthService {
     }
   }
 
+  /** Soft logout for 401 handling: clear tokens and navigate to /auth/login in-app (no IdP redirect). */
+  logoutToLogin(): void {
+    this.clearEnrichedUser();
+    sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(ID_TOKEN_KEY);
+    this.storage.removeItem(REFRESH_TOKEN_KEY);
+    void this.router.navigateByUrl('/auth/login');
+  }
+
   /** RP-initiated logout: ends the OTUH2 server-side session then returns to /auth/login. */
   endSession(idToken: string | null = null): void {
     const endSessionUrl = `${resolveOtuh2BaseUrl()}/connect/endsession`;
@@ -252,7 +261,7 @@ export class AuthService {
     }
   }
 
-  private resolvePrimaryRole(roles: string[]): string {
+  resolvePrimaryRole(roles: string[]): string {
     const priority = ['admin', 'manager', 'headquarters', 'branch_manager', 'coach', 'parent', 'evaluator', 'teacher', 'trainee'];
     const lowerRoles = roles.map(r => r.toLowerCase());
     for (const role of priority) {
@@ -274,5 +283,53 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  /** Request a QR code for QR-based login.
+   *  Generates a new QR session with the given device info (or 'web' default).
+   *  Returns the sessionId and qrData that can be displayed as a QR code. */
+  requestQrCode(deviceInfo?: string) {
+    return this.lessonPlannerApi.requestQrCode({ deviceInfo }).pipe(
+      tap(({ sessionId }) => {
+        sessionStorage.setItem('qr_session_id', sessionId);
+      })
+    );
+  }
+
+  /** Poll the QR status for a given sessionId.
+   *  Returns the status ('pending' | 'confirmed' | 'expired') and optionally the token and user info. */
+  pollQrStatus() {
+    const sessionId = sessionStorage.getItem('qr_session_id');
+    if (!sessionId) {
+      return of({ status: 'expired' });
+    }
+    return this.lessonPlannerApi.pollQrStatus(sessionId).pipe(
+      tap(({ status, token, username, userType, studentId, branchId }) => {
+        if (status === 'confirmed') {
+          if (token) {
+            sessionStorage.setItem('qr_token', token);
+          }
+          if (username) {
+            sessionStorage.setItem('qr_username', username);
+          }
+        }
+      })
+    );
+  }
+
+  /** Confirm a QR code scan by providing the sessionId and username.
+   *  Marks the QR as confirmed and issues a JWT token for the user. */
+  confirmQrScan(username: string) {
+    const sessionId = sessionStorage.getItem('qr_session_id');
+    if (!sessionId) {
+      return of({ status: 'expired', message: 'QR session not found' });
+    }
+    return this.lessonPlannerApi.confirmQrScan({ sessionId, username }).pipe(
+      tap(({ status, message }) => {
+        if (status === 'confirmed') {
+          console.log('[AuthService.confirmQrScan] QR confirmed for:', username);
+        }
+      })
+    );
   }
 }

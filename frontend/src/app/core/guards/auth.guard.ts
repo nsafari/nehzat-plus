@@ -32,7 +32,9 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const encodedReturnTo = encodeURIComponent(returnTo);
   const callbackUrl = `${window.location.origin}${CALLBACK_PATH}?returnTo=${encodedReturnTo}`;
   const otuh2LoginUrl = `${resolveOtuh2BaseUrl()}/auth/login`;
-  const redirectUrl = `${otuh2LoginUrl}?returnUrl=${encodeURIComponent(callbackUrl)}`;
+  const state = crypto.randomUUID();
+  sessionStorage.setItem('otuh2_auth_state', state);
+  const redirectUrl = `${otuh2LoginUrl}?state=${encodeURIComponent(state)}&returnUrl=${encodeURIComponent(callbackUrl)}`;
   console.log('[authGuard] redirecting to EhrazHoviat:', redirectUrl);
   window.location.href = redirectUrl;
   return false;
