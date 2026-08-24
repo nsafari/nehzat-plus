@@ -28,6 +28,7 @@ export { CourierReportApi } from './api-interfaces/api-courier-report.interface'
 export { TrainingApi } from './api-interfaces/api-training.interface';
 export { EducationalProcessApi } from './api-interfaces/api-educational-process.interface';
 export { StudyPathApi } from './api-interfaces/api-study-path.interface';
+export type { VocabularyApi } from './api-interfaces/api-vocabulary.interface';
 
 // Mixin composition: the abstract class is the runtime base value passed to the
 // HTTP mixin chain (WithLearningCommunity(LessonPlannerApi) etc.).  It declares
@@ -61,6 +62,7 @@ import type { CourierReportApi } from './api-interfaces/api-courier-report.inter
 import type { TrainingApi } from './api-interfaces/api-training.interface';
 import type { EducationalProcessApi } from './api-interfaces/api-educational-process.interface';
 import type { StudyPathApi } from './api-interfaces/api-study-path.interface';
+import type { VocabularyApi } from './api-interfaces/api-vocabulary.interface';
 
 export abstract class LessonPlannerApi {
   abstract getTeacherGradings(teacherId: number): Observable<AssignmentGrading[]>;
@@ -98,4 +100,5 @@ export interface LessonPlannerApi
     CourierReportApi,
      TrainingApi,
      EducationalProcessApi,
-     StudyPathApi {}
+     StudyPathApi,
+     VocabularyApi {}

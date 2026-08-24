@@ -1116,6 +1116,54 @@ export interface AwardXpPayload {
   reason: string;
 }
 
+// ===== Vocabulary Module =====
+export type VocabularyLanguage = 'fa' | 'en' | 'ar';
+
+export interface VocabularyTextDto {
+  id: number;
+  title: string;
+  description?: string | null;
+  content: string;
+  language: VocabularyLanguage;
+  subjectAreaId: number;
+  ownerUserId: string;
+  isPublished: boolean;
+  wordCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VocabularyWordDto {
+  id: number;
+  wordText: string;
+  definition: string;
+  exampleSentence?: string | null;
+  exampleTranslation?: string | null;
+  partOfSpeech?: string | null;
+  imageUrl?: string | null;
+  audioUrl?: string | null;
+  difficultyLevel: string;
+  vocabularyTextId: number;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserVocabularyCardDto {
+  id: number;
+  userId: string;
+  vocabularyWordId: number;
+  vocabularyWord?: VocabularyWordDto;
+  nextReviewAt: string;
+  interval: number;
+  easeFactor: number;
+  repetition: number;
+  quality: number;
+  isKnown: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type ArtworkType = 'painting' | 'craft' | 'music' | 'calligraphy';
 
 export interface Artwork {
@@ -4304,5 +4352,53 @@ export interface SkipStepRequest {
 
 export interface EnrollRequest {
   studyPathId: number;
+}
+
+export interface QrCodeResponse {
+  sessionId: string;
+  qrData: string; // "NEHZAT-QR:{sessionId}"
+  expiresAt: Date;
+}
+
+export interface QrPollResponse {
+  status: 'pending' | 'confirmed' | 'expired';
+  token?: string;
+  username?: string;
+  userType?: UserType;
+  studentId?: number;
+  branchId?: number;
+}
+
+export interface QrScanConfirm {
+  status: 'confirmed' | 'expired' | 'pending';
+  message: string;
+}
+
+export interface QuranComChapter {
+  id: number;
+  name_simple: string;
+  name_arabic: string;
+  translated_name: { language_name: string; name: string };
+  verses_count: number;
+  revelation_place: string;
+}
+
+export interface QuranComTafsir {
+  verseKey: string;
+  tafsirId: number;
+  text: string;
+}
+
+export interface QuranComSearchResult {
+  verseKey: string;
+  textUthmani: string;
+  chapterId: number;
+  translationText?: string;
+}
+
+export interface QuranComTranslation {
+  resourceId: number;
+  text: string;
+  verseKey: string;
 }
 

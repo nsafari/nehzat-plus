@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 import { LessonPlannerApi } from './lesson-planner-api.interface';
+import { QrCodeResponse, QrPollResponse, QrScanConfirm } from '../models/lesson-planner.models';
 import { MockLessonPlannerApiBase } from './mock-lesson-planner-base';
 import { MockAuthService } from './mock/auth.service';
 import { MockAdminUsersService } from './mock/admin-users.service';
@@ -30,57 +33,59 @@ import { MockCoursesService } from './mock/courses.service';
 import { MockStudentProgressService } from './mock/student-progress.service';
 import { MockProfileService } from './mock/profile.service';
 import { MockMapService } from './mock/map.service';
-import { MockProgressService } from './mock/progress.service';
 import { MockCalendarService } from './mock/calendar.service';
+import { MockProgressService } from './mock/progress.service';
 import { MockNotificationService } from './mock/notification.service';
 import { MockCourierReportService } from './mock/courier-report.service';
-import { withAuth } from './mock-auth.delegations';
-import { withAdminUsers } from './mock-admin-users.delegations';
-import { withAdminCourses } from './mock-admin-courses.delegations';
-import { withAdminCoaches } from './mock-admin-coaches.delegations';
-import { withAdminBranches } from './mock-admin-branches.delegations';
-import { withAdminCurriculum } from './mock-admin-curriculum.delegations';
-import { withAdminCurriculumBooklets } from './mock-admin-curriculum-booklets.delegations';
-import { withAdminParents } from './mock-admin-parents.delegations';
-import { withAdminEvaluators } from './mock-admin-evaluators.delegations';
-import { withAdminStatistics } from './mock-admin-statistics.delegations';
-import { withAssessments } from './mock-assessments.delegations';
-import { withSpiritual } from './mock-spiritual.delegations';
-import { withDaily } from './mock-daily.delegations';
-import { withArts } from './mock-arts.delegations';
-import { withSurveys } from './mock-surveys.delegations';
-import { withQuran } from './mock-quran.delegations';
-import { withHadith } from './mock-hadith.delegations';
-import { withLiterature } from './mock-literature.delegations';
-import { withLiteratureArabic } from './mock-literature-arabic.delegations';
-import { withMath } from './mock-math.delegations';
-import { withSciences } from './mock-sciences.delegations';
-import { withLearning } from './mock-learning.delegations';
-import { withLearningDefenses } from './mock-learning-defenses.delegations';
-import { withCompetitions } from './mock-competitions.delegations';
-import { withCommunity } from './mock-community.delegations';
-import { withHeadquarters } from './mock-headquarters.delegations';
-import { withTeachers } from './mock-teachers.delegations';
-import { withCourses } from './mock-courses.delegations';
-import { withStudentProgress } from './mock-student-progress.delegations';
-import { withProfile } from './mock-profile.delegations';
-import { withMap } from './mock-map.delegations';
-import { withProgress } from './mock-progress.delegations';
-import { withCalendar } from './mock-calendar.delegations';
-import { withNotification } from './mock-notification.delegations';
-import { withCourierReport } from './mock-courier-report.delegations';
-import { withEvaluation } from './mock-evaluation.delegations';
-import { withMessaging } from './mock-messaging.delegations';
-import { withTeacherGrading } from './mock-teacher-grading.delegations';
-import { withTraining } from './mock-training.delegations';
-import { withStudyPath } from './mock-study-path.delegations';
-import { withEducationalProcess } from './mock-educational-process.delegations';
-import { MockStudyPathService } from './mock/study-path.service';
-import { MockEducationalProcessService } from './mock/educational-process.service';
 import { MockEvaluationService } from './mock/evaluation.service';
 import { MockMessagingService } from './mock/messaging.service';
 import { MockTeacherGradingService } from './mock/teacher-grading.service';
 import { MockTrainingService } from './mock/training.service';
+import { withEducationalProcess } from './mock-educational-process.delegations';
+import { withStudyPath } from './mock-study-path.delegations';
+import { withTraining } from './mock-training.delegations';
+import { withTeacherGrading } from './mock-teacher-grading.delegations';
+import { withMessaging } from './mock-messaging.delegations';
+import { withEvaluation } from './mock-evaluation.delegations';
+import { withCalendar } from './mock-calendar.delegations';
+import { withNotification } from './mock-notification.delegations';
+import { withCourierReport } from './mock-courier-report.delegations';
+import { withProgress } from './mock-progress.delegations';
+import { withMap } from './mock-map.delegations';
+import { withProfile } from './mock-profile.delegations';
+import { withStudentProgress } from './mock-student-progress.delegations';
+import { withCourses } from './mock-courses.delegations';
+import { withTeachers } from './mock-teachers.delegations';
+import { withHeadquarters } from './mock-headquarters.delegations';
+import { withCommunity } from './mock-community.delegations';
+import { withCompetitions } from './mock-competitions.delegations';
+import { withLearningDefenses } from './mock-learning-defenses.delegations';
+import { withLearning } from './mock-learning.delegations';
+import { withSciences } from './mock-sciences.delegations';
+import { withMath } from './mock-math.delegations';
+import { withLiteratureArabic } from './mock-literature-arabic.delegations';
+import { withLiterature } from './mock-literature.delegations';
+import { withHadith } from './mock-hadith.delegations';
+import { withQuran } from './mock-quran.delegations';
+import { withSurveys } from './mock-surveys.delegations';
+import { withArts } from './mock-arts.delegations';
+import { withDaily } from './mock-daily.delegations';
+import { withSpiritual } from './mock-spiritual.delegations';
+import { withAssessments } from './mock-assessments.delegations';
+import { withAdminEvaluators } from './mock-admin-evaluators.delegations';
+import { withAdminParents } from './mock-admin-parents.delegations';
+import { withAdminCurriculumBooklets } from './mock-admin-curriculum-booklets.delegations';
+import { withAdminCurriculum } from './mock-admin-curriculum.delegations';
+import { withAdminBranches } from './mock-admin-branches.delegations';
+import { withAdminCoaches } from './mock-admin-coaches.delegations';
+import { withAdminCourses } from './mock-admin-courses.delegations';
+import { withAdminUsers } from './mock-admin-users.delegations';
+import { withAdminStatistics } from './mock-admin-statistics.delegations';
+import { withAuth } from './mock-auth.delegations';
+import { withVocabulary } from './mock-vocabulary.delegations';
+import { MockStudyPathService } from './mock/study-path.service';
+import { MockEducationalProcessService } from './mock/educational-process.service';
+import { MockVocabularyService } from './mock/vocabulary.service';
 
 /**
  * Facade service that delegates every LessonPlannerApi method to one of the 26
@@ -93,87 +98,89 @@ export class MockLessonPlannerApi
   extends withEducationalProcess(
     withStudyPath(
       withTraining(
-      withTeacherGrading(
-        withMessaging(
-          withEvaluation(
-            withCalendar(
-              withNotification(
-                withCourierReport(
-                  withProgress(
-                    withMap(
-                      withProfile(
-                        withStudentProgress(
-                          withCourses(
-                            withTeachers(
-                              withHeadquarters(
-                                withCommunity(
-                                  withCompetitions(
-                                    withLearningDefenses(
-                                      withLearning(
-                                        withSciences(
-                                          withMath(
-                                            withLiteratureArabic(
-                                              withLiterature(
-                                                withHadith(
-                                                  withQuran(
-                                                    withSurveys(
-                                                      withArts(
-                                                        withDaily(
-                                                          withSpiritual(
-                                                            withAssessments(
-                                                              withAdminEvaluators(
-                                                                withAdminParents(
-                                                                  withAdminCurriculumBooklets(
-                                                                    withAdminCurriculum(
-                                                                      withAdminBranches(
-                                                                        withAdminCoaches(
-                                                                          withAdminCourses(
-                                                                            withAdminUsers(
-                                                                              withAdminStatistics(
-                                                                                withAuth(
-                                                                                  MockLessonPlannerApiBase,
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-     ),
-   ),
+        withTeacherGrading(
+          withMessaging(
+            withEvaluation(
+              withCalendar(
+                withNotification(
+                  withCourierReport(
+                    withProgress(
+                      withMap(
+                        withProfile(
+                          withStudentProgress(
+                            withCourses(
+                              withTeachers(
+                                withHeadquarters(
+                                  withCommunity(
+                                    withCompetitions(
+                                      withLearningDefenses(
+                                        withLearning(
+                                          withSciences(
+                                            withMath(
+                                              withLiteratureArabic(
+                                                withLiterature(
+                                                  withHadith(
+                                                    withQuran(
+                                                      withSurveys(
+                                                        withArts(
+                                                          withDaily(
+                                                            withSpiritual(
+                                                              withAssessments(
+                                                                withAdminEvaluators(
+                                                                  withAdminParents(
+                                                                    withAdminCurriculumBooklets(
+                                                                      withAdminCurriculum(
+                                                                        withAdminBranches(
+                                                                          withAdminCoaches(
+                                                                            withAdminCourses(
+                                                                              withAdminUsers(
+                                                                                withAdminStatistics(
+                                                                                  withAuth(
+                                                                                    withVocabulary(
+                                                                                      MockLessonPlannerApiBase
+                                                                                    )
+                                                                                  )
+                                                                                )
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        )
+                                                                      )
+                                                                    )
+                                                                  )
+                                                                )
+                                                              )
+                                                            )
+                                                          )
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
   )
-   implements LessonPlannerApi
+  implements LessonPlannerApi
 {
   constructor(
     auth: MockAuthService,
@@ -211,9 +218,10 @@ export class MockLessonPlannerApi
     evaluation: MockEvaluationService,
     messaging: MockMessagingService,
     teacherGrading: MockTeacherGradingService,
-     training: MockTrainingService,
+    training: MockTrainingService,
     educationalProcess: MockEducationalProcessService,
     studyPath: MockStudyPathService,
+    vocabulary: MockVocabularyService,
   ) {
     super(
       auth,
@@ -251,9 +259,27 @@ export class MockLessonPlannerApi
       evaluation,
       messaging,
       teacherGrading,
-       training,
+      training,
       educationalProcess,
       studyPath,
+      vocabulary,
     );
+  }
+
+  requestQrCode(_payload?: { deviceInfo?: string }): Observable<QrCodeResponse> {
+    const sessionId = Math.random().toString(36).substring(2, 20);
+    return of({
+      sessionId,
+      qrData: `NEHZAT-QR:${sessionId}`,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    }).pipe(delay(300));
+  }
+
+  pollQrStatus(_sessionId: string): Observable<QrPollResponse> {
+    return of({ status: 'expired' as const }).pipe(delay(300));
+  }
+
+  confirmQrLogin(_payload: { sessionId: string; username: string }): Observable<QrScanConfirm> {
+    return of({ status: 'confirmed' as const, message: 'QR با موفقیت تأیید شد' }).pipe(delay(300));
   }
 }
