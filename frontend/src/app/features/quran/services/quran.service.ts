@@ -9,7 +9,11 @@ import {
   TajweedRule,
   RecitationLevel,
   QuranCurriculum,
-  QuranStudentProgress
+  QuranStudentProgress,
+  QuranComChapter,
+  QuranComTafsir,
+  QuranComSearchResult,
+  QuranComTranslation
 } from '../../../core/models/lesson-planner.models';
 
 export type {
@@ -108,5 +112,25 @@ export class QuranService {
 
   getQuranDashboardStats(): Observable<any> {
     return this.api.getQuranDashboardStats();
+  }
+
+  getQuranChapters(lang: string = 'fa'): Observable<QuranComChapter[]> {
+    return this.api.getQuranChapters(lang);
+  }
+
+  getQuranChapterDetail(chapterId: number, lang: string = 'fa'): Observable<QuranComChapter> {
+    return this.api.getQuranChapterDetail(chapterId, lang);
+  }
+
+  getQuranTafsir(surahId: number, ayahNumber: number, tafsirId: number = 169): Observable<QuranComTafsir> {
+    return this.api.getQuranTafsir(surahId, ayahNumber, tafsirId);
+  }
+
+  searchQuran(query: string, maxResults: number = 20, lang: string = 'fa'): Observable<QuranComSearchResult[]> {
+    return this.api.searchQuran(query, maxResults, lang);
+  }
+
+  getQuranTranslations(surahId: number, ayahNumber: number, translationId: number = 131): Observable<QuranComTranslation[]> {
+    return this.api.getQuranTranslations(surahId, ayahNumber, translationId);
   }
 }

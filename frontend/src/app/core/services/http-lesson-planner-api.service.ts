@@ -33,29 +33,32 @@ import { WithMessaging } from './http-domain/http-messaging.mixin';
 import { WithTeacherGrading } from './http-domain/http-teacher-grading.mixin';
 import { WithTraining } from './http-domain/http-training.mixin';
 import { WithStudyPath } from './http-domain/http-study-path.mixin';
+import { WithVocabulary } from './http-domain/http-vocabulary.mixin';
 
-const HttpMixed = WithStudyPath(WithTraining(WithTeacherGrading(WithCalendar(
-  WithEvaluation(
-    WithCourierReport(
-      WithNotification(
-        WithAuth(
-          WithStudents(
-            WithAdminUsers(
-              WithAdminResources(
-                WithAdminAssignments(
-                  WithRings(
-                    WithAssessments(
-                      WithSpiritualDaily(
-                        WithArtsActivities(
-                          WithSurveys(
-                            WithQuranHadith(
-                              WithLiterature(
-                                WithMathSciences(
-                                  WithLearningCommunity(
-                                    WithMessaging(
-                                      WithProgress(
-                                        WithMap(
-                                          WithProfile(HttpServiceContextBase),
+const HttpMixed = WithVocabulary(
+  WithStudyPath(WithTraining(WithTeacherGrading(WithCalendar(
+    WithEvaluation(
+      WithCourierReport(
+        WithNotification(
+          WithAuth(
+            WithStudents(
+              WithAdminUsers(
+                WithAdminResources(
+                  WithAdminAssignments(
+                    WithRings(
+                      WithAssessments(
+                        WithSpiritualDaily(
+                          WithArtsActivities(
+                            WithSurveys(
+                              WithQuranHadith(
+                                WithLiterature(
+                                  WithMathSciences(
+                                    WithLearningCommunity(
+                                      WithMessaging(
+                                        WithProgress(
+                                          WithMap(
+                                            WithProfile(HttpServiceContextBase),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -77,6 +80,11 @@ const HttpMixed = WithStudyPath(WithTraining(WithTeacherGrading(WithCalendar(
     ),
   ),
 ))));
+
+// Helper function to build API URLs
+function buildApiUrl(base: string, path: string): string {
+  return `${base}${path}`;
+}
 
 @Injectable()
 export class HttpLessonPlannerApi extends HttpMixed {

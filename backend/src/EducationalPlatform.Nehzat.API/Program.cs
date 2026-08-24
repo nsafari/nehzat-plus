@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.OpenApi;
+
 using EducationalPlatform.Nehzat.API.Hubs;
 using EducationalPlatform.Nehzat.API.Middleware;
 using EducationalPlatform.Nehzat.API.Security;
@@ -96,6 +98,8 @@ var otuh2ClientId = otuh2ClientConfig["ClientId"] ?? "nehzat-plus-client";
 var otuh2ClientSecret = otuh2ClientConfig["ClientSecret"] ?? Environment.GetEnvironmentVariable("OTUH2_CLIENT_SECRET") ?? "";
 var otuh2ApiKey = otuh2ClientConfig["ApiKey"] ?? Environment.GetEnvironmentVariable("OTUH2_API_KEY") ?? "";
 builder.Services.AddOtuh2AuthClient(otuh2BaseUrl, otuh2ClientId, otuh2ClientSecret, otuh2ApiKey);
+builder.Services.AddQuranComClient();
+builder.Services.AddScoped<IQuranComService, QuranComService>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
@@ -124,6 +128,7 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
     builder.Services.AddScoped<ILeagueService, LeagueService>();
     builder.Services.AddScoped<IProgressionService, ProgressionService>();
     builder.Services.AddScoped<SampleDataSeeder>();
+    builder.Services.AddScoped<QuranRingSeeder>();
     builder.Services.AddScoped<QuranDataSeeder>();
     builder.Services.AddScoped<ILogService, LogService>();
     builder.Services.AddScoped<IIssueSurveyService, IssueSurveyService>();
@@ -163,6 +168,8 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
     builder.Services.AddScoped<IProgressService, ProgressService>();
     builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
     builder.Services.AddScoped<IEvaluationService, EvaluationService>();
+    builder.Services.AddScoped<IQuranRingService, QuranRingService>();
+    builder.Services.AddSignalR();
     builder.Services.AddHttpClient<AiService>();
 
 builder.Services.AddScoped<IMapService, MapService>();
@@ -177,9 +184,16 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICourierReportService, CourierReportService>();
 builder.Services.AddScoped<IStudyPathService, StudyPathService>();
 builder.Services.AddHostedService<LocationCleanupService>();
-builder.Services.AddHostedService<OrderExpiryService>();
+    builder.Services.AddHostedService<OrderExpiryService>();
 
-    builder.Services.AddSignalR();
+    // Swagger/OpenAPI — circular references در EF Core navigation properties
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddOpenApi();
+    builder.Services.ConfigureHttpJsonOptions(o =>
+    {
+        o.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        o.SerializerOptions.MaxDepth = 128;
+    });
 
     builder.Services.AddCors(options =>
 {
@@ -205,7 +219,8 @@ builder.Services.AddHostedService<OrderExpiryService>();
 
 var app = builder.Build();
 
-app.UseMiddleware<GlobalExceptionMiddleware>();
+    // TEMPORARILY DISABLED to debug OpenAPI 500 error
+    // app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -237,6 +252,7 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 app.MapControllers();
+app.MapOpenApi("/openapi/v1.json");
 app.MapHub<NotificationHub>("/hubs/notifications");
 
 using (var scope = app.Services.CreateScope())
@@ -273,6 +289,9 @@ using (var scope = app.Services.CreateScope())
 
     var quranSeeder = scope.ServiceProvider.GetRequiredService<QuranDataSeeder>();
     await quranSeeder.SeedAsync();
+
+    var quranRingSeeder = scope.ServiceProvider.GetRequiredService<QuranRingSeeder>();
+    await quranRingSeeder.SeedAsync();
 
     var hadithSeeder = scope.ServiceProvider.GetRequiredService<HadithDataSeeder>();
     await hadithSeeder.SeedAsync();

@@ -1,34 +1,29 @@
 param(
-  [switch]$NoBuild,
-  [switch]$Seed
+  [switch]$Seed,
+  [switch]$FrontendOnly,
+  [switch]$BackendOnly
 )
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Start backend
-$backendArgs = @()
-if ($Seed) { $backendArgs += '--seed' }
-$backendJob = Start-Process -WindowStyle Normal -FilePath 'dotnet' -ArgumentList @(
-  'run', '--project', "$root\backend\src\EducationalPlatform.Nehzat.API"
-) @backendArgs -PassThru -NoNewWindow:$false
+Write-Host "`n=== Nehzat Plus — Dev Servers ===" -ForegroundColor Green
 
-# Wait a moment for backend to start
+# Start backend
+if (-not $FrontendOnly) {
+  $backendArgs = @('run', '--project', "$root\backend\src\EducationalPlatform.Nehzat.API", '--launch-profile', 'http')
+  if ($Seed) { $backendArgs += '--seed' }
+  $backendJob = Start-Process -WindowStyle Normal -FilePath 'dotnet' -ArgumentList $backendArgs -PassThru -NoNewWindow:$false
+  Write-Host "Backend PID:  $($backendJob.Id)  → http://localhost:3000" -ForegroundColor Cyan
+}
+
+# Wait for backend to initialize
 Start-Sleep -Seconds 3
 
 # Start frontend
-$frontendArgs = @('run', 'serve')
-if ($NoBuild) { $frontendArgs += '--no-hmr' }
-$frontendJob = Start-Process -WindowStyle Normal -FilePath 'npx.cmd' -ArgumentList @(
-  'ng', 'serve'
-) -WorkingDirectory "$root\frontend" -PassThru -NoNewWindow:$false
+if (-not $BackendOnly) {
+  $frontendProcess = Start-Process -WindowStyle Normal -FilePath 'npx.cmd' -ArgumentList @('ng', 'serve', '--port', '4200') -WorkingDirectory "$root\frontend" -PassThru -NoNewWindow:$false
+  Write-Host "Frontend PID: $($frontendProcess.Id) → http://localhost:4200" -ForegroundColor Cyan
+}
 
-Write-Host "`n=== Nehzat Plus — Backend (port 3000) + Frontend (port 4201) ===" -ForegroundColor Green
-Write-Host "Backend PID: $($backendJob.Id)" -ForegroundColor Cyan
-Write-Host "Frontend PID: $($frontendJob.Id)" -ForegroundColor Cyan
-Write-Host "`nPress any key to stop both servers..."
-$null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-
-# Cleanup
-Stop-Process -Id $backendJob.Id -Force -ErrorAction SilentlyContinue
-Stop-Process -Id $frontendJob.Id -Force -ErrorAction SilentlyContinue
-Write-Host "Servers stopped." -ForegroundColor Yellow
+Write-Host "`nServers are running in separate windows." -ForegroundColor Green
+Write-Host "Close the server windows to stop them.`n" -ForegroundColor Yellow

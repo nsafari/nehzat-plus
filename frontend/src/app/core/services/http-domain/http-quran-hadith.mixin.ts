@@ -287,5 +287,33 @@ export function WithQuranHadith<TBase extends Constructor<HttpServiceContext>>(B
     ): Observable<HadithReview> {
       return this.http.post<HadithReview>(this.url(`/api/hadith/reviews/${studentId}`), payload);
     }
+
+    getQuranChapters(lang: string = 'fa'): Observable<any[]> {
+      return this.http.get<any[]>(this.url('/api/quran/chapters'), { params: { lang } });
+    }
+
+    getQuranChapterDetail(chapterId: number, lang: string = 'fa'): Observable<any> {
+      return this.http.get<any>(this.url(`/api/quran/chapters/${chapterId}`), { params: { lang } });
+    }
+
+    getQuranTafsir(surahId: number, ayahNumber: number, tafsirId: number = 169): Observable<any> {
+      return this.http.get<any>(
+        this.url(`/api/quran/surahs/${surahId}/ayahs/${ayahNumber}/tafsir`),
+        { params: { tafsirId: tafsirId.toString() } },
+      );
+    }
+
+    searchQuran(query: string, maxResults: number = 20, lang: string = 'fa'): Observable<any[]> {
+      return this.http.get<any[]>(this.url('/api/quran/search'), {
+        params: { q: query, maxResults: maxResults.toString(), lang },
+      });
+    }
+
+    getQuranTranslations(surahId: number, ayahNumber: number, translationId: number = 131): Observable<any[]> {
+      return this.http.get<any[]>(
+        this.url(`/api/quran/surahs/${surahId}/ayahs/${ayahNumber}/translations`),
+        { params: { translationId: translationId.toString() } },
+      );
+    }
   };
 }

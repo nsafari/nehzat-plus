@@ -4,6 +4,7 @@ using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Application.Constants;
 using EducationalPlatform.Nehzat.Application.Exceptions;
+using EducationalPlatform.Nehzat.Infrastructure.Services;
 
 namespace EducationalPlatform.Nehzat.API.Controllers;
 
@@ -13,10 +14,12 @@ namespace EducationalPlatform.Nehzat.API.Controllers;
 public class QuranController : ControllerBase
 {
     private readonly IQuranService _service;
+    private readonly IQuranComService _quranCom;
 
-    public QuranController(IQuranService service)
+    public QuranController(IQuranService service, IQuranComService quranCom)
     {
         _service = service;
+        _quranCom = quranCom;
     }
 
     // Surah endpoints
@@ -430,6 +433,43 @@ public class QuranController : ControllerBase
     {
         var stats = await _service.GetDashboardStatsAsync();
         return Ok(stats);
+    }
+
+    // ── Quran.com API v4 Integration ──
+
+    [HttpGet("chapters")]
+    public async Task<IActionResult> GetChapters([FromQuery] string lang = "fa")
+    {
+        try { return Ok(await _quranCom.GetChaptersAsync(lang)); }
+        catch (Exception) { return StatusCode(502, new { message = "خطا در دریافت فهرست سوره‌ها" }); }
+    }
+
+    [HttpGet("chapters/{chapterId}")]
+    public async Task<IActionResult> GetChapterDetail(int chapterId, [FromQuery] string lang = "fa")
+    {
+        try { return Ok(await _quranCom.GetChapterDetailAsync(chapterId, lang)); }
+        catch (Exception) { return StatusCode(502, new { message = "خطا در دریافت جزئیات سوره" }); }
+    }
+
+    [HttpGet("surahs/{surahId}/ayahs/{ayahNumber}/tafsir")]
+    public async Task<IActionResult> GetTafsir(int surahId, int ayahNumber, [FromQuery] int tafsirId = 169)
+    {
+        try { return Ok(await _quranCom.GetTafsirAsync(surahId, ayahNumber, tafsirId)); }
+        catch (Exception) { return StatusCode(502, new { message = "خطا در دریافت تفسیر" }); }
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string q, [FromQuery] int maxResults = 20, [FromQuery] string lang = "fa")
+    {
+        try { return Ok(await _quranCom.SearchAsync(q, maxResults, lang)); }
+        catch (Exception) { return StatusCode(502, new { message = "خطا در جستجو" }); }
+    }
+
+    [HttpGet("surahs/{surahId}/ayahs/{ayahNumber}/translations")]
+    public async Task<IActionResult> GetTranslations(int surahId, int ayahNumber, [FromQuery] int translationId = 131)
+    {
+        try { return Ok(await _quranCom.GetTranslationsAsync(surahId, ayahNumber, translationId)); }
+        catch (Exception) { return StatusCode(502, new { message = "خطا در دریافت ترجمه" }); }
     }
 }
 

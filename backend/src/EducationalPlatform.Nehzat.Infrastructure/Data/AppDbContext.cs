@@ -48,6 +48,10 @@ public class AppDbContext : DbContext
     public DbSet<CurriculumObjective> CurriculumObjectives => Set<CurriculumObjective>();
     public DbSet<Book> Books => Set<Book>();
     public DbSet<RingBook> RingBooks => Set<RingBook>();
+
+    public DbSet<VocabularyText> VocabularyTexts => Set<VocabularyText>();
+    public DbSet<VocabularyWord> VocabularyWords => Set<VocabularyWord>();
+    public DbSet<UserVocabularyCard> UserVocabularyCards => Set<UserVocabularyCard>();
     public DbSet<RingTeachingMethod> RingTeachingMethods => Set<RingTeachingMethod>();
 
     public DbSet<AgeGroup> AgeGroups => Set<AgeGroup>();
@@ -106,6 +110,20 @@ public class AppDbContext : DbContext
   public DbSet<RecitationLevel> RecitationLevels => Set<RecitationLevel>();
   public DbSet<QuranCurriculum> QuranCurricula => Set<QuranCurriculum>();
   public DbSet<QuranStudentProgress> QuranStudentProgresses => Set<QuranStudentProgress>();
+
+  // Phase 19: Quran Ring System
+  public DbSet<QuranRing> QuranRings => Set<QuranRing>();
+  public DbSet<QuranRingSession> QuranRingSessions => Set<QuranRingSession>();
+  public DbSet<QuranSessionStep> QuranSessionSteps => Set<QuranSessionStep>();
+  public DbSet<StudentQuranSessionProgress> StudentQuranSessionProgresses => Set<StudentQuranSessionProgress>();
+  public DbSet<StudentStepProgress> StudentStepProgresses => Set<StudentStepProgress>();
+  public DbSet<StudentSpeedCategory> StudentSpeedCategories => Set<StudentSpeedCategory>();
+  public DbSet<TadabborEntry> TadabborEntries => Set<TadabborEntry>();
+  public DbSet<QuranAssetEvaluation> QuranAssetEvaluations => Set<QuranAssetEvaluation>();
+  public DbSet<CoachInterview> CoachInterviews => Set<CoachInterview>();
+  public DbSet<StudentInterview> StudentInterviews => Set<StudentInterview>();
+  public DbSet<QuranRingSurah> QuranRingSurahs => Set<QuranRingSurah>();
+  public DbSet<QuranRingResource> QuranRingResources => Set<QuranRingResource>();
 
   public DbSet<HadithBook> HadithBooks => Set<HadithBook>();
   public DbSet<HadithChapter> HadithChapters => Set<HadithChapter>();
@@ -1744,6 +1762,85 @@ public class AppDbContext : DbContext
         {
             entity.HasOne(e => e.RandomEvaluation).WithMany(r => r.Answers).HasForeignKey(e => e.RandomEvaluationId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Question).WithMany().HasForeignKey(e => e.QuestionId);
+        });
+
+        modelBuilder.Entity<QuranRing>(entity =>
+        {
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.HasIndex(e => e.SortOrder);
+        });
+
+        modelBuilder.Entity<QuranRingSession>(entity =>
+        {
+            entity.HasIndex(e => new { e.RingId, e.SessionNumber }).IsUnique();
+            entity.HasOne(e => e.Ring).WithMany(r => r.Sessions).HasForeignKey(e => e.RingId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<QuranSessionStep>(entity =>
+        {
+            entity.HasIndex(e => new { e.SessionId, e.StepOrder }).IsUnique();
+            entity.HasOne(e => e.Session).WithMany(s => s.Steps).HasForeignKey(e => e.SessionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StudentQuranSessionProgress>(entity =>
+        {
+            entity.HasIndex(e => new { e.StudentId, e.SessionId }).IsUnique();
+            entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Session).WithMany(s => s.StudentProgress).HasForeignKey(e => e.SessionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StudentStepProgress>(entity =>
+        {
+            entity.HasIndex(e => new { e.SessionProgressId, e.StepId }).IsUnique();
+            entity.HasOne(e => e.SessionProgress).WithMany(p => p.StepProgress).HasForeignKey(e => e.SessionProgressId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Step).WithMany().HasForeignKey(e => e.StepId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StudentSpeedCategory>(entity =>
+        {
+            entity.HasIndex(e => new { e.StudentId, e.RingId }).IsUnique();
+            entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Ring).WithMany().HasForeignKey(e => e.RingId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<TadabborEntry>(entity =>
+        {
+            entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Cascade);
+            // Restrict به‌جای SetNull: مسیر cascade مضاعف از طریق Ayah خطای 1785 SQL Server می‌دهد
+            entity.HasOne(e => e.Ayah).WithMany().HasForeignKey(e => e.AyahId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Surah).WithMany().HasForeignKey(e => e.SurahId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<QuranAssetEvaluation>(entity =>
+        {
+            entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Ring).WithMany().HasForeignKey(e => e.RingId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Evaluator).WithMany().HasForeignKey(e => e.EvaluatorUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CoachInterview>(entity =>
+        {
+            entity.HasOne(e => e.Coach).WithMany().HasForeignKey(e => e.CoachUserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Ring).WithMany().HasForeignKey(e => e.RingId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StudentInterview>(entity =>
+        {
+            entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Ring).WithMany().HasForeignKey(e => e.RingId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Interviewer).WithMany().HasForeignKey(e => e.InterviewerUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<QuranRingSurah>(entity =>
+        {
+            entity.HasIndex(e => new { e.RingId, e.SurahId }).IsUnique();
+            entity.HasOne(e => e.Ring).WithMany(r => r.RingSurahs).HasForeignKey(e => e.RingId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Surah).WithMany().HasForeignKey(e => e.SurahId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<QuranRingResource>(entity =>
+        {
+            entity.HasOne(e => e.Ring).WithMany(r => r.Resources).HasForeignKey(e => e.RingId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

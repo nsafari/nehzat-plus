@@ -22,6 +22,11 @@ export const AUTH_ROUTES: Routes = [
     }
   },
   {
+    path: 'qr-login',
+    loadComponent: () =>
+      import('./pages/qr-login/qr-login.component').then((m) => m.QrLoginComponent)
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'login'

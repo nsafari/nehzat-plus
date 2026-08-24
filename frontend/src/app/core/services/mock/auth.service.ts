@@ -49,6 +49,7 @@ export class MockAuthService {
       ? this.ctx.students.find((s) => s.id === user.studentId)
       : undefined;
     const token = createDummyToken(user.username, user.userType, user.studentId, user.branchId);
+    this.ctx.setCurrentUser(user.username);
 
     return this.ctx.delayed({
       message: 'ورود با موفقیت انجام شد',

@@ -17,8 +17,10 @@ describe('ParentPanelComponent', () => {
   let mockRouter: Router;
 
   const mockStudents: ParentStudentInfo[] = [
-    { studentId: 10, studentName: 'علی احمدی', studentCode: 'S001', courseName: 'قرآن', latestGrade: 85, attendanceRate: 92 },
-    { studentId: 20, studentName: 'فاطمه محمدی', studentCode: 'S002', courseName: 'ادبیات', latestGrade: 90, attendanceRate: 98 },
+    { studentId: 10, studentName: 'علی احمدی', studentCode: 'S001', courseName: 'قرآن', latestGrade: 85, attendanceRate: 92,
+      age: 12, phase: 'راهنمایی', completedLevels: 3, totalLevels: 10, completedLessons: 15, totalLessons: 50 },
+    { studentId: 20, studentName: 'فاطمه محمدی', studentCode: 'S002', courseName: 'ادبیات', latestGrade: 90, attendanceRate: 98,
+      age: 14, phase: 'دبیرستان', completedLevels: 5, totalLevels: 12, completedLessons: 25, totalLessons: 80 },
   ];
 
   function createComponent(): ParentPanelComponent {

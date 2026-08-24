@@ -15,6 +15,10 @@
     <div *ngFor="let ayah of surah.ayahs" class="ayah">
       <p class="verse-number">آیه {{ ayah.verseNumber }}</p>
       <p class="verse-text">{{ ayah.text }}</p>
+      <a mat-stroked-button class="tafsir-link" [routerLink]="['/quran/tafsir', surah.id, ayah.verseNumber]">
+        <mat-icon>menu_book</mat-icon>
+        تفسیر آیه {{ ayah.verseNumber }}
+      </a>
     </div>
   </div>
 </div>

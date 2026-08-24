@@ -19,3 +19,4 @@ export * from './mock-ctx-data-hadith';
 export * from './mock-ctx-data-sciences';
 export * from './mock-ctx-data-learning';
 export * from './mock-ctx-data-career';
+export * from './mock-ctx-data-study-paths';

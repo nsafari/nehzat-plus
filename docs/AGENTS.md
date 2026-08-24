@@ -130,3 +130,40 @@ With `MockAuthHandler` enabled, any username/password works — the handler alwa
 
 ### Limitations
 - Commits are translated by **prefix only** (`feat:` → `ویژگی`); full sentence translation requires AI (ask "تحلیل کن" for a polished Persian version)
+
+---
+
+## Quranic Analysis — منبع تحلیل قرآنی
+
+### منبع معتبر (اجباری)
+برای هرگونه تحلیل لغوی، صرفی، نحوی، یا آماری قرآن کریم، **حتماً** از [Quranic Arabic Corpus](https://corpus.quran.com/) استفاده کنید.
+
+**دلیل**: تحلیل‌های rule-based ساده (مثل regex برای تشخیص فعل/اسم) خطاهای زیادی دارند. مثال‌های خطای تحلیل قبلی:
+- `نوح`، `نساء`، `نذیر`، `نفس` → اشتباهی "فعل" طبقه‌بندی شدند
+- نرمال‌سازی تهاجمی همزه‌ها باعث ادغام کلمات مختلف شد
+
+### نحوه استفاده
+1. **Word-by-Word**: `https://corpus.quran.com/wordbyword.jsp?chapter={surah}&verse={ayah}`
+2. **POS Tags**: هر کلمه دارای برچسب دقیق است:
+   - `N` = Noun (اسم)
+   - `V` = Verb (فعل)
+   - `P` = Preposition (حرف جر)
+   - `CONJ` = Conjunction (حرف عطف)
+   - `SUB` = Subordinating conjunction (حرف مصدري)
+   - `ADJ` = Adjective (صفت)
+   - `PN` = Proper noun (اسم علم)
+   - `PRON` = Pronoun (ضمیر)
+   - `VOC` = Vocative (نداء)
+   - `ACC` = Accusative particle (حرف نصب)
+   - `EMPH` = Emphasis (حرف تأکید)
+   - `IMPV` = Imperative (حرف أمر)
+
+### فایل‌های تحلیل قرآنی
+| File | Purpose |
+|------|---------|
+| `docs/quran-analysis/01-text-4-surahs.md` | متن کامل ۴ سوره (رسم‌الخط عثمانی) |
+| `docs/quran-analysis/analyze.py` | اسکریپت تحلیل (نیاز به بازنویسی با Quranic Arabic Corpus) |
+| `docs/quran-analysis/analysis-results.json` | نتایج خام تحلیل |
+
+### ۴ سوره اصلی حلقه‌ها
+- نوح (۷۱) | حشر (۵۹) | فتح (۴۸) | حجرات (۴۹)

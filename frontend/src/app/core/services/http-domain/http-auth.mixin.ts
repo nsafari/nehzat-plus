@@ -10,6 +10,9 @@ import {
   Course,
   CreateAssignmentPayload,
   CreateCoursePayload,
+  QrCodeResponse,
+  QrPollResponse,
+  QrScanConfirm,
 } from '../../models/lesson-planner.models';
 
 export function WithAuth<TBase extends Constructor<HttpServiceContext>>(Base: TBase) {
@@ -62,6 +65,18 @@ export function WithAuth<TBase extends Constructor<HttpServiceContext>>(Base: TB
       payload: Partial<CreateAssignmentPayload>,
     ): Observable<Assignment> {
       return this.http.post<Assignment>(this.url(`/courses/${courseId}/assignments`), payload);
+    }
+
+    requestQrCode(payload?: { deviceInfo?: string }): Observable<QrCodeResponse> {
+      return this.http.post<QrCodeResponse>(this.url('/auth/qr/generate'), payload);
+    }
+
+    pollQrStatus(sessionId: string): Observable<QrPollResponse> {
+      return this.http.get<QrPollResponse>(this.url(`/auth/qr/poll?sessionId=${sessionId}`));
+    }
+
+    confirmQrScan(payload: { sessionId: string; username: string }): Observable<QrScanConfirm> {
+      return this.http.post<QrScanConfirm>(this.url('/auth/qr/scan'), payload);
     }
   };
 }

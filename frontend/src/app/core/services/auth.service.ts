@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import { OTUH2_API } from './otuh2-api.token';
 import { LESSON_PLANNER_API } from './lesson-planner-api.token';
 import { AuthTokenResponse, RegisterPayload, ApiMessageResponse } from '../models/otuh2.models';
-import { AuthSigninPayload, AuthSigninResponse, CurrentUser, ProfileDto } from '../models/lesson-planner.models';
+import { AuthSigninPayload, AuthSigninResponse, CurrentUser, ProfileDto, QrPollResponse } from '../models/lesson-planner.models';
 import { resolveOtuh2BaseUrl } from './api-url.util';
 
 const ACCESS_TOKEN_KEY = 'otuh2_access_token';
@@ -298,10 +298,10 @@ export class AuthService {
 
   /** Poll the QR status for a given sessionId.
    *  Returns the status ('pending' | 'confirmed' | 'expired') and optionally the token and user info. */
-  pollQrStatus() {
+  pollQrStatus(): Observable<QrPollResponse> {
     const sessionId = sessionStorage.getItem('qr_session_id');
     if (!sessionId) {
-      return of({ status: 'expired' });
+      return of({ status: 'expired' as const });
     }
     return this.lessonPlannerApi.pollQrStatus(sessionId).pipe(
       tap(({ status, token, username, userType, studentId, branchId }) => {

@@ -47,6 +47,7 @@ import { MockUser, initialUsers, initialStudents, initialBranches, initialCourse
   initialUserEnrollments, initialLessonProgress, initialQuizAttempts,
   initialProjectDefenses, initialDefenseEvaluations, initialDefenseSchedule,
   initialCareerPaths, initialPathwayRecommendations,
+  initialStudyPaths, initialStudyPathSteps, initialAccommodations,
 } from './mock-data-context.data';
 
 export abstract class MockDataContextState {
@@ -216,14 +217,10 @@ export abstract class MockDataContextState {
   careerPaths: any[] = [...initialCareerPaths];
   pathwayRecommendations: any[] = [...initialPathwayRecommendations];
 
-  // ── Study Path System ──
-  studyPaths: StudyPath[] = [];
-  studyPathSteps: StudyPathStep[] = [];
-  accommodations: Accommodation[] = [
-    { id: 1, code: 'auditory', name: 'شنوایی', description: 'مناسب برای یادگیری شنوایی', icon: '🎧' },
-    { id: 2, code: 'visual', name: 'بصری', description: 'مناسب برای یادگیری بصری', icon: '👁️' },
-    { id: 3, code: 'kinesthetic', name: 'حس‌پذیر', description: 'مناسب برای یادگیری عملی', icon: '✋' },
-  ];
+   // ── Study Path System ──
+  studyPaths: StudyPath[] = [...initialStudyPaths];
+  studyPathSteps: StudyPathStep[] = [...initialStudyPathSteps];
+  accommodations: Accommodation[] = [...initialAccommodations];
   studyPathAccommodations: StudyPathAccommodation[] = [];
   studentStudyPaths: StudentStudyPath[] = [];
 
@@ -354,9 +351,9 @@ export abstract class MockDataContextState {
     this.defenseSchedule = [...initialDefenseSchedule];
     this.careerPaths = [...initialCareerPaths];
     this.pathwayRecommendations = [...initialPathwayRecommendations];
-    this.studyPaths = [];
-    this.studyPathSteps = [];
-    this.accommodations = [];
+    this.studyPaths = [...initialStudyPaths];
+    this.studyPathSteps = [...initialStudyPathSteps];
+    this.accommodations = [...initialAccommodations];
     this.studyPathAccommodations = [];
     this.studentStudyPaths = [];
     this.currentUsername = null;

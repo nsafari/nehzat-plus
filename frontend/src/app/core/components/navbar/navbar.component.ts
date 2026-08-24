@@ -251,6 +251,7 @@ export class NavbarComponent {
     { label: 'تقویم', route: '/calendar', icon: '▦' },
     { label: 'پیام‌ها', route: '/messages', icon: '✉' },
     { label: 'نقشه', route: '/map', icon: '◎' },
+    { label: 'نشاننامه کتاب', route: '/vocabulary/book-marker', icon: '📖' },
   ];
 
   constructor() {

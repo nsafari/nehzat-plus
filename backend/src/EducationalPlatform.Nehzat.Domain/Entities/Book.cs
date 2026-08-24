@@ -35,4 +35,7 @@ public class Book
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<RingBook> RingBooks { get; set; } = new List<RingBook>();
+
+    [Column(TypeName = "nvarchar(200)")]
+    public string? CoverImageUrl { get; set; }
 }

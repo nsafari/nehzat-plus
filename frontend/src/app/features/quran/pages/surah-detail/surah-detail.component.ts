@@ -1,14 +1,16 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { Surah, Ayah } from '../../services/quran.service';
 import { QuranService } from '../../services/quran.service';
 
 @Component({
   selector: 'app-surah-detail',
   standalone: true,
-  imports: [CommonModule, MatProgressSpinnerModule],
+  imports: [CommonModule, RouterModule, MatProgressSpinnerModule, MatButtonModule, MatIconModule],
   templateUrl: './surah-detail.component.html',
   styleUrls: ['./surah-detail.component.scss']
 })

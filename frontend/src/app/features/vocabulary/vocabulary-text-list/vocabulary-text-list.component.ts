@@ -2,8 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { VocabularyApi } from '@core/services/lesson-planner-api.interface';
-import { LessonPlannerApi } from '@core/services/lesson-planner-api.interface';
+import { LESSON_PLANNER_API } from '@core/services/lesson-planner-api.token';
 import { VocabularyTextDto } from '@core/models/lesson-planner.models';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -57,7 +56,7 @@ import { ApiMessageResponse } from '@core/models/lesson-planner.models';
   `
 })
 export class VocabularyTextListComponent implements OnInit {
-  private api = inject(LessonPlannerApi);
+  private api = inject(LESSON_PLANNER_API);
   private destroy$ = new Subject<void>();
   
   texts: VocabularyTextDto[] = [];

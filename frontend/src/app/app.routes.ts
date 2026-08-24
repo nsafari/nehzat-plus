@@ -248,6 +248,18 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./features/progress/progress.routes').then((m) => m.PROGRESS_ROUTES),
   },
+   {
+    path: 'study-paths',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/study-paths/study-paths.routes').then((m) => m.STUDY_PATHS_ROUTES),
+  },
+  {
+    path: 'vocabulary',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/vocabulary/vocabulary.routes').then((m) => m.vocabularyRoutes),
+  },
   {
     path: '**',
     redirectTo: '/auth/login',

@@ -7,6 +7,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Surah } from '../../services/quran.service';
 import { QuranService } from '../../services/quran.service';
@@ -14,7 +15,7 @@ import { QuranService } from '../../services/quran.service';
 @Component({
   selector: 'app-quran-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MatCardModule, MatTableModule, MatButtonModule, MatInputModule, MatFormFieldModule, MatProgressSpinnerModule],
+  imports: [CommonModule, FormsModule, RouterModule, MatCardModule, MatTableModule, MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './surah-list.component.html',
   styleUrls: ['./surah-list.component.scss']
 })

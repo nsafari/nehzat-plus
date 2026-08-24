@@ -54,8 +54,13 @@ export class MockDataContext extends MockDataContextState {
     return of(value).pipe(delay(this.delayMs));
   }
 
-  findUserByUsername(username: string): MockUser | undefined {
+   findUserByUsername(username: string): MockUser | undefined {
     return this.users.find((u) => u.username === username);
+  }
+
+  /** Sets the current user context for mock domain services (enrollment, step progress). */
+  setCurrentUser(username: string | null): void {
+    this.currentUsername = username;
   }
 
   getEvaluatorName(id: number): string {
