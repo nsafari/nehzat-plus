@@ -116,61 +116,61 @@ builder.Services.AddScoped<IMadrasahService, MadrasahService>();
 builder.Services.AddScoped<ICurriculumService, CurriculumService>();
 builder.Services.AddScoped<IRingService, RingService>();
 builder.Services.AddScoped<ISkillProgressService, SkillProgressService>();
-    builder.Services.AddScoped<ISpiritualCatalogService, SpiritualCatalogService>();
-    builder.Services.AddScoped<ISpiritualEntryService, SpiritualEntryService>();
-    builder.Services.AddScoped<IDailyActivityService, DailyActivityService>();
-    builder.Services.AddScoped<IArtsService, ArtsService>();
-    builder.Services.AddScoped<ISpiritualOccasionService, SpiritualOccasionService>();
-    builder.Services.AddScoped<ISpiritualPathService, SpiritualPathService>();
-    builder.Services.AddScoped<ICurriculumVersionService, CurriculumVersionService>();
-    builder.Services.AddScoped<IMonthlyBookletService, MonthlyBookletService>();
+builder.Services.AddScoped<ISpiritualCatalogService, SpiritualCatalogService>();
+builder.Services.AddScoped<ISpiritualEntryService, SpiritualEntryService>();
+builder.Services.AddScoped<IDailyActivityService, DailyActivityService>();
+builder.Services.AddScoped<IArtsService, ArtsService>();
+builder.Services.AddScoped<ISpiritualOccasionService, SpiritualOccasionService>();
+builder.Services.AddScoped<ISpiritualPathService, SpiritualPathService>();
+builder.Services.AddScoped<ICurriculumVersionService, CurriculumVersionService>();
+builder.Services.AddScoped<IMonthlyBookletService, MonthlyBookletService>();
 builder.Services.AddScoped<ICompetitionService, CompetitionService>();
-    builder.Services.AddScoped<ILeagueService, LeagueService>();
-    builder.Services.AddScoped<IProgressionService, ProgressionService>();
-    builder.Services.AddScoped<SampleDataSeeder>();
-    builder.Services.AddScoped<QuranRingSeeder>();
-    builder.Services.AddScoped<QuranDataSeeder>();
-    builder.Services.AddScoped<ILogService, LogService>();
-    builder.Services.AddScoped<IIssueSurveyService, IssueSurveyService>();
-    builder.Services.AddScoped<IQuranService, QuranService>();
-    builder.Services.AddScoped<IPersianLiteratureService, PersianLiteratureService>();
-    builder.Services.AddScoped<ILearningService, LearningService>();
-    builder.Services.AddScoped<IArabicLiteratureService, ArabicLiteratureService>();
-    builder.Services.AddScoped<ArabicLiteratureDataSeeder>();
-    builder.Services.AddScoped<IMathService, MathService>();
-    builder.Services.AddScoped<MathDataSeeder>();
-    builder.Services.AddScoped<IExperimentalScienceService, ExperimentalScienceService>();
-    builder.Services.AddScoped<ExperimentalScienceDataSeeder>();
-    builder.Services.AddScoped<IHadithService, HadithService>();
-    builder.Services.AddScoped<HadithDataSeeder>();
-    builder.Services.AddScoped<IStudyPathService, StudyPathService>();
-    builder.Services.AddScoped<ISrsService, SrsService>();
-    builder.Services.AddScoped<IXpService, XpService>();
-    builder.Services.AddScoped<IGamificationService, GamificationService>();
-    builder.Services.AddScoped<XpDataSeeder>();
-    builder.Services.AddScoped<TrainingDataSeeder>();
-    builder.Services.AddScoped<ITrainingService, TrainingService>();
-    builder.Services.AddScoped<IMaktabService, MaktabService>();
-    builder.Services.AddScoped<IMaktabLookupService, MaktabLookupService>();
-    builder.Services.AddScoped<IFeedbackService, FeedbackService>();
-    builder.Services.AddScoped<IPhaseTransitionService, PhaseTransitionService>();
-    builder.Services.AddScoped<IAuthService, AuthService>();
-    builder.Services.AddScoped<IHalghehService, HalghehService>();
-    builder.Services.AddScoped<IHalghehMaktabService, HalghehMaktabService>();
-    builder.Services.AddScoped<IHalghehAssignmentService, HalghehAssignmentService>();
-    builder.Services.AddScoped<IConversationService, ConversationService>();
-    builder.Services.AddScoped<IMessageService, MessageService>();
-    builder.Services.AddScoped<IAiService, AiService>();
-    builder.Services.AddScoped<IWorkflowService, WorkflowService>();
-    builder.Services.AddScoped<IEducationalProcessService, EducationalProcessService>();
-    builder.Services.AddSingleton<ICalendarConverter, CalendarConverter>();
-    builder.Services.AddScoped<IProfileService, ProfileService>();
-    builder.Services.AddScoped<IProgressService, ProgressService>();
-    builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
-    builder.Services.AddScoped<IEvaluationService, EvaluationService>();
-    builder.Services.AddScoped<IQuranRingService, QuranRingService>();
-    builder.Services.AddSignalR();
-    builder.Services.AddHttpClient<AiService>();
+builder.Services.AddScoped<ILeagueService, LeagueService>();
+builder.Services.AddScoped<IProgressionService, ProgressionService>();
+builder.Services.AddScoped<SampleDataSeeder>();
+builder.Services.AddScoped<QuranRingSeeder>();
+builder.Services.AddScoped<QuranDataSeeder>();
+builder.Services.AddScoped<ILogService, LogService>();
+builder.Services.AddScoped<IIssueSurveyService, IssueSurveyService>();
+builder.Services.AddScoped<IQuranService, QuranService>();
+builder.Services.AddScoped<IPersianLiteratureService, PersianLiteratureService>();
+builder.Services.AddScoped<ILearningService, LearningService>();
+builder.Services.AddScoped<IArabicLiteratureService, ArabicLiteratureService>();
+builder.Services.AddScoped<ArabicLiteratureDataSeeder>();
+builder.Services.AddScoped<IMathService, MathService>();
+builder.Services.AddScoped<MathDataSeeder>();
+builder.Services.AddScoped<IExperimentalScienceService, ExperimentalScienceService>();
+builder.Services.AddScoped<ExperimentalScienceDataSeeder>();
+builder.Services.AddScoped<IHadithService, HadithService>();
+builder.Services.AddScoped<HadithDataSeeder>();
+builder.Services.AddScoped<IStudyPathService, StudyPathService>();
+builder.Services.AddScoped<ISrsService, SrsService>();
+builder.Services.AddScoped<IXpService, XpService>();
+builder.Services.AddScoped<IGamificationService, GamificationService>();
+builder.Services.AddScoped<XpDataSeeder>();
+builder.Services.AddScoped<TrainingDataSeeder>();
+builder.Services.AddScoped<ITrainingService, TrainingService>();
+builder.Services.AddScoped<IMaktabService, MaktabService>();
+builder.Services.AddScoped<IMaktabLookupService, MaktabLookupService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IPhaseTransitionService, PhaseTransitionService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IHalghehService, HalghehService>();
+builder.Services.AddScoped<IHalghehMaktabService, HalghehMaktabService>();
+builder.Services.AddScoped<IHalghehAssignmentService, HalghehAssignmentService>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IAiService, AiService>();
+builder.Services.AddScoped<IWorkflowService, WorkflowService>();
+builder.Services.AddScoped<IEducationalProcessService, EducationalProcessService>();
+builder.Services.AddSingleton<ICalendarConverter, CalendarConverter>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IProgressService, ProgressService>();
+builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
+builder.Services.AddScoped<IEvaluationService, EvaluationService>();
+builder.Services.AddScoped<IQuranRingService, QuranRingService>();
+builder.Services.AddSignalR();
+builder.Services.AddHttpClient<AiService>();
 
 builder.Services.AddScoped<IMapService, MapService>();
 builder.Services.AddHttpClient("OSRM", client =>
@@ -182,20 +182,19 @@ builder.Services.AddHttpClient("OSRM", client =>
 
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICourierReportService, CourierReportService>();
-builder.Services.AddScoped<IStudyPathService, StudyPathService>();
 builder.Services.AddHostedService<LocationCleanupService>();
-    builder.Services.AddHostedService<OrderExpiryService>();
+builder.Services.AddHostedService<OrderExpiryService>();
 
-    // Swagger/OpenAPI — circular references در EF Core navigation properties
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddOpenApi();
-    builder.Services.ConfigureHttpJsonOptions(o =>
-    {
-        o.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        o.SerializerOptions.MaxDepth = 128;
-    });
+// Swagger/OpenAPI — circular references در EF Core navigation properties
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    o.SerializerOptions.MaxDepth = 128;
+});
 
-    builder.Services.AddCors(options =>
+builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
@@ -219,8 +218,7 @@ builder.Services.AddHostedService<LocationCleanupService>();
 
 var app = builder.Build();
 
-    // TEMPORARILY DISABLED to debug OpenAPI 500 error
-    // app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -238,7 +236,12 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "",
     OnPrepareResponse = ctx =>
     {
-        if (ctx.Context.User.Identity?.IsAuthenticated != true)
+        var path = ctx.Context.Request.Path.Value ?? "";
+        var isPublicAsset = path.Equals("/config.json", StringComparison.OrdinalIgnoreCase)
+            || path.Equals("/manifest.json", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".ico", StringComparison.OrdinalIgnoreCase);
+
+        if (!isPublicAsset && ctx.Context.User.Identity?.IsAuthenticated != true)
         {
             ctx.Context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             ctx.Context.Response.ContentType = "application/json";

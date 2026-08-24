@@ -3,18 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using EducationalPlatform.Nehzat.Application.DTOs;
 using EducationalPlatform.Nehzat.Application.Interfaces;
 using EducationalPlatform.Nehzat.Application.Constants;
-using EducationalPlatform.Nehzat.Application.Exceptions;
 
 namespace EducationalPlatform.Nehzat.API.Controllers
 {
     [ApiController]
     [Route("api/learning")]
     [Authorize]
-    public class LearningController : ControllerBase
+    public class LearningStructureController : ControllerBase
     {
         private readonly ILearningService _service;
 
-        public LearningController(ILearningService service)
+        public LearningStructureController(ILearningService service)
         {
             _service = service;
         }
@@ -260,7 +259,7 @@ namespace EducationalPlatform.Nehzat.API.Controllers
 
         // ========== ContentBlock endpoints ==========
 
-        [HttpGet("lessons/{lessonId}/content")]
+        [HttpGet("lessons/{lessonId}/content-blocks")]
         public async Task<IActionResult> GetContentBlocks(int lessonId)
         {
             return Ok(await _service.GetContentBlocksAsync(lessonId));
@@ -306,265 +305,6 @@ namespace EducationalPlatform.Nehzat.API.Controllers
             {
                 return NotFound(new { message = GenericErrorMessages.NotFound });
             }
-        }
-
-        // ========== Quiz endpoints ==========
-
-        [HttpGet("lessons/{lessonId}/quizzes")]
-        public async Task<IActionResult> GetQuizzes(int lessonId)
-        {
-            return Ok(await _service.GetQuizzesAsync(lessonId));
-        }
-
-        [HttpGet("quizzes/{id}")]
-        public async Task<IActionResult> GetQuizById(int id)
-        {
-            var result = await _service.FindQuizByIdAsync(id);
-            if (result == null) return NotFound(new { message = GenericErrorMessages.NotFound });
-            return Ok(result);
-        }
-
-        [HttpPost("quizzes")]
-        public async Task<IActionResult> CreateQuiz([FromBody] CreateLearningQuizRequest request)
-        {
-            try
-            {
-                var result = await _service.CreateQuizAsync(request);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        [HttpPut("quizzes/{id}")]
-        public async Task<IActionResult> UpdateQuiz(int id, [FromBody] UpdateLearningQuizRequest request)
-        {
-            try
-            {
-                var result = await _service.UpdateQuizAsync(id, request);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        [HttpDelete("quizzes/{id}")]
-        public async Task<IActionResult> DeleteQuiz(int id)
-        {
-            try
-            {
-                await _service.DeleteQuizAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        [HttpGet("quizzes/{quizId}/questions")]
-        public async Task<IActionResult> GetQuizQuestions(int quizId)
-        {
-            return Ok(await _service.GetQuizQuestionsAsync(quizId));
-        }
-
-        // ========== Question endpoints ==========
-
-        [HttpPost("questions")]
-        public async Task<IActionResult> CreateQuestion([FromBody] CreateLearningQuizQuestionRequest request)
-        {
-            try
-            {
-                var result = await _service.CreateQuestionAsync(request);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        [HttpPut("questions/{id}")]
-        public async Task<IActionResult> UpdateQuestion(int id, [FromBody] UpdateLearningQuizQuestionRequest request)
-        {
-            try
-            {
-                var result = await _service.UpdateQuestionAsync(id, request);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        [HttpDelete("questions/{id}")]
-        public async Task<IActionResult> DeleteQuestion(int id)
-        {
-            try
-            {
-                await _service.DeleteQuestionAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        // ========== Option endpoints ==========
-
-        [HttpPost("options")]
-        public async Task<IActionResult> CreateOption([FromBody] CreateQuizOptionRequest request)
-        {
-            try
-            {
-                var result = await _service.CreateOptionAsync(request);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        [HttpPut("options/{id}")]
-        public async Task<IActionResult> UpdateOption(int id, [FromBody] UpdateQuizOptionRequest request)
-        {
-            try
-            {
-                var result = await _service.UpdateOptionAsync(id, request);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        [HttpDelete("options/{id}")]
-        public async Task<IActionResult> DeleteOption(int id)
-        {
-            try
-            {
-                await _service.DeleteOptionAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        // ========== Enrollment endpoints ==========
-
-        [HttpPost("enroll")]
-        public async Task<IActionResult> EnrollUser([FromBody] EnrollUserRequest request)
-        {
-            try
-            {
-                var result = await _service.EnrollUserAsync(request);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-            catch (InvalidOperationException)
-            {
-                return Conflict(new { message = GenericErrorMessages.Conflict });
-            }
-        }
-
-        [HttpGet("users/{userId}/enrollments")]
-        public async Task<IActionResult> GetUserEnrollments(int userId)
-        {
-            return Ok(await _service.GetUserEnrollmentsAsync(userId));
-        }
-
-        [HttpPut("enrollments/{id}/status")]
-        public async Task<IActionResult> UpdateEnrollmentStatus(int id, [FromQuery] string status)
-        {
-            try
-            {
-                var result = await _service.UpdateEnrollmentStatusAsync(id, status);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        // ========== Lesson Progress endpoints ==========
-
-        [HttpPost("lessons/{lessonId}/complete")]
-        public async Task<IActionResult> CompleteLesson(int lessonId, [FromQuery] int enrollmentId)
-        {
-            try
-            {
-                var result = await _service.CompleteLessonAsync(enrollmentId, lessonId);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        [HttpPut("lessons/{lessonId}/progress")]
-        public async Task<IActionResult> UpdateLessonProgress(int lessonId, [FromQuery] int enrollmentId, [FromQuery] string status, [FromQuery] int? score = null)
-        {
-            try
-            {
-                var result = await _service.UpdateLessonProgressAsync(enrollmentId, lessonId, status, score);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-        }
-
-        // ========== Quiz Submission ==========
-
-        [HttpPost("quizzes/{quizId}/submit")]
-        public async Task<IActionResult> SubmitQuiz(int quizId, [FromBody] SubmitQuizRequest request)
-        {
-            if (request.QuizId != quizId)
-                return BadRequest(new { message = GenericErrorMessages.BadRequest });
-
-            try
-            {
-                var result = await _service.SubmitQuizAsync(request);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound(new { message = GenericErrorMessages.NotFound });
-            }
-            catch (InvalidOperationException)
-            {
-                return BadRequest(new { message = GenericErrorMessages.BadRequest });
-            }
-        }
-
-        [HttpGet("users/{userId}/quizzes/{quizId}/attempts")]
-        public async Task<IActionResult> GetUserQuizAttempts(int userId, int quizId)
-        {
-            return Ok(await _service.GetUserQuizAttemptsAsync(userId, quizId));
-        }
-
-        // ========== Dashboard ==========
-
-        [HttpGet("users/{userId}/dashboard")]
-        public async Task<IActionResult> GetUserDashboard(int userId)
-        {
-            return Ok(await _service.GetUserDashboardAsync(userId));
         }
     }
 }
