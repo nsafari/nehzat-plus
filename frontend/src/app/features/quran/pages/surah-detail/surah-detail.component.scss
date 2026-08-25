@@ -1,18 +1,26 @@
+/* ============================================
+   Surah Detail — Responsive
+   Mobile: < 640px | Tablet: 640–1023px | Desktop: ≥ 1024px
+   ============================================ */
+
 .surah-detail {
-  padding: 20px;
+  padding: var(--lp-space-xl, 20px);
+  max-width: 800px;
+  margin: 0 auto;
+  direction: rtl;
 }
 
 .ayahs {
-  margin-top: 20px;
+  margin-top: var(--lp-space-lg, 20px);
 }
 
 .ayah {
   border-bottom: 1px solid var(--lp-border);
-  padding: 10px 0;
+  padding: var(--lp-space-md, 10px) 0;
 }
 
 .tafsir-link {
-  margin-top: 8px;
+  margin-top: var(--lp-space-sm, 8px);
   font-size: 0.85em;
 }
 
@@ -25,13 +33,71 @@
   font-size: 1.1em;
   direction: rtl;
   text-align: right;
+  line-height: 1.8;
 }
 
 .error-banner {
-  padding: 16px;
-  margin: 20px;
+  padding: var(--lp-space-md, 16px);
+  margin: var(--lp-space-lg, 20px) 0;
   border: 1px solid var(--lp-danger);
-  border-radius: 12px;
+  border-radius: var(--lp-radius-xl, 12px);
   background: rgba(185, 28, 28, 0.06);
   color: var(--lp-danger);
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Mobile (< 640px) */
+@media (max-width: 639px) {
+  .surah-detail {
+    padding: var(--lp-space-md, 16px);
+  }
+
+  .ayahs {
+    margin-top: var(--lp-space-md, 16px);
+  }
+
+  .ayah {
+    padding: var(--lp-space-sm, 8px) 0;
+  }
+
+  .verse-text {
+    font-size: var(--lp-text-lg, 18px);
+    line-height: 1.9;
+  }
+
+  .verse-number {
+    font-size: 0.75em;
+  }
+
+  .tafsir-link {
+    font-size: 0.8em;
+  }
+}
+
+/* Tablet (640px – 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .surah-detail {
+    padding: var(--lp-space-lg, 24px);
+  }
+
+  .verse-text {
+    font-size: var(--lp-text-xl, 20px);
+  }
+}
+
+/* Desktop (≥ 1024px) — default rules apply */
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }

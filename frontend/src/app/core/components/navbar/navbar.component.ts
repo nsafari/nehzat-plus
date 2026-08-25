@@ -203,29 +203,96 @@ interface NavItem {
       color: #fff;
     }
 
-    @media (max-width: 768px) {
-      .lp-navbar { flex-wrap: wrap; padding: 0.75rem 1rem; }
-      .lp-navbar__toggle { display: flex; }
+    @media (max-width: 639px) {
+      .lp-navbar {
+        min-height: 56px;
+        padding: 0 1rem;
+      }
+
+      .lp-navbar__logo {
+        font-size: 1rem;
+      }
+
+      .lp-navbar__toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+      }
 
       .lp-navbar__menu {
         display: none;
-        flex-basis: 100%;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        z-index: 1000;
         flex-direction: column;
         align-items: stretch;
         gap: 0.25rem;
-        padding-block-start: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: var(--lp-surface-color, #fff);
+        border-bottom: 1px solid var(--lp-border-color, #e5e7eb);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       }
 
-      .lp-navbar__menu--open { display: flex; }
-      .lp-navbar__link { padding: 0.6rem 0.75rem; }
+      .lp-navbar__menu--open {
+        display: flex;
+      }
+
+      .lp-navbar__link {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        text-align: right;
+      }
+
+      .lp-navbar__logout {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+      }
 
       .lp-navbar__item--user {
-        border-inline-start: none;
-        border-block-start: 1px solid var(--lp-border, #e5e7eb);
-        padding-block-start: 0.5rem;
-        margin-block-start: 0.5rem;
-        justify-content: space-between;
-        padding-inline-start: 0;
+        display: none;
+      }
+    }
+
+    @media (min-width: 640px) and (max-width: 1023px) {
+      .lp-navbar {
+        padding: 0 1.5rem;
+      }
+
+      .lp-navbar__menu {
+        gap: 0.5rem;
+      }
+
+      .lp-navbar__link {
+        padding: 0.5rem 0.65rem;
+        font-size: 0.9rem;
+      }
+
+      .lp-navbar__item--user {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .lp-navbar {
+        padding: 0 2rem;
+      }
+
+      .lp-navbar__menu {
+        gap: 0.75rem;
+      }
+
+      .lp-navbar__toggle {
+        display: none;
       }
     }
 

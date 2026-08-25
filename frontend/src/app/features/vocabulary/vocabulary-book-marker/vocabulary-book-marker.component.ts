@@ -574,6 +574,162 @@ interface SelectedWord {
       font-family: monospace;
       font-size: var(--lp-text-xs);
     }
+
+    /* ============================================
+       RESPONSIVE BREAKPOINTS
+       Mobile: < 640px | Tablet: 640px - 1023px | Desktop: >= 1024px
+       ============================================ */
+
+    /* Mobile (< 640px) */
+    @media (max-width: 639px) {
+      .book-marker-page {
+        padding: 1rem;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .book-marker-tabs {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: thin;
+      }
+
+      .stats-bar {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .toolbar .btn,
+      .file-input-wrapper,
+      .ocr-lang-selector {
+        width: 100%;
+      }
+
+      .tab-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .selected-words-panel {
+        order: 2;
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      .selected-words-list {
+        max-height: 240px;
+      }
+
+      .panel-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .panel-actions .btn {
+        flex: 1 1 auto;
+      }
+
+      .text-content,
+      .ocr-words {
+        max-height: 360px;
+        overflow-y: auto;
+      }
+
+      .image-upload-zone {
+        min-height: 220px;
+        padding: 1rem;
+      }
+
+      .upload-placeholder {
+        padding: 1rem;
+        text-align: center;
+      }
+
+      .shortcuts-help {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Tablet (640px - 1023px) */
+    @media (min-width: 640px) and (max-width: 1023px) {
+      .book-marker-page {
+        padding: 1.5rem;
+      }
+
+      .stats-bar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        > :last-child {
+          grid-column: 1 / -1;
+        }
+      }
+
+      .toolbar {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .tab-panel {
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 0.35fr);
+      }
+
+      .selected-words-panel {
+        min-width: 240px;
+      }
+
+      .text-content,
+      .ocr-words {
+        max-height: 480px;
+        overflow-y: auto;
+      }
+
+      .panel-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    }
+
+    /* Desktop (>= 1024px) - refinements */
+    @media (min-width: 1024px) {
+      .book-marker-tabs {
+        overflow-x: visible;
+      }
+
+      .toolbar {
+        flex-wrap: nowrap;
+      }
+
+      .text-content,
+      .ocr-words {
+        max-height: 600px;
+        overflow-y: auto;
+      }
+    }
+
+    /* Accessibility: Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
   `]
 })
 export class VocabularyBookMarkerComponent implements OnInit, OnDestroy {
