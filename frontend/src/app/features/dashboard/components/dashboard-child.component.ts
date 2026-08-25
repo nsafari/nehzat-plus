@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { PHASE_CONFIG } from '../../../core/tokens/phase.token';
 
 @Component({
@@ -101,9 +102,17 @@ import { PHASE_CONFIG } from '../../../core/tokens/phase.token';
 })
 export class DashboardChildComponent {
   private readonly phaseConfig = inject(PHASE_CONFIG);
+  private readonly router = inject(Router);
   readonly phase = computed(() => this.phaseConfig().phase);
 
   onCardClick(section: string): void {
-    console.log(`[dashboard-child] رفتن به «${section}» — به‌زودی`);
+    const routes: Record<string, string> = {
+      lessons: '/dashboard/learning-path',
+    };
+    if (routes[section]) {
+      this.router.navigate([routes[section]]);
+    } else {
+      console.log(`[dashboard-child] رفتن به «${section}» — به‌زودی`);
+    }
   }
 }
