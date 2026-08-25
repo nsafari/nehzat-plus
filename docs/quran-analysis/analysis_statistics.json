@@ -1,0 +1,606 @@
+{
+  "summary": {
+    "total_words": 646,
+    "unique_words": 412,
+    "type_token_ratio": 0.6378,
+    "surahs_analyzed": 4,
+    "average_confidence": 0.6654
+  },
+  "surah_statistics": {
+    "Nuh": {
+      "surah_number": 71,
+      "total_words": 96,
+      "unique_words": 80,
+      "verses": 10,
+      "type_token_ratio": 0.8333
+    },
+    "Al-Hashr": {
+      "surah_number": 59,
+      "total_words": 234,
+      "unique_words": 175,
+      "verses": 10,
+      "type_token_ratio": 0.7479
+    },
+    "Al-Fath": {
+      "surah_number": 48,
+      "total_words": 139,
+      "unique_words": 115,
+      "verses": 10,
+      "type_token_ratio": 0.8273
+    },
+    "Al-Hujurat": {
+      "surah_number": 49,
+      "total_words": 177,
+      "unique_words": 130,
+      "verses": 10,
+      "type_token_ratio": 0.7345
+    }
+  },
+  "pos_distribution": {
+    "verb": 269,
+    "noun": 260,
+    "particle": 112,
+    "pronoun": 5
+  },
+  "pos_category_distribution": {
+    "verb": 269,
+    "noun": 265,
+    "particle": 112
+  },
+  "pos_per_surah": {
+    "Nuh": {
+      "verb": 38,
+      "noun": 37,
+      "particle": 21
+    },
+    "Al-Hashr": {
+      "verb": 92,
+      "particle": 44,
+      "noun": 95,
+      "pronoun": 3
+    },
+    "Al-Fath": {
+      "verb": 62,
+      "particle": 18,
+      "noun": 58,
+      "pronoun": 1
+    },
+    "Al-Hujurat": {
+      "noun": 70,
+      "verb": 77,
+      "particle": 29,
+      "pronoun": 1
+    }
+  },
+  "top_words_per_pos": {
+    "verb": [
+      {
+        "word": "لهم",
+        "count": 6,
+        "normalized": "لهم"
+      },
+      {
+        "word": "وما",
+        "count": 5,
+        "normalized": "وما"
+      },
+      {
+        "word": "ٱلمومنين",
+        "count": 4,
+        "normalized": "ٱلمومنين"
+      },
+      {
+        "word": "ورسوله",
+        "count": 4,
+        "normalized": "ورسوله"
+      },
+      {
+        "word": "ولا",
+        "count": 4,
+        "normalized": "ولا"
+      },
+      {
+        "word": "ءامنوا",
+        "count": 4,
+        "normalized": "ءامنوا"
+      },
+      {
+        "word": "انا",
+        "count": 3,
+        "normalized": "انا"
+      },
+      {
+        "word": "ٱلسمـوت",
+        "count": 3,
+        "normalized": "ٱلسمـوت"
+      },
+      {
+        "word": "ومن",
+        "count": 3,
+        "normalized": "ومن"
+      },
+      {
+        "word": "فان",
+        "count": 3,
+        "normalized": "فان"
+      },
+      {
+        "word": "وٱلله",
+        "count": 3,
+        "normalized": "وٱلله"
+      },
+      {
+        "word": "وٱتقوا",
+        "count": 3,
+        "normalized": "وٱتقوا"
+      },
+      {
+        "word": "اولـيك",
+        "count": 3,
+        "normalized": "اولـيك"
+      },
+      {
+        "word": "وكان",
+        "count": 3,
+        "normalized": "وكان"
+      },
+      {
+        "word": "فاصلحوا",
+        "count": 3,
+        "normalized": "فاصلحوا"
+      },
+      {
+        "word": "لكم",
+        "count": 2,
+        "normalized": "لكم"
+      },
+      {
+        "word": "لو",
+        "count": 2,
+        "normalized": "لو"
+      },
+      {
+        "word": "دعوتهم",
+        "count": 2,
+        "normalized": "دعوتهم"
+      },
+      {
+        "word": "قلوبهم",
+        "count": 2,
+        "normalized": "قلوبهم"
+      },
+      {
+        "word": "رسوله",
+        "count": 2,
+        "normalized": "رسوله"
+      }
+    ],
+    "noun": [
+      {
+        "word": "ٱلله",
+        "count": 36,
+        "normalized": "ٱلله"
+      },
+      {
+        "word": "ٱلذين",
+        "count": 10,
+        "normalized": "ٱلذين"
+      },
+      {
+        "word": "علي",
+        "count": 9,
+        "normalized": "علي"
+      },
+      {
+        "word": "اني",
+        "count": 4,
+        "normalized": "اني"
+      },
+      {
+        "word": "الي",
+        "count": 3,
+        "normalized": "الي"
+      },
+      {
+        "word": "عليهم",
+        "count": 3,
+        "normalized": "عليهم"
+      },
+      {
+        "word": "بين",
+        "count": 3,
+        "normalized": "بين"
+      },
+      {
+        "word": "يـايها",
+        "count": 3,
+        "normalized": "يـايها"
+      },
+      {
+        "word": "عذاب",
+        "count": 2,
+        "normalized": "عذاب"
+      },
+      {
+        "word": "قال",
+        "count": 2,
+        "normalized": "قال"
+      },
+      {
+        "word": "اجل",
+        "count": 2,
+        "normalized": "اجل"
+      },
+      {
+        "word": "كان",
+        "count": 2,
+        "normalized": "كان"
+      },
+      {
+        "word": "ٱلذي",
+        "count": 2,
+        "normalized": "ٱلذي"
+      },
+      {
+        "word": "اهل",
+        "count": 2,
+        "normalized": "اهل"
+      },
+      {
+        "word": "ديـرهم",
+        "count": 2,
+        "normalized": "ديـرهم"
+      },
+      {
+        "word": "انهم",
+        "count": 2,
+        "normalized": "انهم"
+      },
+      {
+        "word": "ذلك",
+        "count": 2,
+        "normalized": "ذلك"
+      },
+      {
+        "word": "شديد",
+        "count": 2,
+        "normalized": "شديد"
+      },
+      {
+        "word": "ٱلعقاب",
+        "count": 2,
+        "normalized": "ٱلعقاب"
+      },
+      {
+        "word": "افاء",
+        "count": 2,
+        "normalized": "افاء"
+      }
+    ],
+    "particle": [
+      {
+        "word": "من",
+        "count": 21,
+        "normalized": "من"
+      },
+      {
+        "word": "ان",
+        "count": 16,
+        "normalized": "ان"
+      },
+      {
+        "word": "في",
+        "count": 11,
+        "normalized": "في"
+      },
+      {
+        "word": "لا",
+        "count": 6,
+        "normalized": "لا"
+      },
+      {
+        "word": "ما",
+        "count": 6,
+        "normalized": "ما"
+      },
+      {
+        "word": "١",
+        "count": 4,
+        "normalized": "١"
+      },
+      {
+        "word": "٢",
+        "count": 4,
+        "normalized": "٢"
+      },
+      {
+        "word": "٣",
+        "count": 4,
+        "normalized": "٣"
+      },
+      {
+        "word": "٤",
+        "count": 4,
+        "normalized": "٤"
+      },
+      {
+        "word": "٥",
+        "count": 4,
+        "normalized": "٥"
+      },
+      {
+        "word": "٦",
+        "count": 4,
+        "normalized": "٦"
+      },
+      {
+        "word": "٧",
+        "count": 4,
+        "normalized": "٧"
+      },
+      {
+        "word": "٨",
+        "count": 4,
+        "normalized": "٨"
+      },
+      {
+        "word": "٩",
+        "count": 4,
+        "normalized": "٩"
+      },
+      {
+        "word": "١٠",
+        "count": 4,
+        "normalized": "١٠"
+      },
+      {
+        "word": "ثم",
+        "count": 2,
+        "normalized": "ثم"
+      },
+      {
+        "word": "رب",
+        "count": 1,
+        "normalized": "رب"
+      },
+      {
+        "word": "حيث",
+        "count": 1,
+        "normalized": "حيث"
+      },
+      {
+        "word": "لم",
+        "count": 1,
+        "normalized": "لم"
+      },
+      {
+        "word": "او",
+        "count": 1,
+        "normalized": "او"
+      }
+    ],
+    "pronoun": [
+      {
+        "word": "هم",
+        "count": 3,
+        "normalized": "هم"
+      },
+      {
+        "word": "هو",
+        "count": 2,
+        "normalized": "هو"
+      }
+    ]
+  },
+  "top_words_overall": [
+    {
+      "word": "ٱلله",
+      "count": 36
+    },
+    {
+      "word": "من",
+      "count": 21
+    },
+    {
+      "word": "ان",
+      "count": 16
+    },
+    {
+      "word": "في",
+      "count": 11
+    },
+    {
+      "word": "ٱلذين",
+      "count": 10
+    },
+    {
+      "word": "علي",
+      "count": 9
+    },
+    {
+      "word": "لا",
+      "count": 6
+    },
+    {
+      "word": "لهم",
+      "count": 6
+    },
+    {
+      "word": "ما",
+      "count": 6
+    },
+    {
+      "word": "وما",
+      "count": 5
+    },
+    {
+      "word": "١",
+      "count": 4
+    },
+    {
+      "word": "اني",
+      "count": 4
+    },
+    {
+      "word": "٢",
+      "count": 4
+    },
+    {
+      "word": "٣",
+      "count": 4
+    },
+    {
+      "word": "٤",
+      "count": 4
+    },
+    {
+      "word": "٥",
+      "count": 4
+    },
+    {
+      "word": "٦",
+      "count": 4
+    },
+    {
+      "word": "٧",
+      "count": 4
+    },
+    {
+      "word": "٨",
+      "count": 4
+    },
+    {
+      "word": "٩",
+      "count": 4
+    },
+    {
+      "word": "١٠",
+      "count": 4
+    },
+    {
+      "word": "ٱلمومنين",
+      "count": 4
+    },
+    {
+      "word": "ورسوله",
+      "count": 4
+    },
+    {
+      "word": "ولا",
+      "count": 4
+    },
+    {
+      "word": "ءامنوا",
+      "count": 4
+    },
+    {
+      "word": "انا",
+      "count": 3
+    },
+    {
+      "word": "الي",
+      "count": 3
+    },
+    {
+      "word": "ٱلسمـوت",
+      "count": 3
+    },
+    {
+      "word": "عليهم",
+      "count": 3
+    },
+    {
+      "word": "ومن",
+      "count": 3
+    },
+    {
+      "word": "فان",
+      "count": 3
+    },
+    {
+      "word": "وٱلله",
+      "count": 3
+    },
+    {
+      "word": "بين",
+      "count": 3
+    },
+    {
+      "word": "وٱتقوا",
+      "count": 3
+    },
+    {
+      "word": "اولـيك",
+      "count": 3
+    },
+    {
+      "word": "هم",
+      "count": 3
+    },
+    {
+      "word": "وكان",
+      "count": 3
+    },
+    {
+      "word": "يـايها",
+      "count": 3
+    },
+    {
+      "word": "فاصلحوا",
+      "count": 3
+    },
+    {
+      "word": "عذاب",
+      "count": 2
+    },
+    {
+      "word": "قال",
+      "count": 2
+    },
+    {
+      "word": "لكم",
+      "count": 2
+    },
+    {
+      "word": "اجل",
+      "count": 2
+    },
+    {
+      "word": "لو",
+      "count": 2
+    },
+    {
+      "word": "دعوتهم",
+      "count": 2
+    },
+    {
+      "word": "ثم",
+      "count": 2
+    },
+    {
+      "word": "كان",
+      "count": 2
+    },
+    {
+      "word": "هو",
+      "count": 2
+    },
+    {
+      "word": "ٱلذي",
+      "count": 2
+    },
+    {
+      "word": "اهل",
+      "count": 2
+    }
+  ],
+  "classification_methods": {
+    "verb_pattern": 269,
+    "definite_article": 9,
+    "short_word_heuristic": 62,
+    "default_noun": 220,
+    "particle_list": 50,
+    "noun_pattern": 31,
+    "pronoun_list": 5
+  }
+}

@@ -1,6 +1,6 @@
 # 📦 گزارش کامل دارایی‌های پروژه — نهضت‌پلاس (Nehzat Plus)
 
-> **نسخه:** v3.2.0 (baseline — همگام با آخرین تگ گیت) — 2026-08-18
+> **نسخه:** v3.3.0 (baseline — همگام با آخرین تگ گیت) — 2026-08-25
 > **هدف فایل:** آرشیو مرجع از تمام صفحات، دارایی‌ها و ساختار پروژه. پس از هر مرحله توسعه، یک نسخه جدید با شماره نسخه افزایش‌یافته در همین فایل اضافه شود.
 >
 > **قاعده آرشیو:** هر تغییر = یک سکشن `## تغییرات نسخه X` در انتهای فایل (بدون حذف تاریخچه قبلی).
@@ -10,7 +10,7 @@
 ---
 
 ## ۱. نمای کلی معماری
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 | لایه | تکنولوژی | توضیح |
 |------|----------|-------|
@@ -44,7 +44,7 @@ nehzat-plus/
 ---
 
 ## ۲. فرانت‌اند — تمام مسیرها و صفحات
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 ### ۲.۱ احراز هویت — `/auth`
 | مسیر | کامپوننت | گارد |
@@ -244,7 +244,7 @@ nehzat-plus/
 ---
 
 ## ۴. سرویس‌های هسته — `core/services/`
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 | سرویس/فایل | وظیفه |
 |--------|-------|
@@ -295,7 +295,7 @@ nehzat-plus/
 ---
 
 ## ۵. بک‌اند — تمام کنترلرها (۴۱ عدد)
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 ### ۵.۱ احراز هویت و کاربران
 | کنترلر | مسیر پایه | نکات |
@@ -372,7 +372,7 @@ nehzat-plus/
 ---
 
 ## ۶. موجودیت‌های دامنه — `Domain/Entities/` (۱۰۰+)
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 ### ۶.۱ کاربران و نقش‌ها
 `User` (دارای `OidcSubject` — بدون PasswordHash)، `Student`، `Teacher`، `Coach`، `Parent`، `BranchManager`، `Evaluator`، `Branch`، `Madrasah`، `MadrasahBranch`، `NehzatSection`، `MaktabSubSection`، `ParentStudent` (junction)، `AgeGroup`
@@ -410,7 +410,7 @@ nehzat-plus/
 ---
 
 ## ۷. سرویس‌های بک‌اند
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 ### ۷.۱ پیاده‌سازی‌ها — `Infrastructure/Services/` (۴۰+)
 `UserService`، `CourseService`، `AssessmentService`، `AssignmentSubmissionService`، `BranchService`، `BranchManagerService`، `CoachService`، `CompetitionService`، `CurriculumService`، `CurriculumVersionService`، `DailyActivityService`، `EvaluatorService`، `ExperimentalScienceService`، `HadithService`، `IssueSurveyService`، `LeagueService`، `LearningService`، `LogService`، `MadrasahService`، `MathService`، `MonthlyBookletService`، `ParentService`، `PersianLiteratureService`، `ProgressionService`، `QuranService`، `RingService`، `SkillProgressService`، `SpiritualCatalogService`، `SpiritualEntryService`، `SpiritualOccasionService`، `SpiritualPathService`، `SrsService`، `StudentService`، `TeacherService`، `TrainingService`، `XpService`، `ArabicLiteratureService`، `ArtsService`
@@ -424,7 +424,7 @@ nehzat-plus/
 ---
 
 ## ۸. زیرساخت بک‌اند
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 ### ۸.۱ DbContext — `Infrastructure/Data/AppDbContext.cs`
 - `EnsureCreated()` فقط (بدون migration)
@@ -466,7 +466,7 @@ nehzat-plus/
 ---
 
 ## ۹. استایل و دارایی‌ها
-> آخرین تغییر: v2.8.0
+> آخرین تغییر: v3.3.0
 
 - **CSS Variables**: فقط پیشوند `--lp-*` (ممنوع: `--gold`، `--primary`، `--danger`)
 - **فونت**: وزیرمتن (Vazirmatn)
@@ -504,7 +504,7 @@ nehzat-plus/
 ---
 
 ## ۱۱. تست
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 | لایه | فریم‌ورک | فرمان |
 |------|----------|-------|
@@ -541,7 +541,7 @@ nehzat-plus/
 ---
 
 ## ۱۳. مستندات مرجع — `docs/`
-> آخرین تغییر: v3.2.0
+> آخرین تغییر: v3.3.0
 
 | فایل | محتوا |
 |------|-------|
@@ -772,3 +772,15 @@ cd frontend && npm run build:capacitor && npx cap sync android   # mobile
 - feat: add IssueSurvey DTOs and service interface
 - feat: add IssueSurvey domain entities and DbContext configuration
 - fix: align Otuh2Client config with otuh2 registration (client-id, secret)
+
+## تغییرات نسخه v3.3.0 — خودکار (archive-version.ps1)
+
+### نسخه v3.3.0 — 2026-08-24 (5 کامیت)
+>  552 files changed, 55658 insertions(+), 184 deletions(-)
+
+#### سایر (5)
+- fix: resolve vocabulary module TypeScript errors and enable frontend build
+- auth: add OIDC state param + warn-only callback check; soft 401 logout via logoutToLogin
+- W1-W5: Backend study path system + backend EducationalProcess/Feedback/MaktabLookup/PhaseTransition + frontend mock API layer and mock services
+- feat: add Ai, Calendar, Conversation, CourierReport, Evaluation, Gamification, Halgheh, Maktab, Map, Message, Notification, Profile, Progress, Workflow features
+- chore: PROJECT_INVENTORY.md updated by archive script

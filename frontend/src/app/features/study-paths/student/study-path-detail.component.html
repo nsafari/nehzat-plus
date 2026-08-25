@@ -1,0 +1,73 @@
+@if (loading) {
+  <div class="study-path-detail">
+    <p class="loading">بارگذاری مسیر...</p>
+  </div>
+} @else if (error) {
+  <div class="study-path-detail">
+    <div class="error-card">
+      <p>{{ error }}</p>
+      <button class="btn btn--primary" routerLink="/study-paths/student">بازگشت</button>
+    </div>
+  </div>
+} @else if (enrollment) {
+  <div class="study-path-detail">
+    <div class="study-path-detail__header">
+      <h1 class="study-path-detail__title">{{ enrollment.studyPathTitle }}</h1>
+      <p class="study-path-detail__subtitle">
+        <span class="status-badge" [ngClass]="
+          enrollment.status === 'completed' ? 'status-badge--completed' : 'status-badge--active'
+        ">{{ enrollment.status === 'completed' ? 'تکمیل شده' : 'در حال پیشرفت' }}</span>
+      </p>
+    </div>
+
+    <div class="study-path-detail__progress">
+      <div class="study-path-detail__progress-text">
+        <span>پیشرفت: {{ enrollment.progressPercentage }}%</span>
+        <span>مرحله {{ currentStepIndex + 1 }} از {{ enrollment.steps?.length ?? 0 }}</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-bar__fill" [style.width.%]="enrollment.progressPercentage"></div>
+      </div>
+    </div>
+
+    <div class="study-path-detail__steps">
+      @for (step of enrollment.steps; track step.id) {
+        <div
+          class="step-item"
+          [class.step-item--current]="isStepCurrent(step.id)"
+          [class.step-item--completed]="isStepCompleted(step.id)"
+        >
+          <div class="step-item__header">
+            <div
+              class="step-item__number"
+              [class.step-item__number--current]="isStepCurrent(step.id)"
+              [class.step-item__number--completed]="isStepCompleted(step.id)"
+              [class.step-item__number--pending]="!isStepCurrent(step.id) && !isStepCompleted(step.id)"
+            >
+              {{ step.stepOrder }}
+            </div>
+            <h3 class="step-item__title">{{ step.title }}</h3>
+            <span class="step-item__cognitive">{{ step.cognitiveLevel }}</span>
+          </div>
+          @if (step.description) {
+            <p class="step-item__description">{{ step.description }}</p>
+          }
+          <div class="step-item__meta">
+            <span class="step-item__meta-item">مدت زمان: {{ step.estimatedDurationMinutes }} دقیقه</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (enrollment.status !== 'completed') {
+      <div class="study-path-detail__actions">
+        <button class="btn btn--primary" (click)="completeStep()" [disabled]="!enrollment.currentStepId">
+          تکمیل مرحله
+        </button>
+        <button class="btn btn--outline" (click)="skipStep()" [disabled]="!enrollment.currentStepId">
+          نادیده‌گرفتن
+        </button>
+      </div>
+    }
+  </div>
+}

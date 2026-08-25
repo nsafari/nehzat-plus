@@ -1,0 +1,67 @@
+@if (loading) {
+  <div class="student-study-paths">
+    <p class="loading">بارگذاری مسیرهای مطالعاتی...</p>
+  </div>
+} @else if (error) {
+  <div class="student-study-paths">
+    <div class="error-card">
+      <p>{{ error }}</p>
+      <button class="btn btn--primary" (click)="retry()">تلاش مجدد</button>
+    </div>
+  </div>
+} @else {
+  <div class="student-study-paths">
+    <div class="student-study-paths__header">
+      <h1 class="student-study-paths__title">مسیرهای مطالعاتی</h1>
+    </div>
+
+    <div class="student-study-paths__section">
+      <h2 class="student-study-paths__section-title">مسیرهای فعال شما</h2>
+      @if (myEnrollments.length === 0) {
+        <p class="muted">هنوز در هیچ مسیری ثبت‌نام نکرده‌اید.</p>
+      } @else {
+        @for (enrollment of myEnrollments; track enrollment.id) {
+          <div class="study-path-card">
+            <h3 class="study-path-card__title">{{ enrollment.studyPathTitle }}</h3>
+            <div class="study-path-card__meta">
+              <span class="study-path-card__meta-item">پیشرفت: {{ enrollment.progressPercentage }}%</span>
+              <span class="study-path-card__meta-item">وضعیت: {{ enrollment.status }}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar__fill" [style.width.%]="enrollment.progressPercentage"></div>
+            </div>
+            <div class="study-path-card__actions">
+              <button class="btn btn--primary" (click)="viewEnrollment(enrollment.id)">ادامه مسیر</button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="student-study-paths__section">
+      <h2 class="student-study-paths__section-title">همه مسیرها</h2>
+      @if (availablePaths.length === 0) {
+        <p class="muted">مسیر مطالعاتی یافت نشد.</p>
+      } @else {
+        @for (path of availablePaths; track path.id) {
+          <div class="study-path-card">
+            <h3 class="study-path-card__title">{{ path.title }}</h3>
+            <p class="study-path-card__description">{{ path.description }}</p>
+            <div class="study-path-card__meta">
+              <span class="study-path-card__meta-item">سطح: {{ path.subjectAreaName }}</span>
+              <span class="study-path-card__meta-item">مراحل: {{ path.steps.length }}</span>
+            </div>
+            <div class="study-path-card__actions">
+              @if (isEnrolled(path.id)) {
+                <span class="enrollment-badge">ثبت‌نام شده</span>
+                <button class="btn btn--outline" (click)="viewEnrollment(isEnrolled(path.id)!.id)">مشاهده</button>
+              } @else {
+                <button class="btn btn--primary" (click)="enroll(path.id)">ثبت‌نام</button>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+}

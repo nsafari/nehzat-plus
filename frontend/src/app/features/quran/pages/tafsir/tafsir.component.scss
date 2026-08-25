@@ -1,0 +1,89 @@
+.tafsir-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header-card {
+  margin-bottom: 20px;
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px;
+
+  p {
+    color: var(--lp-muted);
+  }
+}
+
+.error-card {
+  background: rgba(185, 28, 28, 0.06);
+  border: 1px solid var(--lp-danger);
+  margin-bottom: 20px;
+}
+
+.error-message {
+  color: var(--lp-danger);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.tafsir-card {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  margin-bottom: 20px;
+}
+
+.verse-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--lp-border);
+}
+
+.verse-key {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: var(--lp-primary);
+}
+
+.tafsir-id {
+  font-size: 0.85em;
+  color: var(--lp-muted);
+}
+
+.tafsir-text {
+  font-size: 1.1em;
+  line-height: 2;
+  text-align: justify;
+  direction: rtl;
+
+  :deep(p) {
+    margin-bottom: 12px;
+  }
+}
+
+.navigation-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--lp-muted);
+
+  button {
+    margin-top: 16px;
+  }
+}
