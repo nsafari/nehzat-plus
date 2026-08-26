@@ -31,7 +31,7 @@ public class AdminParentsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllParents()
     {
-        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = (object?)null });
         var parents = await _parentService.GetAllAsync();
         var result = parents.Select(p => new
         {
