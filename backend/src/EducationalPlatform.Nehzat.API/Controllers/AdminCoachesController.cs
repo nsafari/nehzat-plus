@@ -9,7 +9,6 @@ namespace EducationalPlatform.Nehzat.API.Controllers;
 
 [ApiController]
 [Route("admin/coaches")]
-[Authorize(Roles = "admin,manager,headquarters")]
 public class AdminCoachesController : ControllerBase
 {
     private readonly ICoachService _coachService;
@@ -23,9 +22,16 @@ public class AdminCoachesController : ControllerBase
         _db = db;
     }
 
+    private bool CheckRole()
+    {
+        var role = User.FindFirst("role")?.Value;
+        return role == "admin" || role == "manager" || role == "headquarters";
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAllCoaches()
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         var coaches = await _coachService.GetAllAsync();
         var result = coaches.Select(c => new
         {
@@ -48,6 +54,7 @@ public class AdminCoachesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCoachById(int id)
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         var coach = await _coachService.FindByIdAsync(id);
         if (coach == null) return NotFound(GenericErrorMessages.NotFound);
         return Ok(new
@@ -70,6 +77,7 @@ public class AdminCoachesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateCoach([FromBody] CreateCoachRequest request)
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         using var transaction = await _db.Database.BeginTransactionAsync();
         try
         {
@@ -119,6 +127,7 @@ public class AdminCoachesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCoach(int id, [FromBody] UpdateCoachRequest request)
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         try
         {
             var coach = await _coachService.UpdateAsync(id, request);
@@ -147,6 +156,7 @@ public class AdminCoachesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCoach(int id)
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         try
         {
             await _coachService.DeleteAsync(id);

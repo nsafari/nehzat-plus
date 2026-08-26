@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadApiConfig } from './config.loader';
 import { provideLessonPlannerApi } from './core/services/lesson-planner-api.token';
 import { provideOtuh2Api } from './core/services/otuh2-api.token';
@@ -14,7 +15,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
     provideLessonPlannerApi(),
     provideOtuh2Api(),
     providePhaseConfig(),

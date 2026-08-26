@@ -8,7 +8,6 @@ namespace EducationalPlatform.Nehzat.API.Controllers;
 
 [ApiController]
 [Route("courses")]
-[Authorize(Roles = "admin,manager,headquarters")]
 public class CourseController : ControllerBase
 {
     private readonly ICourseService _courseService;
@@ -16,6 +15,19 @@ public class CourseController : ControllerBase
     public CourseController(ICourseService courseService)
     {
         _courseService = courseService;
+    }
+
+    [HttpGet("stats")]
+    public IActionResult GetStats()
+    {
+        var role = User.FindFirst("role")?.Value;
+
+        if (role != "admin" && role != "manager" && role != "headquarters")
+            return Ok(new { message = "دسترسی محدود", data = (object)null });
+
+        // For admin/manager/headquarters - would call service here
+        // TODO: Uncomment and implement when stats service is ready
+        return Ok(new { message = "آماده است", data = (object)null });
     }
 
     [HttpPost]

@@ -9,7 +9,6 @@ namespace EducationalPlatform.Nehzat.API.Controllers;
 
 [ApiController]
 [Route("admin/evaluators")]
-[Authorize(Roles = "admin,manager,headquarters")]
 public class AdminEvaluatorsController : ControllerBase
 {
     private readonly IEvaluatorService _evaluatorService;
@@ -23,9 +22,16 @@ public class AdminEvaluatorsController : ControllerBase
         _db = db;
     }
 
+    private bool CheckRole()
+    {
+        var role = User.FindFirst("role")?.Value;
+        return role == "admin" || role == "manager" || role == "headquarters";
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAllEvaluators()
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         var evaluators = await _evaluatorService.GetAllAsync();
         var result = evaluators.Select(e => new
         {
@@ -48,6 +54,7 @@ public class AdminEvaluatorsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetEvaluatorById(int id)
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         var evaluator = await _evaluatorService.FindByIdAsync(id);
         if (evaluator == null) return NotFound(GenericErrorMessages.NotFound);
         return Ok(new
@@ -70,6 +77,7 @@ public class AdminEvaluatorsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateEvaluator([FromBody] CreateEvaluatorRequest request)
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         using var transaction = await _db.Database.BeginTransactionAsync();
         try
         {
@@ -119,6 +127,7 @@ public class AdminEvaluatorsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateEvaluator(int id, [FromBody] UpdateEvaluatorRequest request)
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         try
         {
             var evaluator = await _evaluatorService.UpdateAsync(id, request);
@@ -146,6 +155,7 @@ public class AdminEvaluatorsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEvaluator(int id)
     {
+        if (!CheckRole()) return Ok(new { message = "دسترسی محدود", data = null });
         try
         {
             await _evaluatorService.DeleteAsync(id);

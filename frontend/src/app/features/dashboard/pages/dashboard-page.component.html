@@ -4,6 +4,52 @@
     <p class="page-subtitle">نمای کلی عملکرد متربیان و روند پیشرفت در دوره‌های اخیر</p>
   </header>
 
+  @if (isAdminLevel) {
+    <!-- ✅ فقط برای نقش‌های ادمین/مدیر/ستاد: قرآن و ریاضی -->
+    <section class="widgets-row">
+      <div class="panel">
+        <h2 class="panel-title">آمار قرآن</h2>
+        @if (loadingQuran) {
+          <div class="empty-state">در حال بارگذاری…</div>
+        } @else if (quranError) {
+          <div class="empty-state role-empty-state">
+            <p>آمار قرآن در دسترس نیست</p>
+            <button class="btn btn-outline-primary btn-sm mt-2">🔄 تلاش مجدد</button>
+          </div>
+        } @else {
+          <!-- قرآن stats pending -->
+          <div class="empty-state">آمار قرآن در حال بارگذاری</div>
+        }
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">آمار ریاضی</h2>
+        @if (loadingQuran) {
+          <div class="empty-state">در حال بارگذاری…</div>
+        } @else {
+          <div class="empty-state">آمار ریاضی در حال بارگذاری</div>
+        }
+      </div>
+    </section>
+  } @else {
+    <!-- ✅ برای متربی: پیام restricted -->
+    <section class="widgets-row">
+      <div class="panel">
+        <h2 class="panel-title">آمار قرآن</h2>
+        <div class="empty-state role-empty-state">
+          <p>آمار پیشرفت Lesson‌ها مختص مدیران است</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">آمار ریاضی</h2>
+        <div class="empty-state role-empty-state">
+          <p>آمار پیشرفت Lesson‌ها مختص مدیران است</p>
+        </div>
+      </div>
+    </section>
+  }
+
   @if (loading() || error() || !summary()) {
     <div class="empty-state">{{ loading() ? 'در حال بارگذاری…' : 'داده‌ای برای نمایش وجود ندارد' }}</div>
   } @else if (summary(); as s) {

@@ -31,6 +31,20 @@
   background: var(--lp-surface, #fff);
 }
 
+.role-empty-state {
+  .empty-state & {
+    color: var(--lp-muted, #6b7280);
+    background: var(--lp-surface, #fff);
+  }
+}
+
+.widgets-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
