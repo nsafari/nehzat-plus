@@ -1,42 +1,29 @@
-import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpErrorResponse
-} from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
 
-@Injectable()
-export class ErrorInterceptor implements HttpInterceptor {
-  private errorCount = 0;
-  private toastTimer: any;
+import { NotificationService } from '../services/notification.service';
 
-  constructor(private toastr: ToastrService) {}
+let errorCount = 0;
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return next.handle(req).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status !== 401) {
-          this.collectAndShow(error);
-        }
-        return throwError(() => error);
-      })
-    );
-  }
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  const notify = inject(NotificationService);
 
-  private collectAndShow(error: HttpErrorResponse) {
-    this.errorCount++;
-    clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => {
-      this.toastr.error(
-        `${this.errorCount} درخواست با خطا مواجه شد. لطفاً دوباره تلاش کنید.`,
-        'خطا در دریافت داده'
-      );
-      this.errorCount = 0;
-    }, 500);
-  }
-}
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status !== 401) {
+        errorCount++;
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          notify.show(
+            `${errorCount} درخواست با خطا مواجه شد. لطفاً دوباره تلاش کنید.`,
+            'error'
+          );
+          errorCount = 0;
+        }, 500);
+      }
+      return throwError(() => error);
+    })
+  );
+};

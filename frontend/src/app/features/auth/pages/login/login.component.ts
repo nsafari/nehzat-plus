@@ -67,15 +67,19 @@ export class LoginComponent implements OnInit {
         switch (role) {
           case 'admin':
           case 'manager':
-          case 'headquarters':
-          case 'branch_manager':
-          case 'parent':
-          case 'evaluator':
             return { username: 'test', password: 'password' };
           case 'coach':
             return { username: 'coach', password: 'password123' };
           case 'trainee':
             return { username: 'ali.ahmadi', password: 'password123' };
+          case 'parent':
+            return { username: 'parent', password: 'password123' };
+          case 'branch_manager':
+            return { username: 'branch.manager', password: 'password123' };
+          case 'evaluator':
+            return { username: 'evaluator', password: 'password123' };
+          case 'headquarters':
+            return { username: 'headquarters', password: 'password123' };
           default:
             return { username: 'test', password: 'password' };
         }

@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationsService } from '../notifications.service';
+import { AuthService } from '../../../core/services/auth.service';
 import type { NotificationDto } from '../../../core/models/lesson-planner.models';
 
 const TYPE_ICONS: Record<NotificationDto['type'], string> = {
@@ -29,6 +30,7 @@ const TYPE_ICONS: Record<NotificationDto['type'], string> = {
 })
 export class NotificationBellComponent implements OnInit {
   private readonly notifications = inject(NotificationsService);
+  private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly typeIcons = TYPE_ICONS;
@@ -43,6 +45,10 @@ export class NotificationBellComponent implements OnInit {
   }
 
   refresh(): void {
+    if (!this.auth.isAuthenticated()) {
+      this.loading.set(false);
+      return;
+    }
     this.notifications
       .getNotifications(10)
       .pipe(takeUntilDestroyed(this.destroyRef))

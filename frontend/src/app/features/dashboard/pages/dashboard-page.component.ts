@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DashboardService } from '../dashboard.service';
-import { CourseService } from '../../core/services/course.service';
+import { LESSON_PLANNER_API } from '../../../core/services/lesson-planner-api.token';
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import type { DashboardSummaryDto } from '../../../core/models/lesson-planner.models';
@@ -17,7 +17,7 @@ import type { DashboardSummaryDto } from '../../../core/models/lesson-planner.mo
 })
 export class DashboardPageComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
-  private readonly courseService = inject(CourseService);
+  private readonly api = inject(LESSON_PLANNER_API);
   private readonly authService = inject(AuthService);
   private readonly notify = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
@@ -63,7 +63,7 @@ export class DashboardPageComponent implements OnInit {
   loadQuranStats() {
     this.loadingQuran = true;
     this.quranError = false;
-    this.courseService.getStats('quran').subscribe({
+    this.api.getQuranDashboardStats().subscribe({
       next: (data) => {
         // store in summary or separate signal as needed
         this.loadingQuran = false;
