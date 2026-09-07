@@ -1,0 +1,274 @@
+<main class="student-page">
+  <app-dashboard-header
+    [currentUser]="currentUser"
+    [nudgesEnabled]="nudgesEnabled"
+    (toggleUserMenu)="toggleUserMenu()"
+    (showUserModal)="showUserModal()"
+    (logout)="logout()"
+    (toggleNudge)="toggleNudgeNotifications()"
+  ></app-dashboard-header>
+
+  @if (errorMessage) {
+    <p class="lp-error">{{ errorMessage }}</p>
+  }
+  @if (successMessage) {
+    <p class="lp-success">{{ successMessage }}</p>
+  }
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <h3>دروس فعال</h3>
+      @if (loadingCourses) {
+        <p class="muted">در حال دریافت دروس...</p>
+      } @else if (courses.length === 0) {
+        <p class="muted">درسی برای شما فعال نشده است.</p>
+      } @else {
+        <div class="lesson-menu">
+          @for (course of courses; track course.id) {
+            <button
+              type="button"
+              class="lesson-btn"
+              [class.active]="selectedCourse?.id === course.id"
+              (click)="selectCourse(course)"
+            >
+              <i class="bi bi-book"></i> {{ course.title }}
+            </button>
+          }
+        </div>
+      }
+    </aside>
+
+    <app-quran-progress-widget></app-quran-progress-widget>
+
+    <app-math-progress-widget></app-math-progress-widget>
+
+    <section class="main-content">
+      <h2>داشبورد پیشرفت دروس</h2>
+
+      @if (selectedCourse) {
+        <div class="lesson-info">
+          <h3>{{ selectedCourse.title }}</h3>
+          <p><strong>استاد:</strong> {{ selectedCourse.instructor }}</p>
+          <p><strong>درباره درس:</strong> {{ selectedCourse.description }}</p>
+        </div>
+      }
+
+      <div class="timeline-container">
+        <h4>تایم‌لاین تکالیف</h4>
+        @if (loadingAssignments) {
+          <p class="muted">در حال دریافت تکلیف‌ها...</p>
+        } @else if (!selectedCourse || assignments.length === 0) {
+          <p class="muted">برای این درس هنوز تکلیفی ثبت نشده است.</p>
+        } @else {
+          <div class="timeline-horizontal">
+            @for (assignment of assignments; track assignment.id; let i = $index) {
+              <div class="timeline-item">
+                @if (i > 0) {
+                  <div class="timeline-bar"></div>
+                }
+                <button
+                  type="button"
+                  class="timeline-dot"
+                  [class.gray]="getAssignmentStatus(assignment) === 'future'"
+                  [class.blue]="getAssignmentStatus(assignment) === 'today'"
+                  [class.green]="getAssignmentStatus(assignment) === 'past'"
+                  [title]="assignment.title"
+                  (click)="showAssignmentDetails(assignment)"
+                >
+                  <i class="bi" [class.bi-file-earmark-audio]="hasAudioAttachment(assignment)"></i>
+                  <i class="bi bi-book" [class.hidden]="hasAudioAttachment(assignment)"></i>
+                </button>
+                <div class="timeline-label">روز {{ i + 1 }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <app-dashboard-nudge-panel
+        [dailyNudges]="dailyNudges"
+        [loadingNudges]="loadingNudges"
+        (dismiss)="dismissDailyNudge($event)"
+      ></app-dashboard-nudge-panel>
+
+      <div class="chart-container">
+        <h4>نمودار پیشرفت</h4>
+        <div class="chart-placeholder">
+          {{ chartSummary }}
+        </div>
+      </div>
+
+      <app-progress-summary></app-progress-summary>
+
+      <app-dashboard-training-steps></app-dashboard-training-steps>
+
+      <div class="audio-recorder">
+        <h4>ضبط صدا</h4>
+        @if (selectedAssignment) {
+          <p class="muted">تکلیف انتخاب‌شده: {{ selectedAssignment.title }}</p>
+        } @else {
+          <p class="muted">برای شروع ضبط، ابتدا یک تکلیف از تایم‌لاین انتخاب کنید.</p>
+        }
+
+        @if (selectedAssignment && primaryInstructionAudioUrl) {
+          <p class="muted">
+            وضعیت پیش‌نیاز گوش‌دادن:
+            {{ assignmentProgress?.currentListenCount ?? 0 }} /
+            {{ assignmentProgress?.requiredListenCount ?? 3 }}
+          </p>
+        }
+
+        <div class="recorder-controls">
+          <button
+            type="button"
+            class="record-btn"
+            [class.recording]="isRecording"
+            (click)="toggleRecording()"
+            [disabled]="!selectedAssignment || (!isRecording && !isRecordingUnlocked)"
+          >
+            <i class="bi" [class.bi-mic]="!isRecording" [class.bi-stop-fill]="isRecording"></i>
+          </button>
+          @if (isRecording) {
+            <span class="text-danger">در حال ضبط...</span>
+          }
+        </div>
+
+        @if (selectedAssignment && !isRecordingUnlocked) {
+          <p class="lp-error">برای شروع ضبط باید فایل راهنما را کامل گوش دهید تا قفل باز شود.</p>
+        }
+
+        @if (audioUrl) {
+          <div class="audio-preview">
+            <audio [src]="audioUrl" controls></audio>
+            <button type="button" class="btn-primary" (click)="submitAudio()" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'در حال ارسال...' : 'ارسال صوت' }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="submissions-container">
+        <div class="submissions-header">
+          <h4>ارسال‌های من</h4>
+          <button type="button" class="btn-primary" (click)="loadSubmissions()">بروزرسانی</button>
+        </div>
+
+        @if (loadingSubmissions) {
+          <p class="muted">در حال بارگذاری ارسال‌ها...</p>
+        } @else if (filteredSubmissions.length === 0) {
+          <p class="muted">هنوز هیچ ارسالی ثبت نشده است.</p>
+        } @else {
+          <div class="submissions-grid">
+            @for (submission of filteredSubmissions; track submission.id) {
+              <article class="submission-card">
+                <h6>{{ assignmentTitleById(submission.assignmentId) }}</h6>
+                <p class="muted">تاریخ: {{ submission.submissionDate }}</p>
+                <p class="muted">وضعیت: {{ submission.status }}</p>
+                <p class="muted">نمره روزانه: {{ submission.dailyScore ?? 0 }}</p>
+                @if (submission.notes) {
+                  <p>{{ submission.notes }}</p>
+                }
+                @if (resolveAudioUrl(submission.audioFileUrl); as submissionAudioUrl) {
+                  <button type="button" class="btn-secondary" (click)="playAudio(submissionAudioUrl)">
+                    پخش صدا
+                  </button>
+                }
+              </article>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="assessments-container">
+        <div class="assessments-header">
+          <h4>امتحانات من</h4>
+          @if (selectedCourse) {
+            <button type="button" class="btn-primary" (click)="openAssessmentTaker()">
+              شرکت در امتحانات {{ selectedCourse.title }}
+            </button>
+          }
+        </div>
+        @if (!selectedCourse) {
+          <p class="muted">برای شرکت در امتحان، ابتدا یک درس انتخاب کنید.</p>
+        } @else if (loadingHistory) {
+          <p class="muted">در حال دریافت تاریخچه امتحانات...</p>
+        } @else if (assessmentHistory && assessmentHistory.history.length > 0) {
+          <div class="history-stats">
+            <div class="stat-card">
+              <span class="stat-label">کل امتحانات</span>
+              <strong>{{ assessmentHistory.statistics.totalAssessments }}</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">تکمیل شده</span>
+              <strong>{{ assessmentHistory.statistics.completedAssessments }}</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">میانگین نمره</span>
+              <strong>{{ assessmentHistory.statistics.averageScore | number:'1.0-1' }}%</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">بهترین نمره</span>
+              <strong>{{ assessmentHistory.statistics.bestScore }}%</strong>
+            </div>
+          </div>
+          <div class="history-list">
+            @for (item of assessmentHistory.history; track item.assessment.id) {
+              <article class="history-item">
+                <div class="history-item-info">
+                  <strong>{{ item.assessment.title }}</strong>
+                  <span class="muted">{{ item.assessment.assessmentDate }} — {{ item.assessment.type }}</span>
+                </div>
+                @if (item.result) {
+                  <span class="status-chip" [class.status-chip--active]="item.result.percentage >= 50" [class.status-chip--inactive]="item.result.percentage < 50">
+                    {{ item.result.score }}/{{ item.assessment.maxScore }} ({{ item.result.percentage | number:'1.0-1' }}%)
+                  </span>
+                } @else {
+                  <span class="status-chip status-chip--draft">شرکت نکرده</span>
+                }
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="muted">برای این درس هنوز امتحانی ثبت نشده است.</p>
+        }
+      </div>
+    </section>
+  </div>
+
+  @if (isAssignmentModalOpen && selectedAssignment) {
+    <app-dashboard-assignment-modal
+      [assignment]="selectedAssignment"
+      [progress]="assignmentProgress"
+      [primaryInstructionAudioUrl]="primaryInstructionAudioUrl"
+      (close)="closeAssignmentModal()"
+      (startRecording)="startRecordingForAssignment($event)"
+    ></app-dashboard-assignment-modal>
+  }
+
+  @if (isUserModalOpen && currentUser) {
+    <div class="modal-backdrop" (click)="hideUserModal()">
+      <div class="modal-content user-modal" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h5>اطلاعات کاربر</h5>
+          <button type="button" class="btn-secondary" (click)="hideUserModal()">بستن</button>
+        </header>
+        <div class="modal-body user-grid">
+          <p><strong>نام:</strong> {{ currentUser.studentInfo?.firstName ?? '-' }}</p>
+          <p><strong>نام خانوادگی:</strong> {{ currentUser.studentInfo?.lastName ?? '-' }}</p>
+          <p><strong>ایمیل:</strong> {{ currentUser.studentInfo?.email ?? '-' }}</p>
+          <p><strong>شماره تماس:</strong> {{ currentUser.studentInfo?.phoneNumber ?? '-' }}</p>
+          <p><strong>نام کاربری:</strong> {{ currentUser.username }}</p>
+          <p><strong>نوع کاربر:</strong> متربی</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isAssessmentTakerOpen && selectedCourse) {
+    <app-assessment-taker
+      [course]="selectedCourse"
+      [studentId]="authStudentId()"
+      (closed)="onAssessmentTakerClosed()"
+    ></app-assessment-taker>
+  }
+</main>

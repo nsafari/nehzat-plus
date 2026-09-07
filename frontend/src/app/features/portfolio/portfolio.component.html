@@ -1,0 +1,130 @@
+<section class="portfolio-page" dir="rtl">
+  <header class="page-header">
+    <div class="header-content">
+      <button type="button" class="back-link" (click)="backToDashboard()">Back</button>
+      <h1>Portfolio</h1>
+    </div>
+  </header>
+
+  <nav class="view-tabs">
+    <button
+      type="button"
+      class="view-tab"
+      [class.active]="activeView === 'gallery'"
+      (click)="switchView('gallery')"
+    >Gallery</button>
+    <button
+      type="button"
+      class="view-tab"
+      [class.active]="activeView === 'upload'"
+      (click)="switchView('upload')"
+    >Upload</button>
+  </nav>
+
+  @if (loading && activeView === 'gallery') {
+    <div class="loading-state">
+      <p class="muted">Loading...</p>
+    </div>
+  }
+
+  @if (!loading && activeView === 'gallery') {
+    <div class="content-area">
+      @if (items.length === 0) {
+        <div class="empty-state">
+          <p class="muted">No items yet.</p>
+        </div>
+      }
+
+      <div class="gallery-grid">
+        @for (item of items; track item.id) {
+          <article class="portfolio-card">
+            @if (item.fileUrl) {
+              <img class="portfolio-thumb" [src]="item.fileUrl" [alt]="item.title" />
+            } @else {
+              <div class="portfolio-placeholder">
+                <span class="placeholder-icon">{{ getItemTypeIcon(item.type) }}</span>
+              </div>
+            }
+            <div class="portfolio-info">
+              <h2 class="portfolio-title">{{ item.title }}</h2>
+              <span class="portfolio-type">{{ getItemTypeLabel(item.type) }}</span>
+              @if (item.description) {
+                <p class="portfolio-desc">{{ item.description }}</p>
+              }
+              <div class="portfolio-meta">
+                <span class="like-count">{{ item.likeCount }}</span>
+                @if (item.tags) {
+                  <span class="portfolio-tags">{{ item.tags }}</span>
+                }
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  }
+
+  @if (activeView === 'upload') {
+    <div class="upload-section">
+      <div class="upload-preview">
+        @if (uploadPreviewUrl) {
+          <img class="preview-img" [src]="uploadPreviewUrl" alt="preview" />
+        } @else {
+          <div class="preview-placeholder">
+            <span class="placeholder-text">No file selected</span>
+          </div>
+        }
+      </div>
+
+      <form class="upload-form" (ngSubmit)="submitUpload()">
+        <label class="field">
+          <span>Title</span>
+          <input type="text" [(ngModel)]="uploadTitle" name="title" required placeholder="Enter title" />
+        </label>
+
+        <label class="field">
+          <span>Type</span>
+          <select [(ngModel)]="uploadType" name="type">
+            @for (opt of typeOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>File</span>
+          <input type="file" (change)="onFileSelected($event)" accept="image/*,audio/*" />
+          @if (uploadFileName) {
+            <span class="file-name">{{ uploadFileName }}</span>
+          }
+        </label>
+
+        <label class="field">
+          <span>Description</span>
+          <textarea [(ngModel)]="uploadDescription" name="description" rows="3" placeholder="Describe your work..."></textarea>
+        </label>
+
+        <label class="field">
+          <span>Tags</span>
+          <input type="text" [(ngModel)]="uploadTags" name="tags" placeholder="Comma separated" />
+        </label>
+
+        <label class="checkbox-field">
+          <input type="checkbox" [(ngModel)]="uploadIsPublic" name="isPublic" />
+          <span>Public</span>
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="switchView('gallery')">Cancel</button>
+          <button type="submit" class="save-btn" [disabled]="saving">
+            @if (saving) {
+              <span>Saving...</span>
+            } @else {
+              <span>Save</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</section>

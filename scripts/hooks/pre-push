@@ -1,0 +1,5 @@
+#!/bin/sh
+# Auto-archive nehzat-plus git tags into docs/PROJECT_INVENTORY.md
+# Runs on every push; no-op when no new tags exist. Never blocks the push.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(git rev-parse --show-toplevel 2>/dev/null)/scripts/archive-version.ps1" >/dev/null 2>&1
+exit 0

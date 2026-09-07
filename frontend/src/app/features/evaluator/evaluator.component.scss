@@ -1,0 +1,76 @@
+.role-page {
+  direction: rtl;
+  min-height: 100vh;
+  background: var(--lp-bg, #f8f9fa);
+  display: flex;
+  flex-direction: column;
+}
+.toast {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.toast-success { background: var(--lp-success, #065f46); color: var(--lp-surface, #fff); }
+.toast-error { background: var(--lp-danger, #991b1b); color: var(--lp-surface, #fff); }
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: var(--lp-surface, #fff);
+  border-bottom: 1px solid var(--lp-border, #e5e7eb);
+}
+.brand-wrap { display: flex; align-items: center; gap: 1rem; }
+.site-logo { width: 48px; height: 48px; object-fit: contain; }
+h1 { margin: 0; font-size: 1.25rem; color: var(--lp-text, #1e1b14); }
+.muted { color: var(--lp-muted, #6b7280); margin: 0; }
+
+.menu-trigger {
+  background: var(--lp-primary, #1a6b3c);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+.menu-trigger:hover { background: var(--lp-primary-hover, #155c32); }
+
+.sub-nav {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 2rem;
+  background: var(--lp-surface, #fff);
+  border-bottom: 1px solid var(--lp-border, #e5e7eb);
+  overflow-x: auto;
+}
+.sub-nav-link {
+  padding: 0.75rem 1.25rem;
+  color: var(--lp-muted, #6b7280);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+}
+.sub-nav-link:hover {
+  color: var(--lp-text, #1e1b14);
+  background: var(--lp-hover-bg, rgba(26, 107, 60, 0.04));
+}
+.sub-nav-link-active {
+  color: var(--lp-primary, #1a6b3c);
+  border-bottom-color: var(--lp-primary, #1a6b3c);
+  font-weight: 700;
+}
+
+.shell-content { flex: 1; padding: 1.5rem 2rem; }

@@ -1,0 +1,44 @@
+<div class="card-section">
+  <h2>خلاصه داشبورد</h2>
+  @if (dashboardSummary$ | async; as summary) {
+    <div class="summary-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ summary.totalCourses }}</span>
+          <span class="stat-label">دوره‌های فعال</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ summary.totalStudents }}</span>
+          <span class="stat-label">متربیان</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ summary.pendingGradings }}</span>
+          <span class="stat-label">منتظر نمره‌دهی</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ summary.completedGradings }}</span>
+          <span class="stat-label">نمره‌دهی شده</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ summary.averageScore | number:'1.1-1' }}</span>
+          <span class="stat-label">میانگین نمره</span>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <p class="muted">در حال بارگذاری...</p>
+  }
+</div>

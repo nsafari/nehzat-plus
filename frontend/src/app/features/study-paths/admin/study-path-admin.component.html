@@ -1,0 +1,179 @@
+<div class="study-path-admin">
+  <div class="study-path-admin__header">
+    <h1 class="study-path-admin__title">مدیریت مسیرهای مطالعاتی</h1>
+    @if (view === 'paths') {
+      <button class="btn btn--primary" (click)="openCreateModal()">ایجاد مسیر جدید</button>
+    }
+  </div>
+
+  <div class="study-path-admin__tabs">
+    <button
+      class="study-path-admin__tab"
+      [class.study-path-admin__tab--active]="view === 'paths'"
+      (click)="view = 'paths'"
+    >مسیرها</button>
+    <button
+      class="study-path-admin__tab"
+      [class.study-path-admin__tab--active]="view === 'accommodations'"
+      (click)="view = 'accommodations'"
+    >وضعیت‌های یادگیری</button>
+  </div>
+
+  @if (loading) {
+    <p class="loading">بارگذاری...</p>
+  } @else if (error) {
+    <div class="error-card">
+      <p>{{ error }}</p>
+      <button class="btn btn--primary" (click)="retry()">تلاش مجدد</button>
+    </div>
+  } @else {
+    @if (view === 'paths') {
+      @if (studyPaths.length === 0) {
+        <p class="muted">مسیر مطالعاتی یافت نشد.</p>
+      } @else {
+        @for (path of studyPaths; track path.id) {
+          <div class="study-path-card">
+            <h3 class="study-path-card__title">{{ path.title }}</h3>
+            <div class="study-path-card__meta">
+              <span>کلید: {{ path.key }}</span>
+              <span>سطح: {{ path.ageGroupName }}</span>
+              <span>درس: {{ path.subjectAreaName }}</span>
+              <span>مراحل: {{ path.steps.length }}</span>
+              <span>وضعیت: {{ path.isActive ? 'فعال' : 'غیرفعال' }}</span>
+            </div>
+            <div class="study-path-card__actions">
+              <button class="btn btn--danger" (click)="deletePath(path.id)">حذف</button>
+            </div>
+          </div>
+        }
+      }
+    } @else {
+      <div class="accommodation-list">
+        @for (acc of accommodations; track acc.id) {
+          <div class="accommodation-card">
+            <div class="accommodation-card__code">{{ acc.code }}</div>
+            <div class="accommodation-card__name">{{ acc.name }}</div>
+            @if (acc.description) {
+              <p class="muted">{{ acc.description }}</p>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+  @if (showCreateModal) {
+    <div class="modal-backdrop" (click)="showCreateModal = false">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal__header">
+          <h2 class="modal__title">ایجاد مسیر مطالعاتی</h2>
+          <button class="modal__close" (click)="showCreateModal = false">✕</button>
+        </div>
+
+        <div class="form-group">
+          <label>عنوان *</label>
+          <input type="text" [(ngModel)]="newPath.title" placeholder="مثال: ریاضیات پیشرفته" />
+        </div>
+
+        <div class="form-group">
+          <label>کلید (URL-friendly)</label>
+          <input type="text" [(ngModel)]="newPath.key" placeholder="مثال: math-advanced" />
+        </div>
+
+        <div class="form-group">
+          <label>توضیحات</label>
+          <textarea [(ngModel)]="newPath.description"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>گروه سنی</label>
+            <select [(ngModel)]="newPath.ageGroupId">
+              @for (g of ageGroups; track g.id) {
+                <option [ngValue]="g.id">{{ g.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>درس</label>
+            <select [(ngModel)]="newPath.subjectAreaId">
+              @for (s of subjectAreas; track s.id) {
+                <option [ngValue]="s.id">{{ s.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>سطح شناختی</label>
+            <select [(ngModel)]="newPath.cognitiveLevel">
+              <option value="awareness">آگاهی</option>
+              <option value="understanding">درک</option>
+              <option value="application">کاربرد</option>
+              <option value="analysis">تحلیل</option>
+              <option value="synthesis">ترکیب</option>
+              <option value="evaluation">ارزیابی</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>فعال</label>
+            <select [(ngModel)]="newPath.isActive">
+              <option [ngValue]="true">بلی</option>
+              <option [ngValue]="false">خیر</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>مراحل</label>
+          @for (step of newPath.steps ?? []; track $index) {
+            <div class="step-form">
+              <div class="step-form__header">
+                <div class="step-form__number">{{$index + 1}}</div>
+                <div class="step-form__actions">
+                  <button class="btn btn--danger" (click)="removeStep($index)">حذف</button>
+                </div>
+              </div>
+              <div class="step-form__fields">
+                <div class="form-group">
+                  <label>عنوان مرحله *</label>
+                  <input type="text" [(ngModel)]="step.title" />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>سطح شناختی</label>
+                    <select [(ngModel)]="step.cognitiveLevel">
+                      <option value="awareness">آگاهی</option>
+                      <option value="understanding">درک</option>
+                      <option value="application">کاربرد</option>
+                      <option value="analysis">تحلیل</option>
+                      <option value="synthesis">ترکیب</option>
+                      <option value="evaluation">ارزیابی</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>مدت زمان (دقیقه)</label>
+                    <input type="number" [(ngModel)]="step.estimatedDurationMinutes" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>توضیحات</label>
+                  <textarea [(ngModel)]="step.description"></textarea>
+                </div>
+              </div>
+            </div>
+          }
+          <button class="btn btn--outline" (click)="addStepField()">افزودن مرحله</button>
+        </div>
+
+        <div class="modal__footer">
+          <button class="btn btn--outline" (click)="showCreateModal = false">لغو</button>
+          <button class="btn btn--primary" (click)="createPath()" [disabled]="creating">
+            {{ creating ? 'در حال ساخت...' : 'ایجاد' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

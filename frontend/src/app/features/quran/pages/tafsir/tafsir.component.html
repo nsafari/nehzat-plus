@@ -1,0 +1,51 @@
+<div class="tafsir-container" dir="rtl">
+  <mat-card class="header-card">
+    <mat-card-header>
+      <mat-card-title><h1>تفسیر قرآن</h1></mat-card-title>
+      <mat-card-subtitle>تفسیر آیه {{ verseKey }}</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      <p>در حال بارگذاری تفسیر...</p>
+    </div>
+  }
+
+  @if (error()) {
+    <mat-card class="error-card">
+      <mat-card-content>
+        <p class="error-message">{{ error() }}</p>
+        <button mat-stroked-button routerLink="/quran/surahs">بازگشت به فهرست سوره‌ها</button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (tafsir(); as tafsirData) {
+    <mat-card class="tafsir-card">
+      <mat-card-content>
+        <div class="verse-info">
+          <span class="verse-key">{{ tafsirData.verseKey }}</span>
+          <span class="tafsir-id">شماره تفسیر: {{ tafsirData.tafsirId }}</span>
+        </div>
+        <div class="tafsir-text" [innerHTML]="tafsirData.text"></div>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="navigation-actions">
+      <button mat-stroked-button [routerLink]="['/quran/surahs', surahId()]">بازگشت به سوره</button>
+      @if (ayahNumber() > 1) {
+        <button mat-stroked-button [routerLink]="['/quran/tafsir', surahId(), ayahNumber() - 1]">آیه قبلی</button>
+      }
+      <button mat-stroked-button [routerLink]="['/quran/tafsir', surahId(), ayahNumber() + 1]">آیه بعدی</button>
+    </div>
+  }
+
+  @if (!loading() && !error() && !tafsir()) {
+    <div class="empty-state">
+      <p>تفسیری برای این آیه یافت نشد.</p>
+      <button mat-stroked-button routerLink="/quran/surahs">بازگشت به فهرست سوره‌ها</button>
+    </div>
+  }
+</div>

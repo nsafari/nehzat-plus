@@ -1,989 +1,285 @@
 import { Injectable } from '@angular/core';
-import { Observable, delay, of, throwError } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
-import type {
-  AdminCourseStatistics,
-  AdminSystemStatistics,
-  ApiMessageResponse,
-  ApproveUserPayload,
-  Assignment,
-  AssignmentAttachment,
-  StudentAssignmentGateState,
-  AssignmentSubmission,
-  AuthSigninPayload,
-  AuthSigninResponse,
-  AuthSignupPayload,
-  AuthSignupResponse,
-  Course,
-  CoursePayload,
-  DailySeriesPayload,
-  PendingUser,
-  Student,
-  StudentCourseProgress,
-  StudentProgressResponse,
-  UserType
-} from '../models/lesson-planner.models';
-import { resolveMediaUrl } from './api-url.util';
 import { LessonPlannerApi } from './lesson-planner-api.interface';
-
-type StoredUser = {
-  id: number;
-  username: string;
-  password: string;
-  userType: UserType;
-  status: 'approved' | 'pending' | 'rejected';
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phoneNumber?: string;
-  studentId?: string;
-  imageUrl?: string;
-};
-
-const DEFAULT_MOCK_COURSE_IDS = [1, 2];
-
-type ListenState = {
-  requiredListenCount: number;
-  currentListenCount: number;
-  isRecordingUnlocked: boolean;
-  instructionAudioVersion?: string;
-};
-
-type MockStore = {
-  users: StoredUser[];
-  courses: Course[];
-  assignments: Assignment[];
-  attachments: AssignmentAttachment[];
-  students: Student[];
-  studentCourseMap: Record<number, number[]>;
-  submissions: AssignmentSubmission[];
-  listenState: Record<string, ListenState>;
-};
-
-const MOCK_DELAY_MS = 300;
-const DEFAULT_REQUIRED_LISTENS = 3;
-const LISTEN_STATE_STORAGE_KEY = 'mock-listen-gate-state-v1';
-
-type AssignmentListenState = {
-  currentListenCount: number;
-  requiredListenCount: number;
-  isRecordingUnlocked: boolean;
-  instructionAudioVersion?: string;
-};
-
-@Injectable()
-export class MockLessonPlannerApi extends LessonPlannerApi {
-  private readonly store: MockStore = this.createInitialStore();
-  private listenStateByKey: Record<string, AssignmentListenState> = this.loadListenState();
-
-  signin(payload: AuthSigninPayload): Observable<AuthSigninResponse> {
-    const user = this.store.users.find((item) => item.username === payload.username);
-    if (!user || user.password !== payload.password) {
-      return this.fail('نام کاربری یا رمز عبور اشتباه است.');
-    }
-    if (user.status === 'pending') {
-      return this.fail('حساب کاربری شما در انتظار تایید مدیر است.');
-    }
-    if (user.status === 'rejected') {
-      return this.fail('حساب کاربری شما رد شده است. لطفا با مدیر تماس بگیرید.');
-    }
-
-    if (user.userType === 'admin') {
-      return this.ok({
-        message: 'ورود با موفقیت انجام شد.',
-        username: user.username,
-        userType: 'admin',
-        imageUrl: user.imageUrl
-      });
-    }
-
-    const student = this.ensureStudentProfileForUser(user);
-    return this.ok({
-      message: 'ورود با موفقیت انجام شد.',
-      username: user.username,
-      userType: 'student',
-      studentId: student?.id,
-      imageUrl: user.imageUrl,
-      studentInfo: student
-        ? {
-            id: student.id,
-            studentId: student.studentId,
-            firstName: student.firstName,
-            lastName: student.lastName,
-            email: student.email,
-            phoneNumber: student.phoneNumber
-          }
-        : undefined
-    });
-  }
-
-  signup(payload: AuthSignupPayload | FormData): Observable<AuthSignupResponse> {
-    const data = this.readSignupPayload(payload);
-    if (!data.username || !data.password || !data.email || !data.phoneNumber || !data.firstName || !data.lastName) {
-      return this.fail('اطلاعات ثبت نام کامل نیست.');
-    }
-    const duplicateUser = this.store.users.some((item) => item.username === data.username || item.email === data.email);
-    if (duplicateUser) {
-      return this.fail('کاربر با این نام کاربری یا ایمیل قبلا ثبت شده است.');
-    }
-
-    const nextId = this.store.users.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
-    const newUser: StoredUser = {
-      id: nextId,
-      username: data.username,
-      password: data.password,
-      userType: 'student',
-      status: 'pending',
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      phoneNumber: data.phoneNumber
-    };
-    this.store.users.push(newUser);
-    return this.ok({
-      message: 'ثبت نام با موفقیت انجام شد. پس از تایید مدیر میتوانید وارد شوید.',
-      status: 'pending'
-    });
-  }
-
-  seedDatabase(): Observable<ApiMessageResponse> {
-    return this.ok({ message: 'Mock data already seeded.' });
-  }
-
-  getActiveCourses(): Observable<Course[]> {
-    const active = this.store.courses.filter((course) => course.status === 'active');
-    return this.ok(active.map((course) => ({ ...course })));
-  }
-
-  getCourses(): Observable<Course[]> {
-    return this.ok(this.store.courses.map((course) => ({ ...course })));
-  }
-
-  getCourseById(id: number): Observable<Course> {
-    const course = this.store.courses.find((item) => item.id === id);
-    if (!course) {
-      return this.fail('درس پیدا نشد.');
-    }
-    return this.ok({ ...course });
-  }
-
-  createCourse(payload: CoursePayload): Observable<Course> {
-    const now = new Date().toISOString();
-    const course: Course = {
-      id: this.nextNumericId(this.store.courses),
-      title: payload.title,
-      description: payload.description ?? '',
-      courseCode: payload.courseCode,
-      credits: payload.credits ?? 2,
-      instructor: payload.instructor ?? 'نامشخص',
-      status: payload.status ?? 'active',
-      startDate: payload.startDate ?? now.slice(0, 10),
-      endDate: payload.endDate ?? now.slice(0, 10),
-      maxStudents: payload.maxStudents ?? 30,
-      createdAt: now,
-      updatedAt: now
-    };
-    this.store.courses.push(course);
-    return this.ok({ ...course });
-  }
-
-  updateCourse(id: number, payload: Partial<CoursePayload>): Observable<Course> {
-    const index = this.store.courses.findIndex((item) => item.id === id);
-    if (index < 0) {
-      return this.fail('درس پیدا نشد.');
-    }
-    const next = {
-      ...this.store.courses[index],
-      ...payload,
-      id,
-      updatedAt: new Date().toISOString()
-    };
-    this.store.courses[index] = next;
-    return this.ok({ ...next });
-  }
-
-  deleteCourse(id: number): Observable<ApiMessageResponse> {
-    this.store.courses = this.store.courses.filter((course) => course.id !== id);
-    this.store.assignments = this.store.assignments.filter((assignment) => assignment.courseId !== id);
-    this.store.attachments = this.store.attachments.filter(
-      (attachment) => !this.store.assignments.some((assignment) => assignment.id === attachment.assignmentId)
-    );
-    return this.ok({ message: 'درس حذف شد.' });
-  }
-
-  getCourseAssignments(courseId: number): Observable<Assignment[]> {
-    const assignments = this.store.assignments.filter((assignment) => assignment.courseId === courseId);
-    return this.ok(assignments.map((assignment) => this.withAttachments(assignment)));
-  }
-
-  createCourseAssignment(courseId: number, payload: Partial<Assignment>): Observable<Assignment> {
-    return this.createAdminAssignment(courseId, payload);
-  }
-
-  getStudentProgress(studentId: number): Observable<StudentProgressResponse> {
-    const student = this.store.students.find((item) => item.id === studentId);
-    if (!student) {
-      return this.fail('دانش آموز پیدا نشد.');
-    }
-    const courseIds = this.store.studentCourseMap[studentId] ?? [];
-    const courses = this.store.courses.filter((course) => courseIds.includes(course.id));
-    const progressCourses: StudentCourseProgress[] = courses.map((course) => ({
-      course,
-      assignments: this.store.assignments
-        .filter((assignment) => assignment.courseId === course.id)
-        .map((assignment) => this.withAttachments(assignment))
-    }));
-    const submissions = this.store.submissions.filter((submission) => submission.studentId === studentId);
-    return this.ok({
-      student: { ...student },
-      courses: progressCourses,
-      submissions: submissions.map((submission) => ({ ...submission }))
-    });
-  }
-
-  getStudentSubmissions(studentId: number, assignmentId?: number): Observable<AssignmentSubmission[]> {
-    const items = this.store.submissions.filter(
-      (submission) => submission.studentId === studentId && (assignmentId ? submission.assignmentId === assignmentId : true)
-    );
-    return this.ok(items.map((submission) => ({ ...submission })));
-  }
-
-  getAssignmentProgress(studentId: number, assignmentId: number): Observable<StudentAssignmentGateState> {
-    const assignment = this.store.assignments.find((item) => item.id === assignmentId);
-    const hasPlayableInstructionAudio = this.hasPlayableInstructionAudio(assignmentId);
-    const requiredListenCount = assignment?.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS;
-    const state = this.getListenState(studentId, assignmentId, assignment?.instructionAudioVersion, requiredListenCount);
-    const submissions = this.store.submissions.filter(
-      (submission) => submission.studentId === studentId && submission.assignmentId === assignmentId
-    );
-    const latest = submissions.sort((a, b) => Date.parse(b.submissionDate) - Date.parse(a.submissionDate))[0];
-    return this.ok({
-      assignmentId,
-      hasSubmission: Boolean(latest),
-      latestSubmission: latest ? { ...latest } : null,
-      requiredListenCount: state.requiredListenCount,
-      currentListenCount: state.currentListenCount,
-      isRecordingUnlocked: !hasPlayableInstructionAudio || state.isRecordingUnlocked,
-      instructionAudioVersion: assignment?.instructionAudioVersion,
-      hasPlayableInstructionAudio,
-      primaryInstructionAudioUrl: this.getPrimaryInstructionAudioUrl(assignmentId)
-    });
-  }
-
-  registerAssignmentListenCompletion(
-    studentId: number,
-    assignmentId: number,
-    instructionAudioVersion?: string
-  ): Observable<StudentAssignmentGateState> {
-    const assignment = this.store.assignments.find((item) => item.id === assignmentId);
-    const requiredListenCount = assignment?.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS;
-    const state = this.getListenState(studentId, assignmentId, instructionAudioVersion, requiredListenCount);
-    state.currentListenCount = Math.min(state.currentListenCount + 1, state.requiredListenCount);
-    state.isRecordingUnlocked = state.currentListenCount >= state.requiredListenCount;
-    if (instructionAudioVersion !== undefined) {
-      state.instructionAudioVersion = instructionAudioVersion;
-    }
-    this.setListenState(studentId, assignmentId, state);
-
-    const submissions = this.store.submissions.filter(
-      (submission) => submission.studentId === studentId && submission.assignmentId === assignmentId
-    );
-    const latest = submissions.sort((a, b) => Date.parse(b.submissionDate) - Date.parse(a.submissionDate))[0];
-
-    return this.ok({
-      assignmentId,
-      hasSubmission: Boolean(latest),
-      latestSubmission: latest ? { ...latest } : null,
-      requiredListenCount: state.requiredListenCount,
-      currentListenCount: state.currentListenCount,
-      isRecordingUnlocked: state.isRecordingUnlocked,
-      instructionAudioVersion: state.instructionAudioVersion,
-      hasPlayableInstructionAudio: this.hasPlayableInstructionAudio(assignmentId),
-      primaryInstructionAudioUrl: this.getPrimaryInstructionAudioUrl(assignmentId)
-    });
-  }
-
-  submitAssignment(studentId: number, assignmentId: number, payload: FormData): Observable<AssignmentSubmission> {
-    const assignment = this.store.assignments.find((item) => item.id === assignmentId);
-    const hasPlayableInstructionAudio = this.hasPlayableInstructionAudio(assignmentId);
-    if (hasPlayableInstructionAudio) {
-      const gateState = this.getListenState(
-        studentId,
-        assignmentId,
-        assignment?.instructionAudioVersion,
-        assignment?.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS
-      );
-      if (!gateState.isRecordingUnlocked) {
-        return this.fail('برای شروع ضبط باید فایل راهنما را ۳ بار کامل گوش دهید.');
-      }
-    }
-
-    const audioFile = payload.get('audioFile');
-    const audioName = audioFile instanceof File ? audioFile.name : 'submission-audio.webm';
-    const now = new Date().toISOString();
-    const submission: AssignmentSubmission = {
-      id: this.nextNumericId(this.store.submissions),
-      studentId,
-      assignmentId,
-      submissionDate: now,
-      status: 'submitted',
-      notes: this.readString(payload, 'notes'),
-      feedback: '',
-      isCompleted: true,
-      timeSpent: Number(this.readString(payload, 'timeSpent') || 0) || undefined,
-      audioFileUrl: resolveMediaUrl(`/uploads/mock/${audioName}`) ?? `/uploads/mock/${audioName}`
-    };
-    this.store.submissions.push(submission);
-    return this.ok({ ...submission });
-  }
-
-  uploadSubmissionFile(studentId: number, submissionId: number, payload: FormData): Observable<AssignmentSubmission> {
-    const submission = this.store.submissions.find(
-      (item) => item.id === submissionId && item.studentId === studentId
-    );
-    if (!submission) {
-      return this.fail('تحویل پیدا نشد.');
-    }
-    const file = payload.get('file');
-    if (file instanceof File) {
-      submission.documentUrl = resolveMediaUrl(`/uploads/mock/${file.name}`) ?? `/uploads/mock/${file.name}`;
-    }
-    return this.ok({ ...submission });
-  }
-
-  getPendingUsers(): Observable<PendingUser[]> {
-    const pending = this.store.users
-      .filter((user) => user.status === 'pending')
-      .map((user) => ({
-        id: user.id,
-        username: user.username,
-        firstName: user.firstName ?? '',
-        lastName: user.lastName ?? '',
-        email: user.email ?? '',
-        phoneNumber: user.phoneNumber ?? '',
-        status: 'pending' as const
-      }));
-    return this.ok(pending);
-  }
-
-  approveUser(userId: number, payload: ApproveUserPayload): Observable<ApiMessageResponse> {
-    const user = this.store.users.find((item) => item.id === userId);
-    if (!user) {
-      return this.fail('کاربر پیدا نشد.');
-    }
-    user.status = 'approved';
-    user.firstName = payload.firstName;
-    user.lastName = payload.lastName;
-    user.email = payload.email;
-    user.phoneNumber = payload.phoneNumber;
-    user.studentId = payload.studentId;
-
-    const student: Student = {
-      id: this.nextNumericId(this.store.students),
-      studentId: payload.studentId,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      email: payload.email,
-      phoneNumber: payload.phoneNumber
-    };
-    this.store.students.push(student);
-    this.store.studentCourseMap[student.id] = payload.courseIds;
-    return this.ok({ message: 'کاربر تایید شد.' });
-  }
-
-  private ensureStudentProfileForUser(user: StoredUser): Student | undefined {
-    if (user.userType !== 'student' || user.status !== 'approved') {
-      return undefined;
-    }
-
-    let student = this.store.students.find((item) => item.studentId === user.studentId);
-    if (student) {
-      // Always ensure approved students are mapped to dummy courses.
-      this.ensureStudentCourseMap(student.id);
-      return student;
-    }
-
-    const derivedStudentId = user.studentId || `S-${1000 + user.id}`;
-    student = {
-      id: this.nextNumericId(this.store.students),
-      studentId: derivedStudentId,
-      firstName: user.firstName || 'دانش‌آموز',
-      lastName: user.lastName || 'نمونه',
-      email: user.email || `${user.username}@example.com`,
-      phoneNumber: user.phoneNumber || '09120000000'
-    };
-    this.store.students.push(student);
-    user.studentId = student.studentId;
-    this.ensureStudentCourseMap(student.id);
-    return student;
-  }
-
-  private ensureStudentCourseMap(studentNumericId: number): void {
-    const existing = this.store.studentCourseMap[studentNumericId];
-    if (existing && existing.length > 0) {
-      return;
-    }
-    this.store.studentCourseMap[studentNumericId] = [...DEFAULT_MOCK_COURSE_IDS];
-  }
-
-  rejectUser(userId: number): Observable<ApiMessageResponse> {
-    const user = this.store.users.find((item) => item.id === userId);
-    if (!user) {
-      return this.fail('کاربر پیدا نشد.');
-    }
-    user.status = 'rejected';
-    return this.ok({ message: 'کاربر رد شد.' });
-  }
-
-  getAdminCourses(): Observable<Course[]> {
-    return this.getCourses();
-  }
-
-  createAdminCourse(payload: CoursePayload): Observable<Course> {
-    return this.createCourse(payload);
-  }
-
-  updateAdminCourse(id: number, payload: Partial<CoursePayload>): Observable<Course> {
-    return this.updateCourse(id, payload);
-  }
-
-  deleteAdminCourse(id: number): Observable<ApiMessageResponse> {
-    return this.deleteCourse(id);
-  }
-
-  searchAdminCourses(query: string): Observable<Course[]> {
-    const term = query.trim().toLowerCase();
-    const items = this.store.courses.filter(
-      (course) =>
-        course.title.toLowerCase().includes(term) ||
-        course.courseCode.toLowerCase().includes(term) ||
-        (course.instructor ?? '').toLowerCase().includes(term)
-    );
-    return this.ok(items.map((item) => ({ ...item })));
-  }
-
-  filterAdminCourses(status: string): Observable<Course[]> {
-    if (!status) {
-      return this.getCourses();
-    }
-    return this.ok(this.store.courses.filter((course) => course.status === status).map((item) => ({ ...item })));
-  }
-
-  getAdminCourseAssignments(courseId: number): Observable<Assignment[]> {
-    return this.getCourseAssignments(courseId);
-  }
-
-  getAssignmentById(id: number): Observable<Assignment> {
-    const assignment = this.store.assignments.find((item) => item.id === id);
-    if (!assignment) {
-      return this.fail('تکلیف پیدا نشد.');
-    }
-    return this.ok(this.withAttachments(assignment));
-  }
-
-  createAdminAssignment(courseId: number, payload: Partial<Assignment>): Observable<Assignment> {
-    const now = new Date().toISOString();
-    const assignment: Assignment = {
-      id: this.nextNumericId(this.store.assignments),
-      courseId,
-      title: payload.title ?? 'تکلیف جدید',
-      description: payload.description ?? '',
-      type: payload.type ?? 'daily',
-      maxScore: payload.maxScore ?? 20,
-      assignmentDate: payload.assignmentDate ?? now.slice(0, 10),
-      status: payload.status ?? 'published',
-      instructions: payload.instructions ?? '',
-      createdAt: now,
-      updatedAt: now
-    };
-    this.store.assignments.push(assignment);
-    return this.ok(this.withAttachments(assignment));
-  }
-
-  updateAdminAssignment(id: number, payload: Partial<Assignment>): Observable<Assignment> {
-    const index = this.store.assignments.findIndex((item) => item.id === id);
-    if (index < 0) {
-      return this.fail('تکلیف پیدا نشد.');
-    }
-    const next = {
-      ...this.store.assignments[index],
-      ...payload,
-      id,
-      updatedAt: new Date().toISOString()
-    };
-    this.store.assignments[index] = next;
-    return this.ok(this.withAttachments(next));
-  }
-
-  deleteAdminAssignment(id: number): Observable<ApiMessageResponse> {
-    this.store.assignments = this.store.assignments.filter((assignment) => assignment.id !== id);
-    this.store.attachments = this.store.attachments.filter((attachment) => attachment.assignmentId !== id);
-    this.store.submissions = this.store.submissions.filter((submission) => submission.assignmentId !== id);
-    return this.ok({ message: 'تکلیف حذف شد.' });
-  }
-
-  createDailyAssignments(courseId: number, payload: DailySeriesPayload): Observable<Assignment[]> {
-    const startDate = new Date(payload.startDate);
-    const series: Assignment[] = [];
-    for (let offset = 0; offset < payload.days; offset += 1) {
-      const itemDate = new Date(startDate);
-      itemDate.setDate(startDate.getDate() + offset);
-      const titlePrefix = payload.titlePrefix ?? 'تکلیف روز';
-      const assignment = this.createAssignmentSync(courseId, {
-        title: `${titlePrefix} ${offset + 1}`,
-        description: payload.descriptionPrefix ?? '',
-        instructions: payload.instructions ?? '',
-        type: payload.type ?? 'daily',
-        maxScore: payload.maxScore ?? 20,
-        assignmentDate: itemDate.toISOString().slice(0, 10),
-        status: 'published'
-      });
-      series.push(this.withAttachments(assignment));
-    }
-    return this.ok(series);
-  }
-
-  getAssignmentAttachments(assignmentId: number): Observable<AssignmentAttachment[]> {
-    return this.ok(this.store.attachments.filter((attachment) => attachment.assignmentId === assignmentId).map((item) => ({ ...item })));
-  }
-
-  createAttachment(assignmentId: number, payload: FormData): Observable<AssignmentAttachment> {
-    const file = payload.get('file');
-    const fileName = file instanceof File ? file.name : `attachment-${assignmentId}.bin`;
-    const attachment: AssignmentAttachment = {
-      id: this.nextNumericId(this.store.attachments),
-      assignmentId,
-      title: this.readString(payload, 'title') || 'پیوست جدید',
-      description: this.readString(payload, 'description'),
-      kind: 'document',
-      url: resolveMediaUrl(`/uploads/mock/${fileName}`) ?? `/uploads/mock/${fileName}`,
-      displayOrder: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    this.store.attachments.push(attachment);
-    return this.ok({ ...attachment });
-  }
-
-  uploadAttachmentFile(attachmentId: number, payload: FormData): Observable<AssignmentAttachment> {
-    const attachment = this.store.attachments.find((item) => item.id === attachmentId);
-    if (!attachment) {
-      return this.fail('پیوست پیدا نشد.');
-    }
-    const file = payload.get('file');
-    const fileName = file instanceof File ? file.name : `attachment-${attachmentId}.bin`;
-    attachment.url = resolveMediaUrl(`/uploads/mock/${fileName}`) ?? `/uploads/mock/${fileName}`;
-    attachment.updatedAt = new Date().toISOString();
-    return this.ok({ ...attachment });
-  }
-
-  updateAttachment(attachmentId: number, payload: Partial<AssignmentAttachment>): Observable<AssignmentAttachment> {
-    const index = this.store.attachments.findIndex((item) => item.id === attachmentId);
-    if (index < 0) {
-      return this.fail('پیوست پیدا نشد.');
-    }
-    const next = {
-      ...this.store.attachments[index],
-      ...payload,
-      id: attachmentId,
-      updatedAt: new Date().toISOString()
-    };
-    this.store.attachments[index] = next;
-    return this.ok({ ...next });
-  }
-
-  deleteAttachment(attachmentId: number): Observable<ApiMessageResponse> {
-    this.store.attachments = this.store.attachments.filter((attachment) => attachment.id !== attachmentId);
-    return this.ok({ message: 'پیوست حذف شد.' });
-  }
-
-  getSystemStatistics(): Observable<AdminSystemStatistics> {
-    const totalAttachments = this.store.attachments.length;
-    const totalAssignments = this.store.assignments.length;
-    const totalCourses = this.store.courses.length;
-    const activeCourses = this.store.courses.filter((item) => item.status === 'active').length;
-    return this.ok({
-      totalCourses,
-      totalAssignments,
-      totalAttachments,
-      activeCourses
-    });
-  }
-
-  getCourseStatistics(courseId: number): Observable<AdminCourseStatistics> {
-    const course = this.store.courses.find((item) => item.id === courseId);
-    if (!course) {
-      return this.fail('درس پیدا نشد.');
-    }
-    const assignments = this.store.assignments.filter((item) => item.courseId === courseId);
-    const assignmentIds = new Set(assignments.map((item) => item.id));
-    const totalAttachments = this.store.attachments.filter((item) => assignmentIds.has(item.assignmentId)).length;
-    return this.ok({
-      course: { ...course },
-      totalAssignments: assignments.length,
-      totalAttachments
-    });
-  }
-
-  private withAttachments(assignment: Assignment): Assignment {
-    const attachments = this.store.attachments
-      .filter((attachment) => attachment.assignmentId === assignment.id)
-      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
-      .map((attachment) => ({ ...attachment }));
-    return {
-      ...assignment,
-      requiredListenCount: assignment.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS,
-      currentListenCount: assignment.currentListenCount ?? 0,
-      isRecordingUnlocked: assignment.isRecordingUnlocked ?? false,
-      primaryInstructionAudioUrl: this.getPrimaryInstructionAudioUrl(assignment.id),
-      attachments
-    };
-  }
-
-  private createAssignmentSync(courseId: number, payload: Partial<Assignment>): Assignment {
-    const now = new Date().toISOString();
-    const assignment: Assignment = {
-      id: this.nextNumericId(this.store.assignments),
-      courseId,
-      title: payload.title ?? 'تکلیف',
-      description: payload.description ?? '',
-      type: payload.type ?? 'daily',
-      maxScore: payload.maxScore ?? 20,
-      assignmentDate: payload.assignmentDate ?? now.slice(0, 10),
-      status: payload.status ?? 'published',
-      instructions: payload.instructions ?? '',
-      requiredListenCount: payload.requiredListenCount ?? DEFAULT_REQUIRED_LISTENS,
-      currentListenCount: payload.currentListenCount ?? 0,
-      isRecordingUnlocked: payload.isRecordingUnlocked ?? false,
-      instructionAudioVersion: payload.instructionAudioVersion ?? 'v1',
-      createdAt: now,
-      updatedAt: now
-    };
-    this.store.assignments.push(assignment);
-    return assignment;
-  }
-
-  private ok<T>(payload: T): Observable<T> {
-    return of(payload).pipe(delay(MOCK_DELAY_MS));
-  }
-
-  private fail(message: string): Observable<never> {
-    return throwError(() => ({
-      error: { message }
-    }));
-  }
-
-  private readSignupPayload(payload: AuthSignupPayload | FormData): AuthSignupPayload {
-    if (!(payload instanceof FormData)) {
-      return payload;
-    }
-    return {
-      firstName: this.readString(payload, 'firstName'),
-      lastName: this.readString(payload, 'lastName'),
-      username: this.readString(payload, 'username'),
-      email: this.readString(payload, 'email'),
-      phoneNumber: this.readString(payload, 'phoneNumber'),
-      password: this.readString(payload, 'password')
-    };
-  }
-
-  private readString(formData: FormData, key: string): string {
-    const value = formData.get(key);
-    return typeof value === 'string' ? value : '';
-  }
-
-  private nextNumericId<T extends { id: number }>(items: T[]): number {
-    const max = items.reduce((highest, item) => Math.max(highest, item.id), 0);
-    return max + 1;
-  }
-
-  private createInitialStore(): MockStore {
-    const now = new Date();
-    const today = now.toISOString().slice(0, 10);
-    const past = new Date(now);
-    past.setDate(now.getDate() - 1);
-    const future = new Date(now);
-    future.setDate(now.getDate() + 2);
-
-    const courses: Course[] = [
-      {
-        id: 1,
-        title: 'ریاضی پایه',
-        description: 'تمرین روزانه مفاهیم ریاضی پایه',
-        courseCode: 'MATH-101',
-        credits: 2,
-        instructor: 'دکتر احمدی',
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-12-31',
-        maxStudents: 40,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      },
-      {
-        id: 2,
-        title: 'علوم تجربی',
-        description: 'فعالیت های آزمایشگاهی ساده برای دانش آموزان',
-        courseCode: 'SCI-201',
-        credits: 2,
-        instructor: 'مهندس کریمی',
-        status: 'active',
-        startDate: '2026-01-01',
-        endDate: '2026-12-31',
-        maxStudents: 35,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      },
-      {
-        id: 3,
-        title: 'تاریخ معاصر',
-        description: 'مرور وقایع مهم تاریخ',
-        courseCode: 'HIS-110',
-        credits: 1,
-        instructor: 'خانم صادقی',
-        status: 'inactive',
-        startDate: '2025-09-01',
-        endDate: '2026-02-01',
-        maxStudents: 25,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      }
-    ];
-
-    const assignments: Assignment[] = [
-      {
-        id: 1,
-        courseId: 1,
-        title: 'تمرین کسرها',
-        description: 'حل تمرین صفحه 12 کتاب ریاضی',
-        type: 'daily',
-        maxScore: 20,
-        assignmentDate: past.toISOString().slice(0, 10),
-        status: 'published',
-        instructions: 'ابتدا مثال حل شده را بخوانید.',
-        requiredListenCount: DEFAULT_REQUIRED_LISTENS,
-        currentListenCount: 0,
-        isRecordingUnlocked: false,
-        instructionAudioVersion: 'math-fractions-v1',
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      },
-      {
-        id: 2,
-        courseId: 1,
-        title: 'تمرین امروز ریاضی',
-        description: 'پاسخ صوتی به سوالات روز',
-        type: 'daily',
-        maxScore: 20,
-        assignmentDate: today,
-        status: 'published',
-        instructions: 'صدای خود را ضبط کرده و توضیح دهید.',
-        requiredListenCount: DEFAULT_REQUIRED_LISTENS,
-        currentListenCount: 0,
-        isRecordingUnlocked: false,
-        instructionAudioVersion: 'math-daily-v1',
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      },
-      {
-        id: 3,
-        courseId: 2,
-        title: 'گزارش آزمایش آب',
-        description: 'مشاهده و ثبت نتایج آزمایش',
-        type: 'project',
-        maxScore: 25,
-        assignmentDate: future.toISOString().slice(0, 10),
-        status: 'draft',
-        instructions: 'فایل گزارش را تکمیل کنید.',
-        requiredListenCount: DEFAULT_REQUIRED_LISTENS,
-        currentListenCount: 0,
-        isRecordingUnlocked: true,
-        instructionAudioVersion: 'science-report-v1',
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      }
-    ];
-
-    const attachments: AssignmentAttachment[] = [
-      {
-        id: 1,
-        assignmentId: 1,
-        title: 'نمونه حل تمرین',
-        description: 'فایل صوتی توضیح مثال',
-        kind: 'audio',
-        url: '/uploads/mock/sample-lesson.mp3',
-        displayOrder: 1,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      },
-      {
-        id: 2,
-        assignmentId: 2,
-        title: 'برگه تمرین',
-        description: 'فایل PDF تمرین روز',
-        kind: 'document',
-        url: '/uploads/mock/daily-sheet.pdf',
-        displayOrder: 1,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      }
-    ];
-
-    const students: Student[] = [
-      {
-        id: 1,
-        studentId: 'S-1001',
-        firstName: 'علی',
-        lastName: 'رضایی',
-        email: 'student@example.com',
-        phoneNumber: '09123456789'
-      }
-    ];
-
-    const users: StoredUser[] = [
-      {
-        id: 1,
-        username: 'admin',
-        password: 'admin123',
-        userType: 'admin',
-        status: 'approved'
-      },
-      {
-        id: 2,
-        username: 'student',
-        password: 'student123',
-        userType: 'student',
-        status: 'approved',
-        firstName: 'علی',
-        lastName: 'رضایی',
-        email: 'student@example.com',
-        phoneNumber: '09123456789',
-        studentId: 'S-1001'
-      },
-      {
-        id: 3,
-        username: 'pending.user',
-        password: 'student123',
-        userType: 'student',
-        status: 'pending',
-        firstName: 'نگین',
-        lastName: 'محمدی',
-        email: 'pending@example.com',
-        phoneNumber: '09999999999'
-      }
-    ];
-
-    const submissions: AssignmentSubmission[] = [
-      {
-        id: 1,
-        studentId: 1,
-        assignmentId: 1,
-        submissionDate: now.toISOString(),
-        dailyScore: 18,
-        cumulativeScore: 18,
-        status: 'graded',
-        feedback: 'خوب بود',
-        audioFileUrl: '/uploads/mock/student-voice-1.webm',
-        notes: 'تمرین انجام شد.',
-        isCompleted: true,
-        timeSpent: 15
-      }
-    ];
-
-    return {
-      users,
+import { QrCodeResponse, QrPollResponse, QrScanConfirm } from '../models/lesson-planner.models';
+import { MockLessonPlannerApiBase } from './mock-lesson-planner-base';
+import { MockAuthService } from './mock/auth.service';
+import { MockAdminUsersService } from './mock/admin-users.service';
+import { MockAdminCoursesService } from './mock/admin-courses.service';
+import { MockAdminCoachesService } from './mock/admin-coaches.service';
+import { MockAdminBranchesService } from './mock/admin-branches.service';
+import { MockAdminCurriculumService } from './mock/admin-curriculum.service';
+import { MockAdminParentsService } from './mock/admin-parents.service';
+import { MockAdminEvaluatorsService } from './mock/admin-evaluators.service';
+import { MockAdminStatisticsService } from './mock/admin-statistics.service';
+import { MockAssessmentsService } from './mock/assessments.service';
+import { MockSpiritualService } from './mock/spiritual.service';
+import { MockDailyActivitiesService } from './mock/daily-activities.service';
+import { MockArtsService } from './mock/arts.service';
+import { MockSurveysService } from './mock/surveys.service';
+import { MockQuranService } from './mock/quran.service';
+import { MockHadithService } from './mock/hadith.service';
+import { MockLiteratureService } from './mock/literature.service';
+import { MockMathService } from './mock/math.service';
+import { MockSciencesService } from './mock/sciences.service';
+import { MockLearningService } from './mock/learning.service';
+import { MockCompetitionsService } from './mock/competitions.service';
+import { MockCommunityService } from './mock/community.service';
+import { MockHeadquartersService } from './mock/headquarters.service';
+import { MockTeachersService } from './mock/teachers.service';
+import { MockCoursesService } from './mock/courses.service';
+import { MockStudentProgressService } from './mock/student-progress.service';
+import { MockProfileService } from './mock/profile.service';
+import { MockMapService } from './mock/map.service';
+import { MockCalendarService } from './mock/calendar.service';
+import { MockProgressService } from './mock/progress.service';
+import { MockNotificationService } from './mock/notification.service';
+import { MockCourierReportService } from './mock/courier-report.service';
+import { MockEvaluationService } from './mock/evaluation.service';
+import { MockMessagingService } from './mock/messaging.service';
+import { MockTeacherGradingService } from './mock/teacher-grading.service';
+import { MockTrainingService } from './mock/training.service';
+import { withEducationalProcess } from './mock-educational-process.delegations';
+import { withStudyPath } from './mock-study-path.delegations';
+import { withTraining } from './mock-training.delegations';
+import { withTeacherGrading } from './mock-teacher-grading.delegations';
+import { withMessaging } from './mock-messaging.delegations';
+import { withEvaluation } from './mock-evaluation.delegations';
+import { withCalendar } from './mock-calendar.delegations';
+import { withNotification } from './mock-notification.delegations';
+import { withCourierReport } from './mock-courier-report.delegations';
+import { withProgress } from './mock-progress.delegations';
+import { withMap } from './mock-map.delegations';
+import { withProfile } from './mock-profile.delegations';
+import { withStudentProgress } from './mock-student-progress.delegations';
+import { withCourses } from './mock-courses.delegations';
+import { withTeachers } from './mock-teachers.delegations';
+import { withHeadquarters } from './mock-headquarters.delegations';
+import { withCommunity } from './mock-community.delegations';
+import { withCompetitions } from './mock-competitions.delegations';
+import { withLearningDefenses } from './mock-learning-defenses.delegations';
+import { withLearning } from './mock-learning.delegations';
+import { withSciences } from './mock-sciences.delegations';
+import { withMath } from './mock-math.delegations';
+import { withLiteratureArabic } from './mock-literature-arabic.delegations';
+import { withLiterature } from './mock-literature.delegations';
+import { withHadith } from './mock-hadith.delegations';
+import { withQuran } from './mock-quran.delegations';
+import { withSurveys } from './mock-surveys.delegations';
+import { withArts } from './mock-arts.delegations';
+import { withDaily } from './mock-daily.delegations';
+import { withSpiritual } from './mock-spiritual.delegations';
+import { withAssessments } from './mock-assessments.delegations';
+import { withAdminEvaluators } from './mock-admin-evaluators.delegations';
+import { withAdminParents } from './mock-admin-parents.delegations';
+import { withAdminCurriculumBooklets } from './mock-admin-curriculum-booklets.delegations';
+import { withAdminCurriculum } from './mock-admin-curriculum.delegations';
+import { withAdminBranches } from './mock-admin-branches.delegations';
+import { withAdminCoaches } from './mock-admin-coaches.delegations';
+import { withAdminCourses } from './mock-admin-courses.delegations';
+import { withAdminUsers } from './mock-admin-users.delegations';
+import { withAdminStatistics } from './mock-admin-statistics.delegations';
+import { withAuth } from './mock-auth.delegations';
+import { withVocabulary } from './mock-vocabulary.delegations';
+import { MockStudyPathService } from './mock/study-path.service';
+import { MockEducationalProcessService } from './mock/educational-process.service';
+import { MockVocabularyService } from './mock/vocabulary.service';
+
+/**
+ * Facade service that delegates every LessonPlannerApi method to one of the 26
+ * injected domain services. The concrete method bodies live in the domain mixin
+ * factories composed below (mock-*.delegations.ts), one file per domain.
+ * This thin class only owns DI + the delegation wiring.
+ */
+@Injectable({ providedIn: 'root' })
+export class MockLessonPlannerApi
+  extends withEducationalProcess(
+    withStudyPath(
+      withTraining(
+        withTeacherGrading(
+          withMessaging(
+            withEvaluation(
+              withCalendar(
+                withNotification(
+                  withCourierReport(
+                    withProgress(
+                      withMap(
+                        withProfile(
+                          withStudentProgress(
+                            withCourses(
+                              withTeachers(
+                                withHeadquarters(
+                                  withCommunity(
+                                    withCompetitions(
+                                      withLearningDefenses(
+                                        withLearning(
+                                          withSciences(
+                                            withMath(
+                                              withLiteratureArabic(
+                                                withLiterature(
+                                                  withHadith(
+                                                    withQuran(
+                                                      withSurveys(
+                                                        withArts(
+                                                          withDaily(
+                                                            withSpiritual(
+                                                              withAssessments(
+                                                                withAdminEvaluators(
+                                                                  withAdminParents(
+                                                                    withAdminCurriculumBooklets(
+                                                                      withAdminCurriculum(
+                                                                        withAdminBranches(
+                                                                          withAdminCoaches(
+                                                                            withAdminCourses(
+                                                                              withAdminUsers(
+                                                                                withAdminStatistics(
+                                                                                  withAuth(
+                                                                                    withVocabulary(
+                                                                                      MockLessonPlannerApiBase
+                                                                                    )
+                                                                                  )
+                                                                                )
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        )
+                                                                      )
+                                                                    )
+                                                                  )
+                                                                )
+                                                              )
+                                                            )
+                                                          )
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+  implements LessonPlannerApi
+{
+  constructor(
+    auth: MockAuthService,
+    adminUsers: MockAdminUsersService,
+    adminCourses: MockAdminCoursesService,
+    adminCoaches: MockAdminCoachesService,
+    adminBranches: MockAdminBranchesService,
+    adminCurriculum: MockAdminCurriculumService,
+    adminParents: MockAdminParentsService,
+    adminEvaluators: MockAdminEvaluatorsService,
+    adminStatistics: MockAdminStatisticsService,
+    assessments: MockAssessmentsService,
+    spiritual: MockSpiritualService,
+    dailyActivities: MockDailyActivitiesService,
+    arts: MockArtsService,
+    surveys: MockSurveysService,
+    quran: MockQuranService,
+    hadith: MockHadithService,
+    literature: MockLiteratureService,
+    math: MockMathService,
+    sciences: MockSciencesService,
+    learning: MockLearningService,
+    competitions: MockCompetitionsService,
+    community: MockCommunityService,
+    headquarters: MockHeadquartersService,
+    teachers: MockTeachersService,
+    courses: MockCoursesService,
+    studentProgress: MockStudentProgressService,
+    profile: MockProfileService,
+    map: MockMapService,
+    calendar: MockCalendarService,
+    notification: MockNotificationService,
+    courierReport: MockCourierReportService,
+    progress: MockProgressService,
+    evaluation: MockEvaluationService,
+    messaging: MockMessagingService,
+    teacherGrading: MockTeacherGradingService,
+    training: MockTrainingService,
+    educationalProcess: MockEducationalProcessService,
+    studyPath: MockStudyPathService,
+    vocabulary: MockVocabularyService,
+  ) {
+    super(
+      auth,
+      adminUsers,
+      adminCourses,
+      adminCoaches,
+      adminBranches,
+      adminCurriculum,
+      adminParents,
+      adminEvaluators,
+      adminStatistics,
+      assessments,
+      spiritual,
+      dailyActivities,
+      arts,
+      surveys,
+      quran,
+      hadith,
+      literature,
+      math,
+      sciences,
+      learning,
+      competitions,
+      community,
+      headquarters,
+      teachers,
       courses,
-      assignments,
-      attachments,
-      students,
-      studentCourseMap: {
-        1: [1, 2]
-      },
-      submissions,
-      listenState: {}
-    };
-  }
-
-  private buildStateKey(studentId: number, assignmentId: number): string {
-    return `${studentId}:${assignmentId}`;
-  }
-
-  private getPrimaryInstructionAudioUrl(assignmentId: number): string | undefined {
-    const audioAttachment = this.store.attachments.find(
-      (attachment) => attachment.assignmentId === assignmentId && attachment.kind === 'audio' && Boolean(attachment.url)
+      studentProgress,
+      profile,
+      map,
+      calendar,
+      notification,
+      courierReport,
+      progress,
+      evaluation,
+      messaging,
+      teacherGrading,
+      training,
+      educationalProcess,
+      studyPath,
+      vocabulary,
     );
-    if (!audioAttachment) {
-      return undefined;
-    }
-    return resolveMediaUrl(audioAttachment.url) ?? audioAttachment.url;
   }
 
-  private hasPlayableInstructionAudio(assignmentId: number): boolean {
-    return Boolean(this.getPrimaryInstructionAudioUrl(assignmentId));
+  requestQrCode(_payload?: { deviceInfo?: string }): Observable<QrCodeResponse> {
+    const sessionId = Math.random().toString(36).substring(2, 20);
+    return of({
+      sessionId,
+      qrData: `NEHZAT-QR:${sessionId}`,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    }).pipe(delay(300));
   }
 
-  private getListenState(
-    studentId: number,
-    assignmentId: number,
-    instructionAudioVersion: string | undefined,
-    requiredListenCount: number
-  ): AssignmentListenState {
-    const key = this.buildStateKey(studentId, assignmentId);
-    const existing = this.listenStateByKey[key];
-    if (
-      existing &&
-      existing.instructionAudioVersion &&
-      instructionAudioVersion &&
-      existing.instructionAudioVersion !== instructionAudioVersion
-    ) {
-      delete this.listenStateByKey[key];
-    }
-
-    const current = this.listenStateByKey[key];
-    if (current) {
-      current.requiredListenCount = requiredListenCount;
-      current.isRecordingUnlocked = current.currentListenCount >= requiredListenCount;
-      if (instructionAudioVersion !== undefined) {
-        current.instructionAudioVersion = instructionAudioVersion;
-      }
-      this.persistListenState();
-      return current;
-    }
-
-    const state: AssignmentListenState = {
-      currentListenCount: 0,
-      requiredListenCount,
-      isRecordingUnlocked: false,
-      instructionAudioVersion
-    };
-    this.listenStateByKey[key] = state;
-    this.persistListenState();
-    return state;
+  pollQrStatus(_sessionId: string): Observable<QrPollResponse> {
+    return of({ status: 'expired' as const }).pipe(delay(300));
   }
 
-  private setListenState(studentId: number, assignmentId: number, state: AssignmentListenState): void {
-    const key = this.buildStateKey(studentId, assignmentId);
-    this.listenStateByKey[key] = {
-      ...state,
-      isRecordingUnlocked: state.currentListenCount >= state.requiredListenCount
-    };
-    this.persistListenState();
-  }
-
-  private loadListenState(): Record<string, AssignmentListenState> {
-    try {
-      const raw = localStorage.getItem(LISTEN_STATE_STORAGE_KEY);
-      if (!raw) {
-        return {};
-      }
-      const parsed = JSON.parse(raw) as Record<string, AssignmentListenState>;
-      return parsed ?? {};
-    } catch {
-      return {};
-    }
-  }
-
-  private persistListenState(): void {
-    localStorage.setItem(LISTEN_STATE_STORAGE_KEY, JSON.stringify(this.listenStateByKey));
+  confirmQrLogin(_payload: { sessionId: string; username: string }): Observable<QrScanConfirm> {
+    return of({ status: 'confirmed' as const, message: 'QR با موفقیت تأیید شد' }).pipe(delay(300));
   }
 }

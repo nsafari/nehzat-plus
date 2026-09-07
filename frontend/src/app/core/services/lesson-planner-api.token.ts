@@ -9,13 +9,9 @@ export const LESSON_PLANNER_API = new InjectionToken<LessonPlannerApi>('LESSON_P
 
 export function provideLessonPlannerApi(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    HttpLessonPlannerApi,
-    MockLessonPlannerApi,
     {
       provide: LESSON_PLANNER_API,
-      useFactory: (httpApi: HttpLessonPlannerApi, mockApi: MockLessonPlannerApi): LessonPlannerApi =>
-        environment.useMockApi ? mockApi : httpApi,
-      deps: [HttpLessonPlannerApi, MockLessonPlannerApi]
+      useClass: environment.useMockApi ? MockLessonPlannerApi : HttpLessonPlannerApi
     }
   ]);
 }

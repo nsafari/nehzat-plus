@@ -1,6 +1,9 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3000',
-  apiPublicUrl: 'http://localhost:3000',
-  useMockApi: true
+  production: true,
+  apiUrl: 'https://api.nehzat128.ir',
+  apiPublicUrl: 'https://api.nehzat128.ir',
+  otuh2Url: 'https://api.nehzat128.ir/oauth',
+  useMockApi: false,
+  useMockAuth: false,
+  mockUser: null as { id: string; name: string; email: string; role: string } | null
 };

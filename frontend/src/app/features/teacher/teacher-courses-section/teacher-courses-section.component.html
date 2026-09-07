@@ -1,0 +1,27 @@
+<div class="card-section">
+  <h2>دوره‌های من</h2>
+  @if (courses$ | async; as courses) {
+    @if (courses.length === 0) {
+      <p class="muted">دوره‌ای به شما تخصیص داده نشده است.</p>
+    } @else {
+      <div class="courses-grid">
+        @for (course of courses; track course.id) {
+          <div class="course-card">
+            <h4>{{ course.title }}</h4>
+            <p class="muted">کد: {{ course.courseCode }}</p>
+            <p class="muted">{{ course.description }}</p>
+            <div class="course-meta">
+              <span>شروع: {{ course.startDate | date:'yyyy/MM/dd' }}</span>
+              <span>پایان: {{ course.endDate | date:'yyyy/MM/dd' }}</span>
+            </div>
+            <span class="status-badge" [class.active]="course.status === 'active'">
+              {{ course.status === 'active' ? 'فعال' : 'غیرفعال' }}
+            </span>
+          </div>
+        }
+      </div>
+    }
+  } @else {
+    <p class="muted">در حال بارگذاری...</p>
+  }
+</div>

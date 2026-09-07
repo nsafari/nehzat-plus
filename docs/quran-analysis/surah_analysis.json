@@ -1,0 +1,30 @@
+{
+  "Nuh": {
+    "surah_number": 71,
+    "total_words": 96,
+    "unique_words": 80,
+    "verses": 10,
+    "type_token_ratio": 0.8333
+  },
+  "Al-Hashr": {
+    "surah_number": 59,
+    "total_words": 234,
+    "unique_words": 175,
+    "verses": 10,
+    "type_token_ratio": 0.7479
+  },
+  "Al-Fath": {
+    "surah_number": 48,
+    "total_words": 139,
+    "unique_words": 115,
+    "verses": 10,
+    "type_token_ratio": 0.8273
+  },
+  "Al-Hujurat": {
+    "surah_number": 49,
+    "total_words": 177,
+    "unique_words": 130,
+    "verses": 10,
+    "type_token_ratio": 0.7345
+  }
+}

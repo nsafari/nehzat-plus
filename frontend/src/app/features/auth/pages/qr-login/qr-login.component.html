@@ -1,0 +1,35 @@
+@if (!qrCodeShown() && !confirmed()) {
+<h1>ورود با کد QR</h1>
+}
+
+@if (qrCodeShown() && !confirmed()) {
+<div class="qr-container">
+  <p>qr koodi ra be meghdar kode morede nazar konid</p>
+
+  <div class="qr-code">
+    <svg width="200" height="200">
+      <rect width="200" height="200" fill="#fff" />
+      <path d="M0 0h200v200H0z" fill="none" />
+      <path d="M0 0l200 200M0 200l200-200" stroke="#000" stroke-width="5" />
+    </svg>
+  </div>
+
+  <p>میانگین ۵ دقیقه معتبر است</p>
+
+  <button (click)="resendQrCode()" [disabled]="resendDisabled()">
+    <span>جدید کردن QR</span>
+    <span>QR جدید ارسال</span>
+    <span>ورود موفق!</span>
+  </button>
+</div>
+}
+
+@if (confirmed()) {
+  <p>QR شما تأیید شد! به بخش اصلی هدایت می‌شوید...</p>
+  <div class="spinner">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+}

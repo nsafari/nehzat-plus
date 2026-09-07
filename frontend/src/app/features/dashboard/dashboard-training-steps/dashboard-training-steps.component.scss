@@ -1,0 +1,98 @@
+.virtual-training-box {
+  border: 2px solid var(--lp-gold);
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--lp-gold-light) 0%, #fff 100%);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: grid;
+  gap: 0.7rem;
+}
+.virtual-training-box h4 {
+  margin: 0;
+  color: var(--lp-primary);
+  font-size: 1rem;
+  text-align: center;
+}
+.virtual-training-box h5 {
+  margin: 0;
+  color: var(--lp-primary);
+  font-size: 0.9rem;
+}
+.training-step {
+  border: 1px solid rgba(184, 148, 46, 0.2);
+  border-radius: 14px;
+  background: var(--lp-surface);
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.35rem;
+  transition: box-shadow 0.2s;
+}
+.training-step:hover {
+  box-shadow: 0 4px 12px rgba(184, 148, 46, 0.08);
+}
+.training-step p {
+  margin: 0;
+  line-height: 1.75;
+}
+.training-warning {
+  color: #9a3412;
+  background: #fef2e0;
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+.training-note {
+  color: #065f46;
+  background: #eaf5ed;
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+.training-footer {
+  border-top: 2px dashed var(--lp-gold);
+  padding-top: 0.7rem;
+  display: grid;
+  gap: 0.45rem;
+}
+.training-footer ul {
+  margin: 0;
+  padding-right: 1.2rem;
+  display: grid;
+  gap: 0.3rem;
+}
+.audio-caption {
+  margin: 0;
+  font-weight: 600;
+  color: var(--lp-muted);
+  font-size: 0.85rem;
+}
+.download-link {
+  color: var(--lp-primary);
+  font-weight: 600;
+  text-decoration: none;
+  width: fit-content;
+  background: var(--lp-gold-light);
+  padding: 0.35rem 0.7rem;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+.download-link:hover {
+  background: rgba(184, 148, 46, 0.2);
+  text-decoration: none;
+}
+.training-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.training-tags span {
+  border: 1px solid rgba(184, 148, 46, 0.2);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  color: var(--lp-gold);
+  font-size: 0.8rem;
+  background: var(--lp-gold-light);
+}
+.muted {
+  color: var(--lp-muted);
+}

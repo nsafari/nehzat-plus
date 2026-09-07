@@ -1,0 +1,85 @@
+<div class="quran-search-container" dir="rtl">
+  <mat-card class="header-card">
+    <mat-card-header>
+      <mat-card-title><h1>جستجوی قرآن</h1></mat-card-title>
+      <mat-card-subtitle>جستجوی متن، ترجمه و تفسیر آیات قرآن کریم</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-actions align="end">
+      <a mat-stroked-button routerLink="/quran/surahs">
+        <mat-icon>arrow_forward</mat-icon>
+        بازگشت به فهرست سوره‌ها
+      </a>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card class="search-card">
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>عبارت جستجو</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+          placeholder="مثلاً: بسم الله الرحمن الرحیم..."
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="onSearch()" [disabled]="loading() || !searchQuery.trim()">
+        جستجو
+      </button>
+    </mat-card-content>
+  </mat-card>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      <p>در حال جستجو...</p>
+    </div>
+  }
+
+  @if (error()) {
+    <mat-card class="error-card">
+      <mat-card-content>
+        <p class="error-message">{{ error() }}</p>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (!loading() && !error() && searched() && results().length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">search_off</mat-icon>
+      <p>نتیجه‌ای برای «{{ searchQuery }}» یافت نشد.</p>
+    </div>
+  }
+
+  @if (results(); as searchResults) {
+    @if (searchResults.length > 0) {
+      <div class="results-header">
+        <p>{{ searchResults.length }} نتیجه یافت شد</p>
+      </div>
+    }
+
+    <div class="results-list">
+      @for (result of searchResults; track result.verseKey) {
+        <mat-card class="result-card">
+          <mat-card-content>
+            <div class="result-header">
+              <span class="verse-key">{{ result.verseKey }}</span>
+              <a
+                mat-stroked-button
+                [routerLink]="['/quran/tafsir', result.chapterId, getAyahNumber(result.verseKey)]"
+                class="tafsir-link"
+              >
+                تفسیر
+              </a>
+            </div>
+            <p class="arabic-text">{{ result.textUthmani }}</p>
+            @if (result.translationText) {
+              <p class="translation-text">{{ result.translationText }}</p>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</div>

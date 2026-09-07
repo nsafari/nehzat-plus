@@ -1,0 +1,120 @@
+<header class="qb-header">
+  <div>
+    <h3>مدیریت بانک سوالات</h3>
+    <p class="qb-header__count">{{ faNum(filteredQuestions().length) }} سوال</p>
+  </div>
+  <button class="btn-icon" type="button" (click)="close()" title="بستن">✕</button>
+</header>
+
+<div class="qb-filters">
+  <input
+    class="lp-input qb-search"
+    type="search"
+    placeholder="جستجو در متن سوال…"
+    [ngModel]="searchText()"
+    (ngModelChange)="setSearch($event)"
+  />
+  <select class="lp-input" [ngModel]="filterCategory()" (ngModelChange)="setFilterCategory($event)">
+    <option value="">همه موضوع‌ها</option>
+    <option *ngFor="let category of categories()" [value]="category">{{ category }}</option>
+  </select>
+  <select class="lp-input" [ngModel]="filterDifficulty()" (ngModelChange)="setFilterDifficulty($event)">
+    <option value="">همه درجه‌ها</option>
+    <option value="easy">آسان</option>
+    <option value="medium">متوسط</option>
+    <option value="hard">سخت</option>
+  </select>
+  <button class="btn-primary btn-sm" type="button" (click)="openCreate()">＋ سوال جدید</button>
+</div>
+
+<div class="qb-create" *ngIf="showCreate()">
+  <h4>افزودن سوال جدید</h4>
+  <div class="qb-create__grid">
+    <label class="lp-label">
+      <span>متن سوال</span>
+      <textarea class="lp-input" rows="3" [ngModel]="draft().text"
+        (ngModelChange)="updateDraft('text', $event)" placeholder="متن سوال را بنویسید…"></textarea>
+    </label>
+    <label class="lp-label">
+      <span>موضوع</span>
+      <input class="lp-input" type="text" [ngModel]="draft().category" list="qb-categories"
+        (ngModelChange)="updateDraft('category', $event)" placeholder="مثلاً قرآن" />
+      <datalist id="qb-categories">
+        <option *ngFor="let category of categories()" [value]="category"></option>
+      </datalist>
+    </label>
+    <label class="lp-label">
+      <span>درجه سختی</span>
+      <select class="lp-input" [ngModel]="draft().difficulty" (ngModelChange)="updateDraft('difficulty', $event)">
+        <option value="easy">آسان</option>
+        <option value="medium">متوسط</option>
+        <option value="hard">سخت</option>
+      </select>
+    </label>
+    <label class="lp-label">
+      <span>نوع سوال</span>
+      <select class="lp-input" [ngModel]="draft().type" (ngModelChange)="setDraftType($event)">
+        <option value="multiple_choice">چندگزینه‌ای</option>
+        <option value="true_false">درست / نادرست</option>
+        <option value="essay">تشریحی</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="qb-options" *ngIf="draft().type === 'multiple_choice' || draft().type === 'true_false'">
+    <span class="qb-options__label">گزینه‌ها</span>
+    <div class="qb-option-row" *ngFor="let option of draft().options; let i = index">
+      <input class="lp-input" type="text" [ngModel]="option" (ngModelChange)="updateOption(i, $event)"
+        [attr.placeholder]="'گزینه ' + (i + 1)" />
+      <button class="btn-icon" type="button" (click)="removeOption(i)" title="حذف گزینه" [disabled]="draft().options.length <= 2">✕</button>
+    </div>
+    <button class="btn-secondary btn-sm" type="button" *ngIf="draft().type === 'multiple_choice'" (click)="addOption()">
+      ＋ گزینه
+    </button>
+    <label class="lp-label qb-correct">
+      <span>پاسخ صحیح</span>
+      <select class="lp-input" [ngModel]="draft().correctAnswer" (ngModelChange)="updateDraft('correctAnswer', $event)">
+        <option value="">— انتخاب —</option>
+        <option *ngFor="let option of draft().options" [value]="option">{{ option || 'گزینه خالی' }}</option>
+      </select>
+    </label>
+  </div>
+
+  <label class="lp-label qb-correct">
+    <span>امتیاز</span>
+    <input class="lp-input" type="number" min="1" max="50" [ngModel]="draft().points"
+      (ngModelChange)="setPoints($event)" />
+  </label>
+
+  <div class="qb-actions">
+    <button class="btn-primary" type="button" (click)="save()" [disabled]="saving()">
+      {{ saving() ? 'در حال ذخیره…' : 'ذخیره سوال' }}
+    </button>
+    <button class="btn-secondary" type="button" (click)="cancelCreate()">انصراف</button>
+  </div>
+</div>
+
+<div class="qb-list" *ngIf="!showCreate()">
+  <div class="qb-list__loading" *ngIf="loading()">
+    <span class="spinner"></span> در حال بارگذاری…
+  </div>
+
+  <ng-container *ngIf="!loading()">
+    <div class="qb-empty" *ngIf="filteredQuestions().length === 0">
+      <p>سوالی یافت نشد.</p>
+    </div>
+
+    <article class="qb-item" *ngFor="let q of filteredQuestions(); trackBy: trackByQuestion">
+      <div class="qb-item__main">
+        <p class="qb-item__text">{{ q.text }}</p>
+        <div class="qb-item__meta">
+          <span class="lp-chip">{{ q.category }}</span>
+          <span class="lp-chip">{{ difficultyLabels[q.difficulty] }}</span>
+          <span class="lp-chip">{{ typeLabels[q.type] }}</span>
+          <span class="qb-item__points">{{ faNum(q.points) }} امتیاز</span>
+        </div>
+      </div>
+      <button class="btn-icon qb-item__delete" type="button" title="حذف سوال" (click)="deleteQuestion(q)">🗑</button>
+    </article>
+  </ng-container>
+</div>

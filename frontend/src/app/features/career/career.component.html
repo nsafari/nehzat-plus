@@ -1,0 +1,162 @@
+<section class="career-page" dir="rtl">
+  <header class="page-header">
+    <div class="header-content">
+      <button type="button" class="back-link" (click)="backToDashboard()">← بازگشت</button>
+      <h1>💼 ساحت حرفه‌ای</h1>
+    </div>
+  </header>
+
+  <nav class="view-tabs">
+    <button
+      type="button"
+      class="view-tab"
+      [class.active]="activeView === 'certificates'"
+      (click)="switchView('certificates')"
+    >گواهی‌نامه‌ها</button>
+    <button
+      type="button"
+      class="view-tab"
+      [class.active]="activeView === 'skills'"
+      (click)="switchView('skills')"
+    >مهارت‌ها</button>
+    <button
+      type="button"
+      class="view-tab"
+      [class.active]="activeView === 'basket'"
+      (click)="switchView('basket')"
+    >سبد مهارت</button>
+  </nav>
+
+  @if (loading) {
+    <div class="loading-state">
+      <p class="muted">در حال بارگذاری...</p>
+    </div>
+  }
+
+  @if (!loading && activeView === 'certificates') {
+    <div class="content-area">
+      @if (certificates.length === 0) {
+        <div class="empty-state">
+          <p class="muted">هنوز گواهی‌نامه‌ای ثبت نشده است.</p>
+        </div>
+      }
+
+      @for (cert of certificates; track cert.id) {
+        <article class="cert-card">
+          <div class="cert-header">
+            <h2 class="cert-title">{{ cert.title }}</h2>
+            <span class="cert-issuer">{{ cert.issuer }}</span>
+          </div>
+          <div class="cert-meta">
+            <span class="cert-date">
+              @if (cert.issueDate) { تاریخ صدور: {{ cert.issueDate | date:'shortDate' }} }
+            </span>
+            <span class="cert-status">تایید شده</span>
+          </div>
+          @if (cert.certificateUrl) {
+            <a class="cert-link" [href]="cert.certificateUrl" target="_blank">🔗 مشاهده گواهی</a>
+          }
+        </article>
+      }
+    </div>
+  }
+
+  @if (!loading && activeView === 'skills') {
+    <div class="content-area">
+      @if (currentBasket) {
+        <div class="basket-summary">
+          <h2 class="basket-title">{{ currentBasket.title }}</h2>
+          <div class="basket-competency">
+            <span class="competency-label">{{ getCompetencyLabel(currentBasket.competencyPercent) }}</span>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="currentBasket.competencyPercent"></div>
+            </div>
+            <span class="competency-percent">{{ currentBasket.competencyPercent }}%</span>
+          </div>
+          @if (currentBasket.skillNames && currentBasket.skillNames.length > 0) {
+            <ul class="skill-list">
+              @for (name of currentBasket.skillNames; track $index) {
+                <li class="skill-item">{{ name }}</li>
+              }
+            </ul>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <p class="muted">هیچ سبد مهارتی یافت نشد.</p>
+        </div>
+      }
+      <div class="section-actions">
+        <button type="button" class="create-btn" (click)="switchView('basket')">
+          مدیریت سبد مهارت
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (!loading && activeView === 'basket') {
+    <div class="content-area">
+      <div class="section-actions">
+        <button type="button" class="create-btn" (click)="showCreateBasketModal = true">
+          + سبد مهارت جدید
+        </button>
+      </div>
+
+      @if (baskets.length === 0) {
+        <div class="empty-state">
+          <p class="muted">هنوز سبد مهارتی ایجاد نشده است.</p>
+        </div>
+      }
+
+      @for (basket of baskets; track basket.id) {
+        <article class="basket-card">
+          <div class="basket-header">
+            <h2 class="basket-name">{{ basket.title }}</h2>
+            <span class="basket-public">
+              {{ basket.isPublic ? 'عمومی' : 'خصوصی' }}
+            </span>
+          </div>
+          @if (basket.description) {
+            <p class="basket-desc">{{ basket.description }}</p>
+          }
+          <div class="basket-competency">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="basket.competencyPercent"></div>
+            </div>
+            <div class="competency-label">{{ basket.competencyPercent }}% — {{ getCompetencyLabel(basket.competencyPercent) }}</div>
+          </div>
+          <div class="basket-meta">
+            <span class="basket-skills">{{ basket.skillNames?.length ?? 0 }} مهارت</span>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
+
+@if (showCreateBasketModal) {
+  <div class="overlay" (click)="showCreateBasketModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>ایجاد سبد مهارت</h2>
+        <button type="button" class="close-btn" (click)="showCreateBasketModal = false">×</button>
+      </header>
+      <form class="upload-form" (ngSubmit)="createBasket()">
+        <label class="field">
+          <span>عنوان سبد مهارت</span>
+          <input type="text" [(ngModel)]="basketTitle" name="basketTitle" required placeholder="مثلاً مهارت‌های برنامه‌نویسی" />
+        </label>
+        <label class="field">
+          <span>توضیحات</span>
+          <textarea [(ngModel)]="basketDescription" name="basketDescription" rows="3" placeholder="توضیح مختصر..."></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="showCreateBasketModal = false">لغو</button>
+          <button type="submit" class="save-btn" [disabled]="saving">
+            @if (saving) { <span>در حال ساخت...</span> } @else { <span>ایجاد</span> }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

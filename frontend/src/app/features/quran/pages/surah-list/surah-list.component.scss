@@ -1,0 +1,139 @@
+/* ============================================
+   Surah List — Responsive
+   Mobile: < 640px | Tablet: 640–1023px | Desktop: ≥ 1024px
+   ============================================ */
+
+.quran-container {
+  padding: var(--lp-space-xl, 20px);
+  max-width: 900px;
+  margin: 0 auto;
+  direction: rtl;
+}
+
+/* ---- Header ---- */
+.header-card {
+  margin-bottom: var(--lp-space-md, 16px);
+  background: linear-gradient(135deg, var(--lp-primary), var(--lp-primary-hover));
+  color: #fff;
+}
+
+.header-card mat-card-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---- Search ---- */
+.search-card {
+  margin-bottom: var(--lp-space-md, 16px);
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* ---- Loading ---- */
+.spinner {
+  margin: var(--lp-space-xl, 40px) auto;
+}
+
+.loading-text {
+  text-align: center;
+  padding: var(--lp-space-md, 16px);
+  color: var(--lp-muted);
+}
+
+/* ---- Error ---- */
+.error-state {
+  text-align: center;
+  padding: var(--lp-space-2xl, 40px);
+}
+
+.error-message {
+  color: var(--lp-danger);
+  font-weight: 500;
+}
+
+/* ---- Grid ---- */
+.surah-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--lp-space-md, 12px);
+}
+
+/* ---- Card ---- */
+.surah-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.surah-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.surah-number {
+  background: var(--lp-gold-light);
+  color: var(--lp-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: var(--lp-text-base, 16px);
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+  text-align: center;
+  padding: var(--lp-space-2xl, 40px);
+  color: var(--lp-muted);
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Mobile (< 640px) */
+@media (max-width: 639px) {
+  .quran-container {
+    padding: var(--lp-space-md, 16px);
+  }
+
+  .surah-grid {
+    grid-template-columns: 1fr;
+    gap: var(--lp-space-sm, 8px);
+  }
+
+  .surah-number {
+    width: 36px;
+    height: 36px;
+    font-size: var(--lp-text-sm, 14px);
+  }
+}
+
+/* Tablet (640px – 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .quran-container {
+    padding: var(--lp-space-lg, 16px);
+  }
+
+  .surah-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--lp-space-md, 12px);
+  }
+}
+
+/* Desktop (≥ 1024px) — default rules apply */
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

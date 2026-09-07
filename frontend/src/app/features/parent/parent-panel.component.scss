@@ -1,0 +1,144 @@
+/* ============================================
+   Parent Panel — Responsive
+   Mobile: < 640px | Tablet: 640–1023px | Desktop: ≥ 1024px
+   ============================================ */
+
+.role-page {
+  direction: rtl;
+  min-height: 100vh;
+  background: var(--lp-bg, #f8f9fa);
+}
+
+/* ---- Header ---- */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--lp-space-md, 16px) var(--lp-space-xl, 32px);
+  background: var(--lp-surface, #fff);
+  border-bottom: 1px solid var(--lp-border, #e5e7eb);
+  flex-wrap: wrap;
+  gap: var(--lp-space-sm, 8px);
+}
+
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-space-md, 16px);
+}
+
+.site-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: var(--lp-text-xl, 20px);
+  color: var(--lp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.muted {
+  color: var(--lp-muted, #6b7280);
+  margin: 0;
+  font-size: var(--lp-text-sm, 14px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-trigger {
+  background: var(--lp-primary, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: var(--lp-radius-lg, 8px);
+  padding: var(--lp-space-xs, 8px) var(--lp-space-md, 16px);
+  cursor: pointer;
+  font-size: var(--lp-text-sm, 14px);
+  flex-shrink: 0;
+}
+
+.menu-trigger:hover {
+  opacity: 0.9;
+}
+
+/* ---- Main Content ---- */
+.main-content {
+  padding: var(--lp-space-xl, 32px);
+}
+
+.students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--lp-space-xl, 24px);
+  margin-top: var(--lp-space-xl, 24px);
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Mobile (< 640px) */
+@media (max-width: 639px) {
+  .site-header {
+    padding: var(--lp-space-sm, 8px) var(--lp-space-md, 16px);
+  }
+
+  .site-header h1 {
+    font-size: var(--lp-text-lg, 18px);
+  }
+
+  .muted {
+    display: none;
+  }
+
+  .menu-trigger {
+    padding: var(--lp-space-xs, 6px) var(--lp-space-sm, 12px);
+    font-size: var(--lp-text-xs, 12px);
+  }
+
+  .main-content {
+    padding: var(--lp-space-md, 16px);
+  }
+
+  .students-grid {
+    grid-template-columns: 1fr;
+    gap: var(--lp-space-md, 16px);
+    margin-top: var(--lp-space-lg, 16px);
+  }
+}
+
+/* Tablet (640px – 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .site-header {
+    padding: var(--lp-space-md, 16px) var(--lp-space-lg, 24px);
+  }
+
+  .muted {
+    display: none;
+  }
+
+  .students-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--lp-space-lg, 24px);
+  }
+}
+
+/* Desktop (≥ 1024px) — default rules apply */
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

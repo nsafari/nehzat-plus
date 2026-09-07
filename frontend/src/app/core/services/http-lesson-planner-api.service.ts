@@ -1,213 +1,95 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
-  AdminCourseStatistics,
-  AdminSystemStatistics,
-  ApiMessageResponse,
-  ApproveUserPayload,
-  Assignment,
-  AssignmentAttachment,
-  AssignmentProgressResponse,
-  AssignmentSubmission,
-  AuthSigninPayload,
-  AuthSigninResponse,
   AuthSignupPayload,
   AuthSignupResponse,
-  CreateAssignmentPayload,
-  CreateCoursePayload,
-  CreateDailySeriesPayload,
-  Course,
-  PendingUser,
-  StudentProgressResponse
 } from '../models/lesson-planner.models';
-import { LessonPlannerApi } from './lesson-planner-api.interface';
-import { resolveApiBaseUrl } from './api-url.util';
+
+import { HttpServiceContextBase } from './http-domain/base';
+import { WithAuth } from './http-domain/http-auth.mixin';
+import { WithStudents } from './http-domain/http-students.mixin';
+import { WithAdminUsers } from './http-domain/http-admin-users.mixin';
+import { WithAdminResources } from './http-domain/http-admin-resources.mixin';
+import { WithAdminAssignments } from './http-domain/http-admin-assignments.mixin';
+import { WithRings } from './http-domain/http-rings.mixin';
+import { WithAssessments } from './http-domain/http-assessments.mixin';
+import { WithSpiritualDaily } from './http-domain/http-spiritual-daily.mixin';
+import { WithArtsActivities } from './http-domain/http-arts-activities.mixin';
+import { WithSurveys } from './http-domain/http-surveys.mixin';
+import { WithQuranHadith } from './http-domain/http-quran-hadith.mixin';
+import { WithLiterature } from './http-domain/http-literature.mixin';
+import { WithMathSciences } from './http-domain/http-math-sciences.mixin';
+import { WithLearningCommunity } from './http-domain/http-learning-community.mixin';
+import { WithProfile } from './http-domain/http-profile.mixin';
+import { WithMap } from './http-domain/http-map.mixin';
+import { WithProgress } from './http-domain/http-progress.mixin';
+import { WithNotification } from './http-domain/http-notification.mixin';
+import { WithCourierReport } from './http-domain/http-courier-report.mixin';
+import { WithEvaluation } from './http-domain/http-evaluation.mixin';
+import { WithCalendar } from './http-domain/http-calendar.mixin';
+import { WithMessaging } from './http-domain/http-messaging.mixin';
+import { WithTeacherGrading } from './http-domain/http-teacher-grading.mixin';
+import { WithTraining } from './http-domain/http-training.mixin';
+import { WithStudyPath } from './http-domain/http-study-path.mixin';
+import { WithVocabulary } from './http-domain/http-vocabulary.mixin';
+
+const HttpMixed = WithVocabulary(
+  WithStudyPath(WithTraining(WithTeacherGrading(WithCalendar(
+    WithEvaluation(
+      WithCourierReport(
+        WithNotification(
+          WithAuth(
+            WithStudents(
+              WithAdminUsers(
+                WithAdminResources(
+                  WithAdminAssignments(
+                    WithRings(
+                      WithAssessments(
+                        WithSpiritualDaily(
+                          WithArtsActivities(
+                            WithSurveys(
+                              WithQuranHadith(
+                                WithLiterature(
+                                  WithMathSciences(
+                                    WithLearningCommunity(
+                                      WithMessaging(
+                                        WithProgress(
+                                          WithMap(
+                                            WithProfile(HttpServiceContextBase),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
+))));
+
+// Helper function to build API URLs
+function buildApiUrl(base: string, path: string): string {
+  return `${base}${path}`;
+}
 
 @Injectable()
-export class HttpLessonPlannerApi extends LessonPlannerApi {
-  private readonly http = inject(HttpClient);
-
-  signin(payload: AuthSigninPayload): Observable<AuthSigninResponse> {
-    return this.http.post<AuthSigninResponse>(this.url('/auth/signin'), payload);
-  }
-
-  signup(payload: AuthSignupPayload | FormData): Observable<AuthSignupResponse> {
-    return this.http.post<AuthSignupResponse>(this.url('/auth/signup'), this.toSignupBody(payload));
-  }
-
-  seedDatabase(): Observable<ApiMessageResponse> {
-    return this.http.post<ApiMessageResponse>(this.url('/seeder/seed'), {});
-  }
-
-  getActiveCourses(): Observable<Course[]> {
-    return this.http.get<Course[]>(this.url('/courses/active'));
-  }
-
-  getCourses(): Observable<Course[]> {
-    return this.http.get<Course[]>(this.url('/courses'));
-  }
-
-  getCourseById(id: number): Observable<Course> {
-    return this.http.get<Course>(this.url(`/courses/${id}`));
-  }
-
-  createCourse(payload: CreateCoursePayload): Observable<Course> {
-    return this.http.post<Course>(this.url('/courses'), payload);
-  }
-
-  updateCourse(id: number, payload: Partial<CreateCoursePayload>): Observable<Course> {
-    return this.http.put<Course>(this.url(`/courses/${id}`), payload);
-  }
-
-  deleteCourse(id: number): Observable<ApiMessageResponse> {
-    return this.http.delete<ApiMessageResponse>(this.url(`/courses/${id}`));
-  }
-
-  getCourseAssignments(courseId: number): Observable<Assignment[]> {
-    return this.http.get<Assignment[]>(this.url(`/courses/${courseId}/assignments`));
-  }
-
-  createCourseAssignment(courseId: number, payload: CreateAssignmentPayload): Observable<Assignment> {
-    return this.http.post<Assignment>(this.url(`/courses/${courseId}/assignments`), payload);
-  }
-
-  getStudentProgress(studentId: number): Observable<StudentProgressResponse> {
-    return this.http.get<StudentProgressResponse>(this.url(`/students/${studentId}/progress`));
-  }
-
-  getStudentSubmissions(studentId: number, assignmentId?: number): Observable<AssignmentSubmission[]> {
-    let params = new HttpParams();
-    if (assignmentId !== undefined) {
-      params = params.set('assignmentId', String(assignmentId));
-    }
-    return this.http.get<AssignmentSubmission[]>(this.url(`/students/${studentId}/submissions`), { params });
-  }
-
-  getAssignmentProgress(studentId: number, assignmentId: number): Observable<AssignmentProgressResponse> {
-    return this.http.get<AssignmentProgressResponse>(this.url(`/students/${studentId}/assignments/${assignmentId}/progress`));
-  }
-
-  registerAssignmentListenCompletion(
-    studentId: number,
-    assignmentId: number,
-    instructionAudioVersion?: string
-  ): Observable<AssignmentProgressResponse> {
-    return this.http.post<AssignmentProgressResponse>(
-      this.url(`/students/${studentId}/assignments/${assignmentId}/progress/listen`),
-      {
-        instructionAudioVersion
-      }
-    );
-  }
-
-  submitAssignment(studentId: number, assignmentId: number, payload: FormData): Observable<AssignmentSubmission> {
-    return this.http.post<AssignmentSubmission>(
-      this.url(`/students/${studentId}/assignments/${assignmentId}/submit`),
-      payload
-    );
-  }
-
-  uploadSubmissionFile(studentId: number, submissionId: number, payload: FormData): Observable<AssignmentSubmission> {
-    return this.http.post<AssignmentSubmission>(
-      this.url(`/students/${studentId}/submissions/${submissionId}/upload`),
-      payload
-    );
-  }
-
-  getPendingUsers(): Observable<PendingUser[]> {
-    return this.http.get<PendingUser[]>(this.url('/admin/users/pending'));
-  }
-
-  approveUser(userId: number, payload: ApproveUserPayload): Observable<ApiMessageResponse> {
-    return this.http.post<ApiMessageResponse>(this.url(`/admin/users/${userId}/approve`), payload);
-  }
-
-  rejectUser(userId: number): Observable<ApiMessageResponse> {
-    return this.http.post<ApiMessageResponse>(this.url(`/admin/users/${userId}/reject`), {});
-  }
-
-  getAdminCourses(): Observable<Course[]> {
-    return this.http.get<Course[]>(this.url('/admin/courses'));
-  }
-
-  createAdminCourse(payload: CreateCoursePayload): Observable<Course> {
-    return this.http.post<Course>(this.url('/admin/courses'), payload);
-  }
-
-  updateAdminCourse(id: number, payload: Partial<CreateCoursePayload>): Observable<Course> {
-    return this.http.put<Course>(this.url(`/admin/courses/${id}`), payload);
-  }
-
-  deleteAdminCourse(id: number): Observable<ApiMessageResponse> {
-    return this.http.delete<ApiMessageResponse>(this.url(`/admin/courses/${id}`));
-  }
-
-  searchAdminCourses(query: string): Observable<Course[]> {
-    const params = new HttpParams().set('q', query);
-    return this.http.get<Course[]>(this.url('/admin/courses/search'), { params });
-  }
-
-  filterAdminCourses(status: string): Observable<Course[]> {
-    const params = new HttpParams().set('status', status);
-    return this.http.get<Course[]>(this.url('/admin/courses/filter'), { params });
-  }
-
-  getAdminCourseAssignments(courseId: number): Observable<Assignment[]> {
-    return this.http.get<Assignment[]>(this.url(`/admin/courses/${courseId}/assignments`));
-  }
-
-  getAssignmentById(id: number): Observable<Assignment> {
-    return this.http.get<Assignment>(this.url(`/admin/assignments/${id}`));
-  }
-
-  createAdminAssignment(courseId: number, payload: CreateAssignmentPayload): Observable<Assignment> {
-    return this.http.post<Assignment>(this.url(`/admin/courses/${courseId}/assignments`), payload);
-  }
-
-  updateAdminAssignment(id: number, payload: CreateAssignmentPayload): Observable<Assignment> {
-    return this.http.put<Assignment>(this.url(`/admin/assignments/${id}`), payload);
-  }
-
-  deleteAdminAssignment(id: number): Observable<ApiMessageResponse> {
-    return this.http.delete<ApiMessageResponse>(this.url(`/admin/assignments/${id}`));
-  }
-
-  createDailyAssignments(courseId: number, payload: CreateDailySeriesPayload): Observable<Assignment[]> {
-    return this.http.post<Assignment[]>(this.url(`/admin/courses/${courseId}/assignments/daily-series`), payload);
-  }
-
-  getAssignmentAttachments(assignmentId: number): Observable<AssignmentAttachment[]> {
-    return this.http.get<AssignmentAttachment[]>(this.url(`/admin/assignments/${assignmentId}/attachments`));
-  }
-
-  createAttachment(assignmentId: number, payload: FormData): Observable<AssignmentAttachment> {
-    return this.http.post<AssignmentAttachment>(this.url(`/admin/assignments/${assignmentId}/attachments`), payload);
-  }
-
-  uploadAttachmentFile(attachmentId: number, payload: FormData): Observable<AssignmentAttachment> {
-    return this.http.post<AssignmentAttachment>(this.url(`/admin/attachments/${attachmentId}/upload`), payload);
-  }
-
-  updateAttachment(attachmentId: number, payload: Partial<AssignmentAttachment>): Observable<AssignmentAttachment> {
-    return this.http.put<AssignmentAttachment>(this.url(`/admin/attachments/${attachmentId}`), payload);
-  }
-
-  deleteAttachment(attachmentId: number): Observable<ApiMessageResponse> {
-    return this.http.delete<ApiMessageResponse>(this.url(`/admin/attachments/${attachmentId}`));
-  }
-
-  getSystemStatistics(): Observable<AdminSystemStatistics> {
-    return this.http.get<AdminSystemStatistics>(this.url('/admin/statistics'));
-  }
-
-  getCourseStatistics(courseId: number): Observable<AdminCourseStatistics> {
-    return this.http.get<AdminCourseStatistics>(this.url(`/admin/courses/${courseId}/statistics`));
-  }
-
-  private url(path: string): string {
-    return `${resolveApiBaseUrl()}${path}`;
+export class HttpLessonPlannerApi extends HttpMixed {
+  constructor(http: HttpClient) {
+    super(http);
   }
 
   private toSignupBody(payload: AuthSignupPayload | FormData): FormData | Omit<AuthSignupPayload, 'userImage'> {

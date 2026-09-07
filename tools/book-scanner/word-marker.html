@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ابزار علامت‌گذاری کلمات کتاب</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: #e94560; margin-bottom: 10px; }
+        .stats { display: flex; justify-content: center; gap: 30px; margin: 20px 0; }
+        .stat-box { background: #16213e; padding: 15px 30px; border-radius: 10px; text-align: center; }
+        .stat-value { font-size: 2em; font-weight: bold; color: #e94560; }
+        .stat-label { color: #888; margin-top: 5px; }
+        .controls { display: flex; gap: 15px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+        button { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; transition: all 0.3s; }
+        .btn-primary { background: #e94560; color: white; }
+        .btn-primary:hover { background: #c73e54; }
+        .btn-secondary { background: #0f3460; color: white; }
+        .btn-secondary:hover { background: #1a4a7a; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #219a52; }
+        .text-container { background: #16213e; border-radius: 15px; padding: 30px; margin: 20px 0; max-height: 60vh; overflow-y: auto; line-height: 2.2; font-size: 1.2em; direction: rtl; }
+        .word { display: inline-block; padding: 2px 6px; margin: 2px; cursor: pointer; border-radius: 4px; transition: all 0.2s; }
+        .word:hover { background: rgba(233, 69, 96, 0.3); }
+        .word.selected { background: #e94560; color: white; font-weight: bold; }
+        .word-separator { color: #666; }
+        .line-break { display: block; height: 20px; }
+        .file-input-wrapper { text-align: center; margin: 30px 0; }
+        .file-input-wrapper label { display: inline-block; padding: 20px 40px; background: #0f3460; border-radius: 10px; cursor: pointer; transition: all 0.3s; }
+        .file-input-wrapper label:hover { background: #1a4a7a; }
+        .file-input-wrapper input { display: none; }
+        .selected-words-panel { background: #16213e; border-radius: 15px; padding: 20px; margin: 20px 0; }
+        .selected-words-panel h3 { color: #e94560; margin-bottom: 15px; }
+        .selected-words-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .selected-word-tag { background: #e94560; color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; }
+        .progress-bar { width: 100%; height: 10px; background: #0f3460; border-radius: 5px; margin: 20px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: #e94560; width: 0%; transition: width 0.3s; }
+        .instructions { background: #0f3460; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .instructions h3 { color: #e94560; margin-bottom: 10px; }
+        .instructions ul { margin-right: 20px; }
+        .instructions li { margin: 8px 0; }
+        .keyboard-hints { display: flex; gap: 20px; justify-content: center; margin: 15px 0; flex-wrap: wrap; }
+        .hint { background: #16213e; padding: 8px 16px; border-radius: 8px; font-size: 0.9em; }
+        .hint kbd { background: #e94560; padding: 2px 8px; border-radius: 4px; margin: 0 5px; }
+        .page-thumb { border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; transition: all 0.2s; }
+        .page-thumb img { width: 100px; height: auto; display: block; }
+        .page-thumb .badge { background: #e94560; color: white; text-align: center; padding: 5px; font-size: 0.8em; }
+        .page-thumb.active { border-color: #e94560; }
+        .page-thumb:hover { border-color: #888; }
+        .pages-list { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; padding: 10px 0; border-top: 1px solid #333; border-bottom: 1px solid #333; }
+        .split-view { display: flex; gap: 20px; flex-wrap: wrap; }
+        .image-panel { flex: 1; min-width: 400px; }
+        .image-panel img { width: 100%; max-height: 60vh; object-fit: contain; border-radius: 8px; background: #0f3460; }
+        .text-panel { flex: 1; min-width: 300px; background: #16213e; border-radius: 10px; padding: 20px; max-height: 60vh; overflow-y: auto; line-height: 2; font-size: 1.1em; }
+        .page-nav { margin-top: 10px; text-align: center; color: #888; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .tab { padding: 12px 24px; background: #0f3460; color: #888; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .tab.active { background: #e94560; color: white; }
+        .tab:hover:not(.active) { background: #1a4a7a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .upload-zone { border: 2px dashed #e94560; border-radius: 10px; padding: 40px; text-align: center; margin: 20px 0; cursor: pointer; transition: all 0.3s; }
+        .upload-zone.drag-over { border-color: #e94560; background: rgba(233, 69, 96, 0.1); }
+        .ocr-status { padding: 10px; margin: 10px 0; border-radius: 8px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #888; border-top: 2px solid #e94560; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ابزار علامت‌گذاری کلمات کتاب</h1>
+            <p>فایل متنی، عکس یا PDF کتاب را بارگذاری کنید</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="text">📄 بارگذاری متن</div>
+            <div class="tab" data-tab="image">📷 بارگذاری تصویر</div>
+        </div>
+        
+        <!-- Text Tab -->
+        <div id="tab-text" class="tab-content active">
+            <div class="instructions">
+                <h3>راهنما</h3>
+                <ul>
+                    <li>فایل .txt کتاب را انتخاب کنید</li>
+                    <li>روی کلمات کلیک کنید تا العلامه‌گذاری شود</li>
+                    <li>دوباره کلیک کنید تا علامه برداشته شود</li>
+                </ul>
+                <div class="keyboard-hints">
+                    <div class="hint"><kbd>Ctrl</kbd>+<kbd>S</kbd> ذخیره</div>
+                    <div class="hint"><kbd>Ctrl</kbd>+<kbd>Z</kbd> بازگشت</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box"><div class="stat-value" id="totalWords">0</div><div class="stat-label">کل کلمات</div></div>
+                <div class="stat-box"><div class="stat-value" id="selectedCount">0</div><div class="stat-label">انتخاب شده</div></div>
+                <div class="stat-box"><div class="stat-value" id="progressPercent">0%</div><div class="stat-label">پیشرفت</div></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            
+            <div class="controls">
+                <label class="btn-primary" style="display: inline-block; cursor: pointer;">
+                    انتخاب فایل متنی
+                    <input type="file" id="txtFileInput" accept=".txt,.text" style="display: none;">
+                </label>
+                <button class="btn-secondary" id="clearBtn">پاک کردن همه</button>
+                <button class="btn-success" id="exportBtn">خروجی JSON</button>
+                <button class="btn-success" id="exportTxtBtn">خروجی TXT</button>
+            </div>
+            
+            <div class="text-container" id="textContainer">
+                <p style="text-align: center; color: #666;">فایل متنی خود را بارگذاری کنید...</p>
+            </div>
+            
+            <div class="selected-words-panel">
+                <h3>کلمات انتخاب شده</h3>
+                <div class="selected-words-list" id="selectedWordsList"></div>
+            </div>
+        </div>
+        
+        <!-- Image Tab -->
+        <div id="tab-image" class="tab-content hidden">
+            <div class="instructions">
+                <h3>راهنما</h3>
+                <ul>
+                    <li>عکس‌های صفحات کتاب را آپلود کنید</li>
+                    <li>روی کلمات استخراج شده کلیک کنید</li>
+                    <li>برای جابجایی بین صفحات از کلیدهای ← و → استفاده کنید</li>
+                </ul>
+                <div class="keyboard-hints">
+                    <div class="hint"><kbd>←</kbd>/<kbd>→</kbd> صفحه قبل/بعد</div>
+                    <div class="hint"><kbd>Ctrl</kbd>+<kbd>Z</kbd> بازگشت</div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box"><div class="stat-value" id="totalWordsImg">0</div><div class="stat-label">کل کلمات</div></div>
+                <div class="stat-box"><div class="stat-value" id="selectedCountImg">0</div><div class="stat-label">انتخاب شده</div></div>
+                <div class="stat-box"><div class="stat-value" id="progressPercentImg">0%</div><div class="stat-label">پیشرفت</div></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFillImg"></div></div>
+            
+            <div class="controls">
+                <label class="btn-primary" style="display: inline-block; cursor: pointer;">
+                    انتخاب عکس‌ها
+                    <input type="file" id="imageFileInput" accept="image/*" multiple style="display: none;">
+                </label>
+                <button class="btn-secondary" id="clearBtnImg">پاک کردن همه</button>
+                <button class="btn-success" id="exportBtnImg">خروجی JSON</button>
+                <button class="btn-success" id="exportTxtBtnImg">خروجی TXT</button>
+            </div>
+            
+            <div class="ocr-status" id="ocrStatusDiv">
+                <span id="ocrStatusText">آماده برای پردازش</span>
+                <span class="spinner hidden" id="ocrSpinner"></span>
+            </div>
+            
+            <div class="upload-zone" id="uploadZone">
+                <p style="color: #888; font-size: 1.2em;">عکس‌های صفحات کتاب را اینجا رها کنید (Drag & Drop)</p>
+                <p style="color: #666; margin-top: 10px;">یا کلیک کنید برای انتخاب فایل</p>
+                <p style="color: #e94560; margin-top: 15px; font-size: 0.9em;">▼ کلیک یا رها کردن فایل‌ها ▼</p>
+            </div>
+            
+            <div class="pages-list" id="pagesList"></div>
+             
+            <div class="split-view hidden" id="imageContainer"></div>
+            
+            <div class="selected-words-panel">
+                <h3>کلمات انتخاب شده</h3>
+                <div class="selected-words-list" id="selectedWordsListImg"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    (function() {
+        'use strict';
+        
+        // === متغیرهای اصلی ===
+        let selectedWords = new Set();
+        let allWords = [];
+        let history = [];
+        let ocrWorker = null;
+        let allPagesOcrText = [];
+        let currentPage = 1;
+        let currentOcrLang = 'fas+ara';
+        
+        // === المان‌های تب متن ===
+        const txtFileInput = document.getElementById('txtFileInput');
+        const textContainer = document.getElementById('textContainer');
+        const selectedWordsList = document.getElementById('selectedWordsList');
+        const totalWordsEl = document.getElementById('totalWords');
+        const selectedCountEl = document.getElementById('selectedCount');
+        const progressPercentEl = document.getElementById('progressPercent');
+        const progressFill = document.getElementById('progressFill');
+        const clearBtn = document.getElementById('clearBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const exportTxtBtn = document.getElementById('exportTxtBtn');
+        
+        // === المان‌های تب تصویر ===
+        const imageFileInput = document.getElementById('imageFileInput');
+        const pagesList = document.getElementById('pagesList');
+        const imageContainer = document.getElementById('imageContainer');
+        const uploadZone = document.getElementById('uploadZone');
+        const ocrStatusText = document.getElementById('ocrStatusText');
+        const ocrSpinner = document.getElementById('ocrSpinner');
+        const totalWordsImgEl = document.getElementById('totalWordsImg');
+        const selectedCountImgEl = document.getElementById('selectedCountImg');
+        const progressPercentImgEl = document.getElementById('progressPercentImg');
+        const progressFillImg = document.getElementById('progressFillImg');
+        const clearBtnImg = document.getElementById('clearBtnImg');
+        const exportBtnImg = document.getElementById('exportBtnImg');
+        const exportTxtBtnImg = document.getElementById('exportTxtBtnImg');
+        const selectedWordsListImg = document.getElementById('selectedWordsListImg');
+        
+        // === توابع مشترک ===
+        function updateStats() {
+            selectedCountEl.textContent = selectedWords.size;
+            const percent = allWords.length > 0 ? Math.round((selectedWords.size / allWords.length) * 100) : 0;
+            progressPercentEl.textContent = percent + '%';
+            progressFill.style.width = percent + '%';
+            renderSelectedWords();
+            // هم همسو کردن با تب تصویر
+            if (totalWordsImgEl) totalWordsImgEl.textContent = allWords.length;
+            if (selectedCountImgEl) selectedCountImgEl.textContent = selectedWords.size;
+            if (progressPercentImgEl) progressPercentImgEl.textContent = percent + '%';
+            if (progressFillImg) progressFillImg.style.width = percent + '%';
+        }
+        
+        function renderSelectedWords() {
+            const selectedArray = Array.from(selectedWords).map(id => {
+                const word = allWords.find(w => w.id === id);
+                return word ? word.text : '';
+            }).filter(w => w);
+            selectedWordsList.innerHTML = selectedArray.map(w => 
+                `<span class="selected-word-tag">${w}</span>`
+            ).join('');
+            if (selectedWordsListImg) {
+                selectedWordsListImg.innerHTML = selectedArray.map(w => 
+                    `<span class="selected-word-tag">${w}</span>`
+                ).join('');
+            }
+        }
+        
+        function saveHistory() {
+            history.push(new Set(selectedWords));
+            if (history.length > 50) history.shift();
+        }
+        
+        function undo() {
+            if (history.length === 0) return;
+            const prevState = history.pop();
+            document.querySelectorAll('.word.selected').forEach(el => el.classList.remove('selected'));
+            selectedWords = prevState;
+            selectedWords.forEach(id => {
+                const el = document.querySelector(`[data-id="${id}"]`);
+                if (el) el.classList.add('selected');
+            });
+            updateStats();
+        }
+        
+        // === بارگذاری فایل متنی ===
+        txtFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                renderText(event.target.result);
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+        
+        function renderText(text) {
+            const lines = text.split('\n');
+            let html = '';
+            allWords = [];
+            selectedWords.clear();
+            
+            lines.forEach((line, lineIndex) => {
+                if (line.trim() === '') {
+                    html += '<div class="line-break"></div>';
+                    return;
+                }
+                const words = line.split(/(\s+)/);
+                words.forEach((word, wordIndex) => {
+                    if (word.match(/^\s+$/)) {
+                        html += word;
+                    } else if (word.trim() !== '') {
+                        const wordId = `word-${lineIndex}-${wordIndex}`;
+                        allWords.push({ id: wordId, text: word.trim() });
+                        html += `<span class="word" data-id="${wordId}" onclick="window.toggleWord('${wordId}')">${word}</span>`;
+                    }
+                });
+            });
+            
+            textContainer.innerHTML = html;
+            totalWordsEl.textContent = allWords.length;
+            updateStats();
+        }
+        
+        // === تابع سراسری برای کلیک روی کلمات ===
+        window.toggleWord = function(wordId) {
+            saveHistory();
+            const wordEl = document.querySelector(`[data-id="${wordId}"]`);
+            if (selectedWords.has(wordId)) {
+                selectedWords.delete(wordId);
+                wordEl.classList.remove('selected');
+            } else {
+                selectedWords.add(wordId);
+                wordEl.classList.add('selected');
+            }
+            updateStats();
+        };
+        
+        // === دکمه‌های تب متن ===
+        clearBtn.addEventListener('click', function() {
+            if (selectedWords.size === 0) return;
+            if (confirm('آیا مطمئن هستید؟ تمام علامت‌ها پاک خواهند شد.')) {
+                saveHistory();
+                selectedWords.clear();
+                document.querySelectorAll('.word.selected').forEach(el => el.classList.remove('selected'));
+                updateStats();
+            }
+        });
+        
+        exportBtn.addEventListener('click', function() {
+            const selectedArray = Array.from(selectedWords).map(id => {
+                const word = allWords.find(w => w.id === id);
+                return word ? word.text : '';
+            }).filter(w => w);
+            const data = {
+                timestamp: new Date().toISOString(),
+                totalWords: allWords.length,
+                selectedCount: selectedArray.length,
+                words: selectedArray
+            };
+            downloadFile(JSON.stringify(data, null, 2), 'selected_words.json', 'application/json');
+        });
+        
+        exportTxtBtn.addEventListener('click', function() {
+            const selectedArray = Array.from(selectedWords).map(id => {
+                const word = allWords.find(w => w.id === id);
+                return word ? word.text : '';
+            }).filter(w => w);
+            downloadFile(selectedArray.join('\n'), 'selected_words.txt', 'text/plain');
+        });
+        
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // === کیبورد ===
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                exportBtn.click();
+            } else if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            }
+        });
+        
+        // === جابجایی تب‌ها ===
+        document.querySelectorAll('.tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-' + tab.dataset.tab).classList.remove('hidden');
+                document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // === بخش OCR (Tesseract.js v5) ===
+        async function initTesseract(lang = 'fas+ara') {
+            if (!ocrWorker || currentOcrLang !== lang) {
+                if (ocrWorker) {
+                    await ocrWorker.terminate();
+                }
+                ocrWorker = await Tesseract.createWorker(lang, 1, {
+                    logger: m => {
+                        console.log('[Tesseract]', m);
+                        if (m.status === 'loading tesseract core' || m.status === 'downloading') {
+                            const pct = Math.round((m.progress || 0) * 100);
+                            ocrStatusText.textContent = `بارگذاری modello: ${pct}%`;
+                        }
+                    }
+                });
+                currentOcrLang = lang;
+                ocrStatusText.textContent = 'مدل OCR آماده';
+            }
+            return ocrWorker;
+        }
+        
+        async function recognizeText(img) {
+            try {
+                const worker = await initTesseract();
+                // Tesseract v5 accepts canvas or data URL
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                const { data: { text } } = await worker.recognize(canvas);
+                return text;
+            } catch (err) {
+                console.error('OCR error:', err);
+                return '';
+            }
+        }
+        
+        // === آپلود تصویر ===
+        imageFileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) processImages(files);
+            e.target.value = '';
+        });
+        
+        // === Drag & Drop ===
+        uploadZone.addEventListener('click', function() {
+            imageFileInput.click();
+        });
+        
+        uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+        
+        uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+        });
+        
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) processImages(files);
+        });
+        
+        async function processImages(files) {
+            selectedWords = new Set();
+            allWords = [];
+            allPagesOcrText = [];
+            pagesList.innerHTML = '';
+            imageContainer.innerHTML = '';
+            imageContainer.classList.add('hidden');
+            ocrSpinner.classList.remove('hidden');
+            ocrStatusText.textContent = 'در حال پردازش OCR...';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const img = await loadImage(file);
+                if (!img) continue;
+                
+                const text = await recognizeText(img);
+                allPagesOcrText.push(text);
+                addPageThumbnail(img, i + 1);
+                createPageView(img, i + 1, text);
+            }
+            
+            ocrSpinner.classList.add('hidden');
+            ocrStatusText.textContent = 'پایان OCR. روی کلمات کلیک کنید.';
+            
+            if (files.length > 0) {
+                showPage(1);
+                imageContainer.classList.remove('hidden');
+            }
+        }
+        
+        function loadImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = () => resolve(null);
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        function addPageThumbnail(img, pageNum) {
+            const thumb = document.createElement('div');
+            thumb.className = 'page-thumb';
+            thumb.innerHTML = `<img src="${img.src}" alt="صفحه ${pageNum}"><div class="badge">${pageNum}</div>`;
+            thumb.onclick = () => showPage(pageNum);
+            pagesList.appendChild(thumb);
+        }
+        
+        function createPageView(img, pageNum, text) {
+            const panel = document.createElement('div');
+            panel.className = 'image-panel';
+            panel.style.display = 'none';
+            panel.dataset.page = pageNum;
+            panel.innerHTML = `<img src="${img.src}" alt="صفحه ${pageNum}"><div class="page-nav">صفحه ${pageNum}</div>`;
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'text-panel';
+            if (text && text.trim()) {
+                const words = text.split(/(\s+)/);
+                let html = '';
+                words.forEach((word, wIndex) => {
+                    if (word.match(/^\s+$/)) {
+                        html += word;
+                    } else if (word.trim() !== '') {
+                        const id = `img-word-${pageNum}-${wIndex}`;
+                        allWords.push({ id, text: word.trim() });
+                        html += `<span class="word" data-id="${id}" onclick="window.toggleWord('${id}')">${word}</span>`;
+                    }
+                });
+                textDiv.innerHTML = html;
+            } else {
+                textDiv.innerHTML = '<p style="color: #666; text-align: center;">متنی شناسایی نشد</p>';
+            }
+            panel.appendChild(textDiv);
+            imageContainer.appendChild(panel);
+            
+            totalWordsImgEl.textContent = allWords.length;
+        }
+        
+        function showPage(pageNum) {
+            currentPage = pageNum;
+            document.querySelectorAll('.page-thumb').forEach((t, i) => {
+                t.classList.toggle('active', i + 1 === pageNum);
+            });
+            document.querySelectorAll('.image-panel').forEach(p => {
+                p.style.display = parseInt(p.dataset.page) === pageNum ? 'block' : 'none';
+            });
+        }
+        
+        // === کیبورد برای تصاویر ===
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.shiftKey) return;
+            if (e.key === 'ArrowRight') {
+                const panels = document.querySelectorAll('.image-panel');
+                if (currentPage < panels.length) showPage(currentPage + 1);
+            }
+            if (e.key === 'ArrowLeft') {
+                if (currentPage > 1) showPage(currentPage - 1);
+            }
+        });
+        
+        // === دکمه‌های تب تصویر ===
+        clearBtnImg.addEventListener('click', function() {
+            if (selectedWords.size === 0) return;
+            if (confirm('آیا مطمئن هستید؟')) {
+                saveHistory();
+                selectedWords.clear();
+                document.querySelectorAll('.word.selected').forEach(el => el.classList.remove('selected'));
+                updateStats();
+            }
+        });
+        
+        exportBtnImg.addEventListener('click', function() { exportBtn.click(); });
+        exportTxtBtnImg.addEventListener('click', function() { exportTxtBtn.click(); });
+        
+        console.log('✅ ابزار علامت‌گذاری کلمات کتاب - بارگذاری شد');
+        console.log('ℹ️ برای بهترین نتیجه، فایل را با سرور محلی باز کنید: npx serve .');
+    })();
+    </script>
+</body>
+</html>

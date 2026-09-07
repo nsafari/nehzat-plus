@@ -1,6 +1,6 @@
-# رابطه کاربر و دانش‌آموز
+# رابطه کاربر و متربی
 
-این فایل توضیح می‌دهد که چگونه سیستم احراز هویت با دانش‌آموزان کار می‌کند.
+این فایل توضیح می‌دهد که چگونه سیستم احراز هویت با متربیان کار می‌کند.
 
 ## ساختار رابطه
 
@@ -23,7 +23,7 @@ export class User {
   imageUrl: string;
 
   @Column({ nullable: true })
-  studentId: number; // رابطه با دانش‌آموز
+  studentId: number; // رابطه با متربی
 
   @ManyToOne(() => Student, { nullable: true })
   @JoinColumn({ name: 'studentId' })
@@ -48,7 +48,7 @@ export class Student {
   email: string;
 
   @Column({ unique: true })
-  studentId: string; // کد دانش‌آموزی
+  studentId: string; // کد متربی
 }
 ```
 
@@ -66,7 +66,7 @@ Content-Type: application/json
 ```
 
 ### 2. پاسخ سیستم
-اگر کاربر دانش‌آموز باشد:
+اگر کاربر متربی باشد:
 ```json
 {
   "message": "Sign-in successful",
@@ -95,7 +95,7 @@ Content-Type: application/json
 
 ## کاربران نمونه
 
-### دانش‌آموزان
+### متربیان
 سیستم به‌صورت خودکار کاربران زیر را ایجاد می‌کند:
 
 | Username | Password | Student ID | نام |
@@ -125,7 +125,7 @@ async function login(username, password) {
   const data = await response.json();
   
   if (data.userType === 'student') {
-    // ذخیره اطلاعات دانش‌آموز
+    // ذخیره اطلاعات متربی
     localStorage.setItem('studentId', data.studentId);
     localStorage.setItem('studentInfo', JSON.stringify(data.studentInfo));
     localStorage.setItem('userType', 'student');
@@ -137,9 +137,9 @@ async function login(username, password) {
 }
 ```
 
-### 2. استفاده از شناسه دانش‌آموز
+### 2. استفاده از شناسه متربی
 ```javascript
-// دریافت شناسه دانش‌آموز جاری
+// دریافت شناسه متربی جاری
 const studentId = localStorage.getItem('studentId');
 
 // استفاده در API calls
@@ -150,7 +150,7 @@ const progress = await fetch(`/students/${studentId}/progress`, {
 });
 ```
 
-### 3. دریافت پروفایل دانش‌آموز جاری
+### 3. دریافت پروفایل متربی جاری
 ```javascript
 async function getCurrentStudentProfile() {
   const response = await fetch('/students/me/profile', {
@@ -174,18 +174,18 @@ async function getCurrentStudentProfile() {
 - `POST /auth/login` - ورود کاربر
 - `POST /auth/register` - ثبت‌نام کاربر جدید
 
-### دانش‌آموز
-- `GET /students/me/profile` - دریافت پروفایل دانش‌آموز جاری
-- `GET /students/:id/progress` - دریافت پیشرفت دانش‌آموز
+### متربی
+- `GET /students/me/profile` - دریافت پروفایل متربی جاری
+- `GET /students/:id/progress` - دریافت پیشرفت متربی
 - `POST /students/:id/assignments/:assignmentId/submit` - ارسال تکلیف
 
 ## نکات مهم
 
-1. **یک کاربر = یک دانش‌آموز**: هر کاربر می‌تواند حداکثر یک دانش‌آموز باشد
+1. **یک کاربر = یک متربی**: هر کاربر می‌تواند حداکثر یک متربی باشد
 2. **احراز هویت اجباری**: تمام APIها نیاز به توکن معتبر دارند
-3. **شناسه دانش‌آموز**: پس از ورود، `studentId` در پاسخ برگردانده می‌شود
+3. **شناسه متربی**: پس از ورود، `studentId` در پاسخ برگردانده می‌شود
 4. **نوع کاربر**: سیستم بین `student` و `admin` تمایز قائل می‌شود
-5. **دسترسی**: دانش‌آموزان فقط به داده‌های خود دسترسی دارند
+5. **دسترسی**: متربیان فقط به داده‌های خود دسترسی دارند
 
 ## مثال کامل Frontend
 
@@ -206,7 +206,7 @@ class AuthService {
     const data = await response.json();
     
     if (data.userType === 'student') {
-      // ذخیره اطلاعات دانش‌آموز
+      // ذخیره اطلاعات متربی
       localStorage.setItem('token', 'your-jwt-token'); // در آینده JWT
       localStorage.setItem('studentId', data.studentId);
       localStorage.setItem('studentInfo', JSON.stringify(data.studentInfo));

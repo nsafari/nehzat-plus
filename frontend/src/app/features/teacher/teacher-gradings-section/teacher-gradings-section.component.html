@@ -1,0 +1,43 @@
+<div class="card-section">
+  <h2>نمره‌دهی‌های انجام شده</h2>
+  @if (gradings$ | async; as gradings) {
+    @if (gradings.length === 0) {
+      <p class="muted">هنوز نمره‌دهی‌ای انجام نشده است.</p>
+    } @else {
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>متربی</th>
+              <th>تکلیف</th>
+              <th>نمره روزانه</th>
+              <th>نمره تجمعی</th>
+              <th>وضعیت</th>
+              <th>بازخورد</th>
+              <th>تاریخ</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of gradings; track g.id) {
+              <tr>
+                <td data-label="متربی">#{{ g.submissionId }}</td>
+                <td data-label="تکلیف">#{{ g.submission?.assignmentId ?? '-' }}</td>
+                <td data-label="نمره روزانه">{{ g.dailyScore ?? '-' }}</td>
+                <td data-label="نمره تجمعی">{{ g.cumulativeScore ?? '-' }}</td>
+                <td data-label="وضعیت">
+                  <span class="status-badge" [class]="getStatusClass(g.status)">
+                    {{ getStatusLabel(g.status) }}
+                  </span>
+                </td>
+                <td data-label="بازخورد">{{ g.feedback ?? '-' }}</td>
+                <td data-label="تاریخ">{{ g.gradedAt | date:'yyyy/MM/dd HH:mm' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  } @else {
+    <p class="muted">در حال بارگذاری...</p>
+  }
+</div>

@@ -1,0 +1,1308 @@
+<div class="content">
+ <p class="first">
+  Welcome to the
+  <a href="/">
+   Quranic Arabic Corpus
+  </a>
+  , an annotated linguistic resource which shows the Arabic grammar,
+        syntax and morphology for each word in the Holy Quran. Click on an Arabic word
+        below to see details of the word's grammar, or to suggest a correction.
+ </p>
+ <table border="0" cellpadding="0" cellspacing="0" class="selectChapter">
+  <tr>
+   <td>
+    <select id="chapterList" name="chapterList" onchange="javascript:updateVerses();">
+     <option value="1">
+      Chapter (1) sūrat l-fātiḥah (The Opening)
+     </option>
+     <option value="2">
+      Chapter (2) sūrat l-baqarah (The Cow)
+     </option>
+     <option value="3">
+      Chapter (3) sūrat āl ʿim'rān (The Family of Imrān)
+     </option>
+     <option value="4">
+      Chapter (4) sūrat l-nisāa (The Women)
+     </option>
+     <option value="5">
+      Chapter (5) sūrat l-māidah (The Table spread with Food)
+     </option>
+     <option value="6">
+      Chapter (6) sūrat l-anʿām (The Cattle)
+     </option>
+     <option value="7">
+      Chapter (7) sūrat l-aʿrāf (The Heights)
+     </option>
+     <option value="8">
+      Chapter (8) sūrat l-anfāl (The Spoils of War)
+     </option>
+     <option value="9">
+      Chapter (9) sūrat l-tawbah (The Repentance)
+     </option>
+     <option value="10">
+      Chapter (10) sūrat yūnus (Jonah)
+     </option>
+     <option value="11">
+      Chapter (11) sūrat hūd (Hud)
+     </option>
+     <option value="12">
+      Chapter (12) sūrat yūsuf (Joseph)
+     </option>
+     <option value="13">
+      Chapter (13) sūrat l-raʿd (The Thunder)
+     </option>
+     <option value="14">
+      Chapter (14) sūrat ib'rāhīm (Abraham)
+     </option>
+     <option value="15">
+      Chapter (15) sūrat l-ḥij'r (The Rocky Tract)
+     </option>
+     <option value="16">
+      Chapter (16) sūrat l-naḥl (The Bees)
+     </option>
+     <option value="17">
+      Chapter (17) sūrat l-isrā (The Night Journey)
+     </option>
+     <option value="18">
+      Chapter (18) sūrat l-kahf (The Cave)
+     </option>
+     <option value="19">
+      Chapter (19) sūrat maryam (Mary)
+     </option>
+     <option value="20">
+      Chapter (20) sūrat ṭā hā
+     </option>
+     <option value="21">
+      Chapter (21) sūrat l-anbiyāa (The Prophets)
+     </option>
+     <option value="22">
+      Chapter (22) sūrat l-ḥaj (The Pilgrimage)
+     </option>
+     <option value="23">
+      Chapter (23) sūrat l-mu'minūn (The Believers)
+     </option>
+     <option value="24">
+      Chapter (24) sūrat l-nūr (The Light)
+     </option>
+     <option value="25">
+      Chapter (25) sūrat l-fur'qān (The Criterion)
+     </option>
+     <option value="26">
+      Chapter (26) sūrat l-shuʿarā (The Poets)
+     </option>
+     <option value="27">
+      Chapter (27) sūrat l-naml (The Ants)
+     </option>
+     <option value="28">
+      Chapter (28) sūrat l-qaṣaṣ (The Stories)
+     </option>
+     <option value="29">
+      Chapter (29) sūrat l-ʿankabūt (The Spider)
+     </option>
+     <option value="30">
+      Chapter (30) sūrat l-rūm (The Romans)
+     </option>
+     <option value="31">
+      Chapter (31) sūrat luq'mān
+     </option>
+     <option value="32">
+      Chapter (32) sūrat l-sajdah (The Prostration)
+     </option>
+     <option value="33">
+      Chapter (33) sūrat l-aḥzāb (The Combined Forces)
+     </option>
+     <option value="34">
+      Chapter (34) sūrat saba (Sheba)
+     </option>
+     <option value="35">
+      Chapter (35) sūrat fāṭir (The Originator)
+     </option>
+     <option value="36">
+      Chapter (36) sūrat yā sīn
+     </option>
+     <option value="37">
+      Chapter (37) sūrat l-ṣāfāt (Those Ranges in Ranks)
+     </option>
+     <option value="38">
+      Chapter (38) sūrat ṣād
+     </option>
+     <option value="39">
+      Chapter (39) sūrat l-zumar (The Groups)
+     </option>
+     <option value="40">
+      Chapter (40) sūrat ghāfir (The Forgiver God)
+     </option>
+     <option value="41">
+      Chapter (41) sūrat fuṣṣilat (Explained in Detail)
+     </option>
+     <option value="42">
+      Chapter (42) sūrat l-shūrā (Consultation)
+     </option>
+     <option value="43">
+      Chapter (43) sūrat l-zukh'ruf (The Gold Adornment)
+     </option>
+     <option value="44">
+      Chapter (44) sūrat l-dukhān (The Smoke)
+     </option>
+     <option value="45">
+      Chapter (45) sūrat l-jāthiyah (Crouching)
+     </option>
+     <option value="46">
+      Chapter (46) sūrat l-aḥqāf (The Curved Sand-hills)
+     </option>
+     <option value="47">
+      Chapter (47) sūrat muḥammad
+     </option>
+     <option value="48">
+      Chapter (48) sūrat l-fatḥ (The Victory)
+     </option>
+     <option value="49">
+      Chapter (49) sūrat l-ḥujurāt (The Dwellings)
+     </option>
+     <option value="50">
+      Chapter (50) sūrat qāf
+     </option>
+     <option value="51">
+      Chapter (51) sūrat l-dhāriyāt (The Wind that Scatter)
+     </option>
+     <option value="52">
+      Chapter (52) sūrat l-ṭūr (The Mount)
+     </option>
+     <option value="53">
+      Chapter (53) sūrat l-najm (The Star)
+     </option>
+     <option value="54">
+      Chapter (54) sūrat l-qamar (The Moon)
+     </option>
+     <option value="55">
+      Chapter (55) sūrat l-raḥmān (The Most Gracious)
+     </option>
+     <option value="56">
+      Chapter (56) sūrat l-wāqiʿah (The Event)
+     </option>
+     <option value="57">
+      Chapter (57) sūrat l-ḥadīd (The Iron)
+     </option>
+     <option value="58">
+      Chapter (58) sūrat l-mujādilah (She That Disputeth)
+     </option>
+     <option value="59">
+      Chapter (59) sūrat l-ḥashr (The Gathering)
+     </option>
+     <option value="60">
+      Chapter (60) sūrat l-mum'taḥanah (The Woman to be examined)
+     </option>
+     <option value="61">
+      Chapter (61) sūrat l-ṣaf (The Row)
+     </option>
+     <option value="62">
+      Chapter (62) sūrat l-jumuʿah (Friday)
+     </option>
+     <option value="63">
+      Chapter (63) sūrat l-munāfiqūn (The Hypocrites)
+     </option>
+     <option value="64">
+      Chapter (64) sūrat l-taghābun (Mutual Loss &amp; Gain)
+     </option>
+     <option value="65">
+      Chapter (65) sūrat l-ṭalāq (The Divorce)
+     </option>
+     <option value="66">
+      Chapter (66) sūrat l-taḥrīm (The Prohibition)
+     </option>
+     <option value="67">
+      Chapter (67) sūrat l-mulk (Dominion)
+     </option>
+     <option value="68">
+      Chapter (68) sūrat l-qalam (The Pen)
+     </option>
+     <option value="69">
+      Chapter (69) sūrat l-ḥāqah (The Inevitable)
+     </option>
+     <option value="70">
+      Chapter (70) sūrat l-maʿārij (The Ways of Ascent)
+     </option>
+     <option selected="selected" value="71">
+      Chapter (71) sūrat nūḥ
+     </option>
+     <option value="72">
+      Chapter (72) sūrat l-jin (The Jinn)
+     </option>
+     <option value="73">
+      Chapter (73) sūrat l-muzamil (The One wrapped in Garments)
+     </option>
+     <option value="74">
+      Chapter (74) sūrat l-mudathir (The One Enveloped)
+     </option>
+     <option value="75">
+      Chapter (75) sūrat l-qiyāmah (The Resurrection)
+     </option>
+     <option value="76">
+      Chapter (76) sūrat l-insān (Man)
+     </option>
+     <option value="77">
+      Chapter (77) sūrat l-mur'salāt (Those sent forth)
+     </option>
+     <option value="78">
+      Chapter (78) sūrat l-naba (The Great News)
+     </option>
+     <option value="79">
+      Chapter (79) sūrat l-nāziʿāt (Those who Pull Out)
+     </option>
+     <option value="80">
+      Chapter (80) sūrat ʿabasa (He frowned)
+     </option>
+     <option value="81">
+      Chapter (81) sūrat l-takwīr (The Overthrowing)
+     </option>
+     <option value="82">
+      Chapter (82) sūrat l-infiṭār (The Cleaving)
+     </option>
+     <option value="83">
+      Chapter (83) sūrat l-muṭafifīn (Those Who Deal in Fraud)
+     </option>
+     <option value="84">
+      Chapter (84) sūrat l-inshiqāq (The Splitting Asunder)
+     </option>
+     <option value="85">
+      Chapter (85) sūrat l-burūj (The Big Stars)
+     </option>
+     <option value="86">
+      Chapter (86) sūrat l-ṭāriq (The Night-Comer)
+     </option>
+     <option value="87">
+      Chapter (87) sūrat l-aʿlā (The Most High)
+     </option>
+     <option value="88">
+      Chapter (88) sūrat l-ghāshiyah (The Overwhelming)
+     </option>
+     <option value="89">
+      Chapter (89) sūrat l-fajr (The Dawn)
+     </option>
+     <option value="90">
+      Chapter (90) sūrat l-balad (The City)
+     </option>
+     <option value="91">
+      Chapter (91) sūrat l-shams (The Sun)
+     </option>
+     <option value="92">
+      Chapter (92) sūrat l-layl (The Night)
+     </option>
+     <option value="93">
+      Chapter (93) sūrat l-ḍuḥā (The Forenoon)
+     </option>
+     <option value="94">
+      Chapter (94) sūrat l-sharḥ (The Opening Forth)
+     </option>
+     <option value="95">
+      Chapter (95) sūrat l-tīn (The Fig)
+     </option>
+     <option value="96">
+      Chapter (96) sūrat l-ʿalaq (The Clot)
+     </option>
+     <option value="97">
+      Chapter (97) sūrat l-qadr (The Night of Decree)
+     </option>
+     <option value="98">
+      Chapter (98) sūrat l-bayinah (The Clear Evidence)
+     </option>
+     <option value="99">
+      Chapter (99) sūrat l-zalzalah (The Earthquake)
+     </option>
+     <option value="100">
+      Chapter (100) sūrat l-ʿādiyāt (Those That Run)
+     </option>
+     <option value="101">
+      Chapter (101) sūrat l-qāriʿah (The Striking Hour)
+     </option>
+     <option value="102">
+      Chapter (102) sūrat l-takāthur (The piling Up)
+     </option>
+     <option value="103">
+      Chapter (103) sūrat l-ʿaṣr (Time)
+     </option>
+     <option value="104">
+      Chapter (104) sūrat l-humazah (The Slanderer)
+     </option>
+     <option value="105">
+      Chapter (105) sūrat l-fīl (The Elephant)
+     </option>
+     <option value="106">
+      Chapter (106) sūrat quraysh
+     </option>
+     <option value="107">
+      Chapter (107) sūrat l-māʿūn (Small Kindnesses)
+     </option>
+     <option value="108">
+      Chapter (108) sūrat l-kawthar (A River in Paradise)
+     </option>
+     <option value="109">
+      Chapter (109) sūrat l-kāfirūn (The Disbelievers)
+     </option>
+     <option value="110">
+      Chapter (110) sūrat l-naṣr (The Help)
+     </option>
+     <option value="111">
+      Chapter (111) sūrat l-masad (The Palm Fibre)
+     </option>
+     <option value="112">
+      Chapter (112) sūrat l-ikhlāṣ (Sincerity)
+     </option>
+     <option value="113">
+      Chapter (113) sūrat l-falaq (The Daybreak)
+     </option>
+     <option value="114">
+      Chapter (114) sūrat l-nās (Mankind)
+     </option>
+    </select>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <select id="verseList" name="verseList">
+     <option selected="selected" value="1">
+      Verse (71:1)
+     </option>
+     <option value="2">
+      Verse (71:2)
+     </option>
+     <option value="3">
+      Verse (71:3)
+     </option>
+     <option value="4">
+      Verse (71:4)
+     </option>
+     <option value="5">
+      Verse (71:5)
+     </option>
+     <option value="6">
+      Verse (71:6)
+     </option>
+     <option value="7">
+      Verse (71:7)
+     </option>
+     <option value="8">
+      Verse (71:8)
+     </option>
+     <option value="9">
+      Verse (71:9)
+     </option>
+     <option value="10">
+      Verse (71:10)
+     </option>
+     <option value="11">
+      Verse (71:11)
+     </option>
+     <option value="12">
+      Verse (71:12)
+     </option>
+     <option value="13">
+      Verse (71:13)
+     </option>
+     <option value="14">
+      Verse (71:14)
+     </option>
+     <option value="15">
+      Verse (71:15)
+     </option>
+     <option value="16">
+      Verse (71:16)
+     </option>
+     <option value="17">
+      Verse (71:17)
+     </option>
+     <option value="18">
+      Verse (71:18)
+     </option>
+     <option value="19">
+      Verse (71:19)
+     </option>
+     <option value="20">
+      Verse (71:20)
+     </option>
+     <option value="21">
+      Verse (71:21)
+     </option>
+     <option value="22">
+      Verse (71:22)
+     </option>
+     <option value="23">
+      Verse (71:23)
+     </option>
+     <option value="24">
+      Verse (71:24)
+     </option>
+     <option value="25">
+      Verse (71:25)
+     </option>
+     <option value="26">
+      Verse (71:26)
+     </option>
+     <option value="27">
+      Verse (71:27)
+     </option>
+     <option value="28">
+      Verse (71:28)
+     </option>
+    </select>
+    <button onclick="navigateVerse();" type="button">
+     Go
+    </button>
+   </td>
+  </tr>
+ </table>
+ <div class="bismi">
+  <img src="/images/quran-bismi1.png"/>
+ </div>
+ <h3 class="chapterName">
+  Chapter (71) sūrat nūḥ
+ </h3>
+ <table border="0" cellpadding="0" cellspacing="0" class="morphologyTable">
+  <tr class="head">
+   <td>
+    Translation
+   </td>
+   <td>
+    Arabic word
+   </td>
+   <td class="head3">
+    Syntax and morphology
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:1)
+    </span>
+    <br/>
+    <span class="phonetic">
+     innā
+    </span>
+    <br/>
+    Indeed, We
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:1)">
+     <img src="/wordimage?id=73569"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segPink">
+     ACC
+    </b>
+    – accusative particle
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 1st person plural object pronoun
+    <div class="arabicGrammar">
+     حرف نصب و«نا» ضمير متصل في محل نصب اسم «ان»
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:2)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=rsl#(71:1:2)">
+     arsalnā
+    </a>
+    <br/>
+    [We] sent
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:2)" name="(71:1:2)">
+     <img src="/wordimage?id=73570"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSeagreen">
+     V
+    </b>
+    – 1st person plural (form IV) perfect verb
+    <br/>
+    <b class="segSky">
+     PRON
+    </b>
+    – subject pronoun
+    <div class="arabicGrammar">
+     فعل ماض و«نا» ضمير متصل في محل رفع فاعل
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:3)
+    </span>
+    <br/>
+    <span class="phonetic">
+     nūḥan
+    </span>
+    <br/>
+    Nuh
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:3)" name="(71:1:3)">
+     <img src="/wordimage?id=73571"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segBlue">
+     PN
+    </b>
+    – accusative masculine proper noun →
+    <a href="/concept.jsp?id=nuh">
+     Nuh
+    </a>
+    <div class="arabicGrammar">
+     اسم علم منصوب
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:4)
+    </span>
+    <br/>
+    <a href="qurandictionary.jsp?q=%3CilaY%60#(71:1:4)">
+     ilā
+    </a>
+    <br/>
+    to
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:4)" name="(71:1:4)">
+     <img src="/wordimage?id=73572"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segRust">
+     P
+    </b>
+    – preposition
+    <div class="arabicGrammar">
+     حرف جر
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:5)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=qwm#(71:1:5)">
+     qawmihi
+    </a>
+    <br/>
+    his people,
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:5)" name="(71:1:5)">
+     <img src="/wordimage?id=73573"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSky">
+     N
+    </b>
+    – genitive masculine noun
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 3rd person masculine singular possessive pronoun
+    <div class="arabicGrammar">
+     اسم مجرور والهاء ضمير متصل في محل جر بالاضافة
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:6)
+    </span>
+    <br/>
+    <span class="phonetic">
+     an
+    </span>
+    <br/>
+    that
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:6)" name="(71:1:6)">
+     <img src="/wordimage?id=73574"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segGold">
+     SUB
+    </b>
+    – subordinating conjunction
+    <div class="arabicGrammar">
+     حرف مصدري
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:7)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=n*r#(71:1:7)">
+     andhir
+    </a>
+    <br/>
+    "Warn
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:7)" name="(71:1:7)">
+     <img src="/wordimage?id=73575"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSeagreen">
+     V
+    </b>
+    – 2nd person masculine singular (form IV) imperative verb
+    <div class="arabicGrammar">
+     فعل أمر
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:8)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=qwm#(71:1:8)">
+     qawmaka
+    </a>
+    <br/>
+    your people
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:8)" name="(71:1:8)">
+     <img src="/wordimage?id=73576"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSky">
+     N
+    </b>
+    – accusative masculine noun
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 2nd person masculine singular possessive pronoun
+    <div class="arabicGrammar">
+     اسم منصوب والكاف ضمير متصل في محل جر بالاضافة
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:9)
+    </span>
+    <br/>
+    <span class="phonetic">
+     min
+    </span>
+    <br/>
+    from
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:9)" name="(71:1:9)">
+     <img src="/wordimage?id=73577"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segRust">
+     P
+    </b>
+    – preposition
+    <div class="arabicGrammar">
+     حرف جر
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:10)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=qbl#(71:1:10)">
+     qabli
+    </a>
+    <br/>
+    before
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:10)" name="(71:1:10)">
+     <img src="/wordimage?id=73578"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSky">
+     N
+    </b>
+    – genitive noun
+    <div class="arabicGrammar">
+     اسم مجرور
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:11)
+    </span>
+    <br/>
+    <span class="phonetic">
+     an
+    </span>
+    <br/>
+    [that]
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:11)" name="(71:1:11)">
+     <img src="/wordimage?id=73579"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segGold">
+     SUB
+    </b>
+    – subordinating conjunction
+    <div class="arabicGrammar">
+     حرف مصدري
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:12)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=Aty#(71:1:12)">
+     yatiyahum
+    </a>
+    <br/>
+    comes to them
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:12)" name="(71:1:12)">
+     <img src="/wordimage?id=73580"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSeagreen">
+     V
+    </b>
+    – 3rd person masculine singular imperfect verb, subjunctive mood
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 3rd person masculine plural object pronoun
+    <div class="arabicGrammar">
+     فعل مضارع منصوب و«هم» ضمير متصل في محل نصب مفعول به
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:13)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=E*b#(71:1:13)">
+     ʿadhābun
+    </a>
+    <br/>
+    a punishment
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:1:13)" name="(71:1:13)">
+     <img src="/wordimage?id=73581"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSky">
+     N
+    </b>
+    – nominative masculine indefinite noun
+    <div class="arabicGrammar">
+     اسم مرفوع
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:1:14)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=Alm#(71:1:14)">
+     alīmun
+    </a>
+    <br/>
+    painful."
+   </td>
+   <td class="ic">
+    <img class="num" src="/images/verses/1.png"/>
+    <a href="/wordmorphology.jsp?location=(71:1:14)" name="(71:1:14)">
+     <img src="/wordimage?id=73582"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segPurple">
+     ADJ
+    </b>
+    – nominative masculine singular indefinite adjective
+    <div class="arabicGrammar">
+     صفة مرفوعة
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:2:1)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=qwl#(71:2:1)">
+     qāla
+    </a>
+    <br/>
+    He said,
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:2:1)" name="(71:2:1)">
+     <img src="/wordimage?id=73583"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSeagreen">
+     V
+    </b>
+    – 3rd person masculine singular perfect verb
+    <div class="arabicGrammar">
+     فعل ماض
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:2:2)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=qwm#(71:2:2)">
+     yāqawmi
+    </a>
+    <br/>
+    "O my people!
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:2:2)" name="(71:2:2)">
+     <img src="/wordimage?id=73584"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segGreen">
+     VOC
+    </b>
+    – prefixed vocative particle
+    <i class="ab">
+     ya
+    </i>
+    <br/>
+    <b class="segSky">
+     N
+    </b>
+    – accusative masculine noun
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 1st person singular possessive pronoun
+    <div class="arabicGrammar">
+     أداة نداء
+     <br/>
+     اسم منصوب والياء المحذوفة ضمير متصل في محل جر بالاضافة
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:2:3)
+    </span>
+    <br/>
+    <span class="phonetic">
+     innī
+    </span>
+    <br/>
+    Indeed, I am
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:2:3)" name="(71:2:3)">
+     <img src="/wordimage?id=73585"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segPink">
+     ACC
+    </b>
+    – accusative particle
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 1st person singular object pronoun
+    <div class="arabicGrammar">
+     حرف نصب والياء ضمير متصل في محل نصب اسم «ان»
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:2:4)
+    </span>
+    <br/>
+    <span class="phonetic">
+     lakum
+    </span>
+    <br/>
+    to you
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:2:4)" name="(71:2:4)">
+     <img src="/wordimage?id=73586"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segRust">
+     P
+    </b>
+    – prefixed preposition
+    <i class="ab">
+     lām
+    </i>
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 2nd person masculine plural personal pronoun
+    <div class="arabicGrammar">
+     جار ومجرور
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:2:5)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=n*r#(71:2:5)">
+     nadhīrun
+    </a>
+    <br/>
+    a warner
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:2:5)" name="(71:2:5)">
+     <img src="/wordimage?id=73587"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSky">
+     N
+    </b>
+    – nominative masculine indefinite noun
+    <div class="arabicGrammar">
+     اسم مرفوع
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:2:6)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=byn#(71:2:6)">
+     mubīnun
+    </a>
+    <br/>
+    clear.
+   </td>
+   <td class="ic">
+    <img class="num" src="/images/verses/2.png"/>
+    <a href="/wordmorphology.jsp?location=(71:2:6)" name="(71:2:6)">
+     <img src="/wordimage?id=73588"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segPurple">
+     ADJ
+    </b>
+    – nominative masculine indefinite (form IV) active participle
+    <div class="arabicGrammar">
+     صفة مرفوعة
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:3:1)
+    </span>
+    <br/>
+    <span class="phonetic">
+     ani
+    </span>
+    <br/>
+    That
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:3:1)" name="(71:3:1)">
+     <img src="/wordimage?id=73589"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segGold">
+     SUB
+    </b>
+    – subordinating conjunction
+    <div class="arabicGrammar">
+     حرف مصدري
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:3:2)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=Ebd#(71:3:2)">
+     uʿ'budū
+    </a>
+    <br/>
+    Worship
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:3:2)" name="(71:3:2)">
+     <img src="/wordimage?id=73590"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segSeagreen">
+     V
+    </b>
+    – 2nd person masculine plural imperative verb
+    <br/>
+    <b class="segSky">
+     PRON
+    </b>
+    – subject pronoun
+    <div class="arabicGrammar">
+     فعل أمر والواو ضمير متصل في محل رفع فاعل
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:3:3)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=Alh#(71:3:3)">
+     l-laha
+    </a>
+    <br/>
+    Allah,
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:3:3)" name="(71:3:3)">
+     <img src="/wordimage?id=73591"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segBlue">
+     PN
+    </b>
+    – accusative proper noun →
+    <a href="/concept.jsp?id=allah">
+     Allah
+    </a>
+    <div class="arabicGrammar">
+     لفظ الجلالة منصوب
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:3:4)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=wqy#(71:3:4)">
+     wa-ittaqūhu
+    </a>
+    <br/>
+    and fear Him
+   </td>
+   <td class="ic">
+    <a href="/wordmorphology.jsp?location=(71:3:4)" name="(71:3:4)">
+     <img src="/wordimage?id=73592"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segNavy">
+     CONJ
+    </b>
+    – prefixed conjunction
+    <i class="ab">
+     wa
+    </i>
+    (and)
+    <br/>
+    <b class="segSeagreen">
+     V
+    </b>
+    – 2nd person masculine plural (form VIII) imperative verb
+    <br/>
+    <b class="segSky">
+     PRON
+    </b>
+    – subject pronoun
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 3rd person masculine singular object pronoun
+    <div class="arabicGrammar">
+     الواو عاطفة
+     <br/>
+     فعل أمر والواو ضمير متصل في محل رفع فاعل والهاء ضمير متصل في محل نصب مفعول به
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <span class="location">
+     (71:3:5)
+    </span>
+    <br/>
+    <a href="/qurandictionary.jsp?q=TwE#(71:3:5)">
+     wa-aṭīʿūni
+    </a>
+    <br/>
+    and obey me.
+   </td>
+   <td class="ic">
+    <img class="num" src="/images/verses/3.png"/>
+    <a href="/wordmorphology.jsp?location=(71:3:5)" name="(71:3:5)">
+     <img src="/wordimage?id=73593"/>
+    </a>
+   </td>
+   <td class="col3">
+    <b class="segNavy">
+     CONJ
+    </b>
+    – prefixed conjunction
+    <i class="ab">
+     wa
+    </i>
+    (and)
+    <br/>
+    <b class="segSeagreen">
+     V
+    </b>
+    – 2nd person masculine plural (form IV) imperative verb
+    <br/>
+    <b class="segSky">
+     PRON
+    </b>
+    – subject pronoun
+    <br/>
+    <b class="segMetal">
+     PRON
+    </b>
+    – 1st person singular object pronoun
+    <div class="arabicGrammar">
+     الواو عاطفة
+     <br/>
+     فعل أمر والواو ضمير متصل في محل رفع فاعل والياء المحذوفة ضمير متصل في محل نصب مفعول به
+    </div>
+   </td>
+  </tr>
+ </table>
+ <div id="flashTitle">
+  <a href="/options.jsp?t=1&amp;chapter=71&amp;verse=1&amp;token=1">
+   Quran Recitation by Saad Al-Ghamadi
+  </a>
+ </div>
+ <div id="flashPlayer">
+ </div>
+ <div class="navigationPane">
+  <a href="?chapter=70&amp;verse=44">
+   <img src="/images/nav-previous.png"/>
+  </a>
+  Verse
+  <b>
+   1-3
+  </b>
+  |
+  <a href="?chapter=71&amp;verse=4">
+   4-6
+  </a>
+  |
+  <a href="?chapter=71&amp;verse=7">
+   7-10
+  </a>
+  |
+  <a href="?chapter=71&amp;verse=11">
+   11-14
+  </a>
+  |
+  <a href="?chapter=71&amp;verse=15">
+   15-18
+  </a>
+  |
+  <a href="?chapter=71&amp;verse=19">
+   19-22
+  </a>
+  |
+  <a href="?chapter=71&amp;verse=23">
+   23-25
+  </a>
+  |
+  <a href="?chapter=71&amp;verse=26">
+   26-27
+  </a>
+  |
+  <a href="?chapter=71&amp;verse=28">
+   28
+  </a>
+  <a href="?chapter=71&amp;verse=4">
+   <img src="/images/nav-next.png"/>
+  </a>
+ </div>
+</div>

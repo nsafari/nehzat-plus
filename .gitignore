@@ -1,0 +1,24 @@
+# Log files
+*.log
+*.err
+stderr.txt
+stdout.txt
+
+# Build output
+dist/
+**/dist/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# IDE
+.omo/
+.playwright-mcp/
+.opencode/
+
+# Agent-generated artifacts
+CURRICULUM-DESIGN.md
+docs/PAGE_DEVELOPMENT_PLAN.md
+docs/PAGE_DEVELOPMENT_PLAN.md.bak
+docs/plans/

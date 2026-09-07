@@ -1,0 +1,272 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using EducationalPlatform.Nehzat.Application.DTOs;
+using EducationalPlatform.Nehzat.Application.Interfaces;
+using EducationalPlatform.Nehzat.Application.Constants;
+using EducationalPlatform.Nehzat.Application.Exceptions;
+
+namespace EducationalPlatform.Nehzat.API.Controllers;
+
+[ApiController]
+[Route("api/hadith")]
+[Authorize]
+public class HadithController : ControllerBase
+{
+    private readonly IHadithService _service;
+
+    public HadithController(IHadithService service)
+    {
+        _service = service;
+    }
+
+    // Books
+    [HttpGet("books")]
+    public async Task<IActionResult> GetAllBooks()
+    {
+        return Ok(await _service.GetAllBooksAsync());
+    }
+
+    [HttpGet("books/{id}")]
+    public async Task<IActionResult> GetBookById(int id)
+    {
+        var result = await _service.FindBookByIdAsync(id);
+        if (result == null) return NotFound(new { message = "کتاب حدیث یافت نشد." });
+        return Ok(result);
+    }
+
+    [HttpPost("books")]
+    public async Task<IActionResult> CreateBook([FromBody] CreateHadithBookRequest request)
+    {
+        try
+        {
+            var result = await _service.CreateBookAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException)
+        {
+            return Conflict(GenericErrorMessages.Conflict);
+        }
+    }
+
+    [HttpPut("books/{id}")]
+    public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateHadithBookRequest request)
+    {
+        try
+        {
+            var result = await _service.UpdateBookAsync(id, request);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(GenericErrorMessages.NotFound);
+        }
+    }
+
+    [HttpDelete("books/{id}")]
+    public async Task<IActionResult> DeleteBook(int id)
+    {
+        try
+        {
+            await _service.DeleteBookAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(GenericErrorMessages.NotFound);
+        }
+    }
+
+    // Chapters
+    [HttpGet("books/{bookId}/chapters")]
+    public async Task<IActionResult> GetChaptersByBook(int bookId)
+    {
+        return Ok(await _service.GetChaptersByBookAsync(bookId));
+    }
+
+    [HttpGet("chapters/{id}")]
+    public async Task<IActionResult> GetChapterById(int id)
+    {
+        var result = await _service.FindChapterByIdAsync(id);
+        if (result == null) return NotFound(new { message = "باب حدیث یافت نشد." });
+        return Ok(result);
+    }
+
+    [HttpPost("chapters")]
+    public async Task<IActionResult> CreateChapter([FromBody] CreateHadithChapterRequest request)
+    {
+        try
+        {
+            var result = await _service.CreateChapterAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException)
+        {
+            return Conflict(GenericErrorMessages.Conflict);
+        }
+    }
+
+    [HttpPut("chapters/{id}")]
+    public async Task<IActionResult> UpdateChapter(int id, [FromBody] UpdateHadithChapterRequest request)
+    {
+        try
+        {
+            var result = await _service.UpdateChapterAsync(id, request);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(GenericErrorMessages.NotFound);
+        }
+    }
+
+    [HttpDelete("chapters/{id}")]
+    public async Task<IActionResult> DeleteChapter(int id)
+    {
+        try
+        {
+            await _service.DeleteChapterAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(GenericErrorMessages.NotFound);
+        }
+    }
+
+    // Hadiths
+    [HttpGet("chapters/{chapterId}/hadiths")]
+    public async Task<IActionResult> GetHadithsByChapter(int chapterId)
+    {
+        return Ok(await _service.GetHadithsByChapterAsync(chapterId));
+    }
+
+    [HttpGet("hadith/{id}")]
+    public async Task<IActionResult> GetHadithById(int id)
+    {
+        var result = await _service.FindHadithByIdAsync(id);
+        if (result == null) return NotFound(new { message = "حدیث یافت نشد." });
+        return Ok(result);
+    }
+
+    [HttpPost("hadith")]
+    public async Task<IActionResult> CreateHadith([FromBody] CreateHadithRequest request)
+    {
+        try
+        {
+            var result = await _service.CreateHadithAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException)
+        {
+            return Conflict(GenericErrorMessages.Conflict);
+        }
+    }
+
+    [HttpPut("hadith/{id}")]
+    public async Task<IActionResult> UpdateHadith(int id, [FromBody] UpdateHadithRequest request)
+    {
+        try
+        {
+            var result = await _service.UpdateHadithAsync(id, request);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(GenericErrorMessages.NotFound);
+        }
+    }
+
+    [HttpDelete("hadith/{id}")]
+    public async Task<IActionResult> DeleteHadith(int id)
+    {
+        try
+        {
+            await _service.DeleteHadithAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(GenericErrorMessages.NotFound);
+        }
+    }
+
+    // Progress & Review
+    [HttpGet("review/due")]
+    public async Task<IActionResult> GetDueForReview([FromQuery] int count = 10)
+    {
+        // TODO: userId extraction from claims should be implemented
+        return Ok(await _service.GetDueForReviewAsync(count));
+    }
+
+    [HttpPost("review")]
+    public async Task<IActionResult> SubmitReview([FromBody] SubmitReviewRequest request)
+    {
+        var userIdClaim = User.FindFirst("userId")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            return Unauthorized(GenericErrorMessages.BadRequest);
+
+        try
+        {
+            var result = await _service.SubmitReviewAsync(userId, request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException)
+        {
+            return Conflict(GenericErrorMessages.Conflict);
+        }
+    }
+
+    [HttpGet("progress/summary")]
+    public async Task<IActionResult> GetProgressSummary()
+    {
+        var userIdClaim = User.FindFirst("userId")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "شناسه کاربر نامعتبر است." });
+
+        return Ok(await _service.GetProgressSummaryAsync(userId));
+    }
+
+    [HttpGet("progress/{hadithId}")]
+    public async Task<IActionResult> GetUserProgress(int hadithId)
+    {
+        var userIdClaim = User.FindFirst("userId")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "شناسه کاربر نامعتبر است." });
+
+        var result = await _service.GetUserProgressAsync(userId, hadithId);
+        if (result == null) return NotFound(new { message = "پیشرفت حدیث یافت نشد." });
+        return Ok(result);
+    }
+
+    // Assessments
+    [HttpGet("chapters/{chapterId}/assessments")]
+    public async Task<IActionResult> GetAssessmentsByChapter(int chapterId)
+    {
+        return Ok(await _service.GetAssessmentsByChapterAsync(chapterId));
+    }
+
+    [HttpPost("assessments")]
+    public async Task<IActionResult> CreateAssessment([FromBody] CreateHadithAssessmentRequest request)
+    {
+        try
+        {
+            var result = await _service.CreateAssessmentAsync(request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException)
+        {
+            return Conflict(GenericErrorMessages.Conflict);
+        }
+    }
+
+    // Dashboard
+    [HttpGet("dashboard-stats")]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        var userIdClaim = User.FindFirst("userId")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "شناسه کاربر نامعتبر است." });
+
+        return Ok(await _service.GetDashboardStatsAsync(userId));
+    }
+}

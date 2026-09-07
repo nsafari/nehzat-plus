@@ -1,0 +1,65 @@
+Total words: 1578
+With POS tags: 1578
+With transliteration: 441
+
+=== FIRST 10 WORDS ===
+  71:1:1 - innā - Indeed, We - [{'pos': 'ACC', 'description': 'accusative particle'}, {'pos': 'PRON', 'description': '1st person plural object pronoun'}]
+  71:1:2 -  - [We] sent - [{'pos': 'V', 'description': '1st person plural (form IV) perfect verb'}, {'pos': 'PRON', 'description': 'subject pronoun'}]
+  71:1:3 - nūḥan - Nuh - [{'pos': 'PN', 'description': 'accusative masculine proper noun →'}]
+  71:1:4 -  - to - [{'pos': 'P', 'description': 'preposition'}]
+  71:1:5 -  - his people, - [{'pos': 'N', 'description': 'genitive masculine noun'}, {'pos': 'PRON', 'description': '3rd person masculine singular possessive pronoun'}]
+  71:1:6 - an - that - [{'pos': 'SUB', 'description': 'subordinating conjunction'}]
+  71:1:7 -  - "Warn - [{'pos': 'V', 'description': '2nd person masculine singular (form IV) imperative verb'}]
+  71:1:8 -  - your people - [{'pos': 'N', 'description': 'accusative masculine noun'}, {'pos': 'PRON', 'description': '2nd person masculine singular possessive pronoun'}]
+  71:1:9 - min - from - [{'pos': 'P', 'description': 'preposition'}]
+  71:1:10 -  - before - [{'pos': 'N', 'description': 'genitive noun'}]
+
+=== POS TAG DISTRIBUTION ===
+  N: 500
+  PRON: 497
+  V: 387
+  P: 238
+  CONJ: 202
+  PN: 120
+  ADJ: 69
+  REL: 67
+  NEG: 49
+  ACC: 47
+  REM: 41
+  COND: 31
+  EMPH: 24
+  SUB: 21
+  DEM: 19
+  T: 14
+  PRO: 14
+  LOC: 14
+  PRP: 13
+  VOC: 9
+  RES: 7
+  CIRC: 7
+  RSLT: 7
+  INTG: 6
+  CERT: 6
+  PREV: 5
+  FUT: 5
+  RET: 5
+  CAUS: 2
+  EXP: 2
+  IMPV: 1
+  AMD: 1
+
+=== SAMPLE VERSES (71:1) ===
+  1. innā (Indeed, We) -> [{'pos': 'ACC', 'description': 'accusative particle'}, {'pos': 'PRON', 'description': '1st person plural object pronoun'}]
+  2.  ([We] sent) -> [{'pos': 'V', 'description': '1st person plural (form IV) perfect verb'}, {'pos': 'PRON', 'description': 'subject pronoun'}]
+  3. nūḥan (Nuh) -> [{'pos': 'PN', 'description': 'accusative masculine proper noun →'}]
+  4.  (to) -> [{'pos': 'P', 'description': 'preposition'}]
+  5.  (his people,) -> [{'pos': 'N', 'description': 'genitive masculine noun'}, {'pos': 'PRON', 'description': '3rd person masculine singular possessive pronoun'}]
+  6. an (that) -> [{'pos': 'SUB', 'description': 'subordinating conjunction'}]
+  7.  ("Warn) -> [{'pos': 'V', 'description': '2nd person masculine singular (form IV) imperative verb'}]
+  8.  (your people) -> [{'pos': 'N', 'description': 'accusative masculine noun'}, {'pos': 'PRON', 'description': '2nd person masculine singular possessive pronoun'}]
+  9. min (from) -> [{'pos': 'P', 'description': 'preposition'}]
+  10.  (before) -> [{'pos': 'N', 'description': 'genitive noun'}]
+  11. an ([that]) -> [{'pos': 'SUB', 'description': 'subordinating conjunction'}]
+  12.  (comes to them) -> [{'pos': 'V', 'description': '3rd person masculine singular imperfect verb, subjunctive mood'}, {'pos': 'PRON', 'description': '3rd person masculine plural object pronoun'}]
+  13.  (a punishment) -> [{'pos': 'N', 'description': 'nominative masculine indefinite noun'}]
+  14.  (painful.") -> [{'pos': 'ADJ', 'description': 'nominative masculine singular indefinite adjective'}]

@@ -1,0 +1,235 @@
+<main class="arts-page">
+  <header class="page-header">
+    <div class="header-content">
+      <a class="back-link" routerLink="/dashboard">بازگشت</a>
+      <h1>{{ getViewIcon() }} ساحت زیباشناختی-هنری</h1>
+    </div>
+    <button type="button" class="upload-btn" (click)="openUploadModal()">+ آپلود اثر</button>
+  </header>
+
+  <nav class="view-tabs">
+    <button type="button" class="view-tab" [class.active]="activeView === 'gallery'" (click)="switchView('gallery')">
+      🎨 گالری نقاشی و صنایع دستی
+    </button>
+    <button type="button" class="view-tab" [class.active]="activeView === 'music'" (click)="switchView('music')">
+      🎵 سرود و تلاوت
+    </button>
+    <button type="button" class="view-tab" [class.active]="activeView === 'calligraphy'" (click)="switchView('calligraphy')">
+      ✒️ خوشنویسی و خط
+    </button>
+  </nav>
+
+  @if (loading) {
+    <div class="loading-state">
+      <p class="muted">در حال بارگذاری آثار...</p>
+    </div>
+  } @else {
+    <div class="content-area">
+      @if (activeView === 'gallery') {
+        @if (artworks.length > 0) {
+          <section class="gallery-grid">
+            @for (artwork of artworks; track artwork.id) {
+              <article class="art-card">
+                <button type="button" class="thumb-btn" (click)="openLightbox(artwork)">
+                  <img class="art-thumb" [src]="artwork.fileUrl" [alt]="artwork.title" loading="lazy" />
+                </button>
+                <div class="art-info">
+                  <h3 class="art-title">{{ artwork.title }}</h3>
+                  <span class="type-badge">{{ typeLabel(artwork.type) }}</span>
+                </div>
+                <button type="button" class="like-btn" (click)="onLikeArtwork(artwork)">
+                  👍 {{ artwork.likeCount }}
+                </button>
+              </article>
+            }
+          </section>
+        } @else {
+          <div class="empty-state">
+            <p class="muted">هنوز اثری در گالری نیست؛ اولین اثر خود را آپلود کن!</p>
+          </div>
+        }
+      }
+
+      @if (activeView === 'music') {
+        @if (musicRecords.length > 0) {
+          <section class="music-list">
+            @for (record of musicRecords; track record.id) {
+              <article class="music-card">
+                <div class="music-main">
+                  <button type="button" class="play-btn" (click)="onToggleMusic(record)">
+                    {{ activeMusicId === record.id ? '⏸' : '▶' }}
+                  </button>
+                  <div class="music-meta">
+                    <h3 class="music-title">{{ record.title }}</h3>
+                    <span class="music-artist">
+                      {{ record.artistName ?? 'بی‌نام' }}{{ record.genre ? ' • ' + record.genre : '' }}
+                    </span>
+                  </div>
+                  <button type="button" class="like-btn" (click)="onLikeMusic(record)">
+                    👍 {{ record.likeCount }}
+                  </button>
+                </div>
+                @if (record.description) {
+                  <p class="music-desc">{{ record.description }}</p>
+                }
+                <audio class="audio-player" controls preload="metadata" [src]="record.audioUrl"></audio>
+              </article>
+            }
+          </section>
+        } @else {
+          <div class="empty-state">
+            <p class="muted">هنوز اثری صوتی ثبت نشده است؛ سرود یا تلاوت خود را آپلود کن!</p>
+          </div>
+        }
+      }
+
+      @if (activeView === 'calligraphy') {
+        @if (calligraphySamples.length > 0) {
+          <section class="gallery-grid">
+            @for (sample of calligraphySamples; track sample.id) {
+              <article class="art-card">
+                <button type="button" class="thumb-btn" (click)="openCalligraphyDetail(sample)">
+                  <img class="art-thumb" [src]="sample.imageUrl" [alt]="sample.title" loading="lazy" />
+                </button>
+                <div class="art-info">
+                  <h3 class="art-title">{{ sample.title }}</h3>
+                  @if (sample.style) {
+                    <span class="type-badge">{{ sample.style }}</span>
+                  }
+                </div>
+                <button type="button" class="like-btn" (click)="onLikeCalligraphy(sample)">
+                  👍 {{ sample.likeCount }}
+                </button>
+              </article>
+            }
+          </section>
+        } @else {
+          <div class="empty-state">
+            <p class="muted">هنوز اثری از خوشنویسی ثبت نشده است؛ مشق خط خود را آپلود کن!</p>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  @if (showUploadModal) {
+    <div class="overlay" (click)="showUploadModal = false">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2>آپلود اثر {{ typeLabel(activeView === 'gallery' ? uploadType : activeView) }}</h2>
+          <button type="button" class="close-btn" (click)="showUploadModal = false">×</button>
+        </header>
+
+        <form class="upload-form" (ngSubmit)="onSubmit()">
+          <label class="field">
+            <span>عنوان اثر</span>
+            <input type="text" [(ngModel)]="uploadTitle" name="title" required placeholder="عنوان اثر خود را بنویسید" />
+          </label>
+
+          @if (activeView === 'gallery') {
+            <label class="field">
+              <span>نوع اثر</span>
+              <select [(ngModel)]="uploadType" name="type">
+                <option value="painting">نقاشی</option>
+                <option value="craft">صنایع دستی</option>
+              </select>
+            </label>
+          }
+
+          @if (activeView === 'calligraphy') {
+            <label class="field">
+              <span>سبک خط</span>
+              <input type="text" [(ngModel)]="uploadStyle" name="style" placeholder="مثلاً نستعلیق، ثلث، شکسته" />
+            </label>
+          }
+
+          @if (activeView === 'music') {
+            <div class="field-row">
+              <label class="field">
+                <span>نام هنرمند</span>
+                <input type="text" [(ngModel)]="uploadArtistName" name="artist" placeholder="نام شما" />
+              </label>
+              <label class="field">
+                <span>سبک/گونه</span>
+                <input type="text" [(ngModel)]="uploadGenre" name="genre" placeholder="سرود، تلاوت، تواشیح" />
+              </label>
+            </div>
+          }
+
+          <label class="field">
+            <span>{{ activeView === 'music' ? 'فایل صوتی' : 'تصویر اثر' }}</span>
+            <input type="file" accept="{{ activeView === 'music' ? 'audio/*' : 'image/*' }}" (change)="onFileSelected($event)" />
+          </label>
+
+          @if (uploadPreviewUrl && activeView !== 'music') {
+            <div class="preview">
+              <img class="preview-img" [src]="uploadPreviewUrl" alt="پیش‌نمایش اثر" />
+            </div>
+          }
+
+          <label class="field">
+            <span>توضیحات</span>
+            <textarea [(ngModel)]="uploadDescription" name="description" rows="3" placeholder="توضیحات اختیاری درباره اثر..."></textarea>
+          </label>
+
+          <label class="field">
+            <span>برچسب‌ها (با ویرگول جدا کنید)</span>
+            <input type="text" [(ngModel)]="uploadTags" name="tags" placeholder="مثلاً طبیعت، آبرنگ" />
+          </label>
+
+          <label class="checkbox-field">
+            <input type="checkbox" [(ngModel)]="uploadIsPublic" name="isPublic" />
+            <span>نمایش برای همکلاسی‌ها (گالری عمومی)</span>
+          </label>
+
+          <div class="modal-actions">
+            <button type="button" class="cancel-btn" (click)="showUploadModal = false">انصراف</button>
+            <button type="submit" class="save-btn" [disabled]="saving">
+              {{ saving ? 'در حال آپلود...' : 'ثبت اثر' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (selectedArtwork) {
+    <div class="overlay" (click)="closeLightbox()">
+      <div class="lightbox" (click)="$event.stopPropagation()">
+        <img class="lightbox-img" [src]="selectedArtwork.fileUrl" [alt]="selectedArtwork.title" />
+        <div class="lightbox-info">
+          <h2>{{ selectedArtwork.title }}</h2>
+          <span class="type-badge">{{ typeLabel(selectedArtwork.type) }}</span>
+          @if (selectedArtwork.description) {
+            <p class="lightbox-desc">{{ selectedArtwork.description }}</p>
+          }
+          @if (selectedArtwork.tags) {
+            <p class="lightbox-tags">{{ selectedArtwork.tags }}</p>
+          }
+        </div>
+        <button type="button" class="close-btn lightbox-close" (click)="closeLightbox()">×</button>
+      </div>
+    </div>
+  }
+
+  @if (selectedCalligraphy) {
+    <div class="overlay" (click)="closeCalligraphyDetail()">
+      <div class="lightbox" (click)="$event.stopPropagation()">
+        <img class="lightbox-img" [src]="selectedCalligraphy.imageUrl" [alt]="selectedCalligraphy.title" />
+        <div class="lightbox-info">
+          <h2>{{ selectedCalligraphy.title }}</h2>
+          @if (selectedCalligraphy.style) {
+            <span class="type-badge">{{ selectedCalligraphy.style }}</span>
+          }
+          @if (selectedCalligraphy.description) {
+            <p class="lightbox-desc">{{ selectedCalligraphy.description }}</p>
+          }
+          @if (selectedCalligraphy.tags) {
+            <p class="lightbox-tags">{{ selectedCalligraphy.tags }}</p>
+          }
+        </div>
+        <button type="button" class="close-btn lightbox-close" (click)="closeCalligraphyDetail()">×</button>
+      </div>
+    </div>
+  }
+</main>

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["docs/AGENTS.md"],
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "small_model": "zen/big-pickle",
+  "plugin": [
+    "@tarquinen/opencode-dcp",
+    "opencode-gemini-auth",
+    "opencode-models-discovery",
+    "@nick-vi/opencode-type-inject"
+  ],
+  "compaction": {
+    "auto": true,
+    "tail_turns": 12
+  }
+}

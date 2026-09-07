@@ -1,80 +1,91 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterLink, Router } from '@angular/router';
 
+import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/services/auth.service';
+import { resolveOtuh2BaseUrl } from '../../../../core/services/api-url.util';
+
+interface RoleOption {
+  key: string;
+  label: string;
+  icon: string;
+  description: string;
+}
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
-  template: `
-    <main class="page-container">
-      <section class="card auth-card">
-        <h1 class="title">ورود به پنل دانش‌آموز</h1>
-        <p class="subtitle">برای نسخه نمایشی از حساب‌های زیر استفاده کنید:</p>
-        <ul class="demo-accounts">
-          <li>دانش‌آموز: <code>student / student123</code></li>
-          <li>مدیر: <code>admin / admin123</code></li>
-        </ul>
-
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
-          <label class="field">
-            <span>نام کاربری</span>
-            <input formControlName="username" type="text" />
-          </label>
-          <label class="field">
-            <span>رمز عبور</span>
-            <input formControlName="password" type="password" />
-          </label>
-          @if (errorMessage) {
-            <p class="error-text">{{ errorMessage }}</p>
-          }
-          <button class="btn-primary" type="submit" [disabled]="form.invalid || isSubmitting">
-            {{ isSubmitting ? 'در حال ورود...' : 'ورود' }}
-          </button>
-        </form>
-
-        <p class="helper-text">
-          حساب ندارید؟
-          <a routerLink="/auth/register">ثبت‌نام</a>
-        </p>
-      </section>
-    </main>
-  `
+  imports: [RouterLink],
+  templateUrl: './login.component.html'
 })
-export class LoginComponent {
-  private readonly fb = inject(FormBuilder);
+export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  protected readonly form = this.fb.nonNullable.group({
-    username: ['', [Validators.required]],
-    password: ['', [Validators.required]]
-  });
-  protected isSubmitting = false;
-  protected errorMessage = '';
-  protected onSubmit(): void {
-    if (this.form.invalid || this.isSubmitting) {
+  protected readonly useMockAuth = environment.useMockAuth;
+  protected otuh2LoginUrl = '';
+
+  protected readonly roles: RoleOption[] = [
+    { key: 'admin',        label: 'مدیر',         icon: '⚙️',  description: 'دسترسی کامل مدیریتی' },
+    { key: 'trainee',      label: 'متربی',    icon: '📚',  description: 'داشبورد روزانه و تکالیف' },
+    { key: 'coach',        label: 'مربی',         icon: '🏋️',  description: 'مدیریت متربیان' },
+    { key: 'parent',       label: 'والدین',        icon: '👨‍👩‍👧', description: 'پیگیری پیشرفت' },
+    { key: 'branch_manager', label: 'مدیر شعبه',  icon: '🏢',  description: 'مدیریت شعبه' },
+    { key: 'evaluator',    label: 'ارزیاب',       icon: '📋',  description: 'ارزیابی متربیان' },
+    { key: 'headquarters', label: 'ستاد',         icon: '🏛️',  description: 'داشبورد ستادی' },
+  ];
+
+  ngOnInit(): void {
+    if (this.authService.isAuthenticated()) {
+      const user = this.authService.getCurrentUser();
+      const target = user
+        ? this.authService.getDashboardPathForRole(user.userType)
+        : '/dashboard';
+      window.location.href = target;
       return;
     }
+    this.otuh2LoginUrl = `${resolveOtuh2BaseUrl()}/auth/login?returnUrl=${encodeURIComponent(`${window.location.origin}/auth/callback?returnTo=${encodeURIComponent('/dashboard')}`)}`;
+  }
 
-    this.errorMessage = '';
-    this.isSubmitting = true;
-    const payload = this.form.getRawValue();
+  protected loginAs(role: string): void {
+    const account = this.devAccountForRole(role);
+    this.authService.signinLocal(account.username, account.password).subscribe({
+      next: () => {
+        const target = this.authService.getDashboardPathForRole(role);
+        void this.router.navigateByUrl(target);
+      },
+      error: () => {
+        console.warn(`[LoginComponent] centralized sign-in failed for role=${role}; falling back to mock login`);
+        this.authService.mockLogin(role);
+        const target = this.authService.getDashboardPathForRole(role);
+        void this.router.navigateByUrl(target);
+      }
+    });
+  }
 
-    this.authService
-      .signin(payload)
-      .pipe(finalize(() => (this.isSubmitting = false)))
-      .subscribe({
-        next: (response) => {
-          const target = response.userType === 'admin' ? '/admin' : '/dashboard';
-          void this.router.navigateByUrl(target);
-        },
-        error: (error) => {
-          this.errorMessage = error?.error?.message ?? 'خطا در ورود. دوباره تلاش کنید.';
+    private devAccountForRole(role: string): { username: string; password: string } {
+        switch (role) {
+          case 'admin':
+          case 'manager':
+            return { username: 'test', password: 'password' };
+          case 'coach':
+            return { username: 'coach', password: 'password123' };
+          case 'trainee':
+            return { username: 'ali.ahmadi', password: 'password123' };
+          case 'parent':
+            return { username: 'parent', password: 'password123' };
+          case 'branch_manager':
+            return { username: 'branch.manager', password: 'password123' };
+          case 'evaluator':
+            return { username: 'evaluator', password: 'password123' };
+          case 'headquarters':
+            return { username: 'headquarters', password: 'password123' };
+          default:
+            return { username: 'test', password: 'password' };
         }
-      });
+      }
+
+  protected redirectToOtuh2(): void {
+    window.location.href = this.otuh2LoginUrl;
   }
 }

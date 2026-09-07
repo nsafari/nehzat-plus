@@ -1,0 +1,76 @@
+<main class="role-page">
+  <header class="site-header">
+    <div class="brand-wrap">
+      <img
+        src="assets/nehzat.png"
+        alt="لوگو سایت"
+        class="site-logo"
+        [class.hidden]="logoHidden"
+        (error)="logoHidden = true"
+      />
+      <div>
+        <h1>داشبورد استاد</h1>
+        <p class="muted">خوش آمدید {{ currentUser?.username }}</p>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a class="nav-link" routerLink="/teacher/spiritual" routerLinkActive="nav-link-active">مسیر معنوی</a>
+    </nav>
+    <div class="user-menu">
+      <button type="button" class="menu-trigger" (click)="logout()">خروج</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.tab-active]="activeTab() === 'dashboard'"
+      (click)="switchTab('dashboard')"
+    >داشبورد</button>
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.tab-active]="activeTab() === 'courses'"
+      (click)="switchTab('courses')"
+    >دوره‌های من</button>
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.tab-active]="activeTab() === 'gradings'"
+      (click)="switchTab('gradings')"
+    >نمره‌دهی‌ها</button>
+    <button
+      type="button"
+      role="tab"
+      class="tab"
+      [class.tab-active]="activeTab() === 'pending'"
+      (click)="switchTab('pending')"
+    >منتظر نمره‌دهی</button>
+  </nav>
+
+  <section class="main-content">
+    @if (activeTab() === 'dashboard') {
+      <app-teacher-dashboard-section [teacherId]="teacherId" />
+    }
+
+    @if (activeTab() === 'courses') {
+      <app-teacher-courses-section [teacherId]="teacherId" />
+    }
+
+    @if (activeTab() === 'gradings') {
+      <app-teacher-gradings-section [teacherId]="teacherId" />
+    }
+
+    @if (activeTab() === 'pending') {
+      <app-teacher-pending-section
+        [teacherId]="teacherId"
+        [currentUserId]="currentUserId"
+        (gradeSubmitted)="onGradeSubmitted()"
+      />
+    }
+  </section>
+</main>

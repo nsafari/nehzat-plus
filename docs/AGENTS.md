@@ -1,115 +1,169 @@
 # AGENTS.md — Nehzat Plus (Lesson Planner)
 
-Two sub-projects: `backend/` (ASP.NET Core 8) and `frontend/` (Angular 21).
+Two sub-projects: `backend/` (ASP.NET Core 10, Clean Architecture) and `frontend/` (Angular 21). Both run with zero infrastructure — `dotnet run` and `npm start` are all you need.
 
 ---
 
-## @backend/ (ASP.NET Core 8 + EF Core + SQLite)
+## Backend — ASP.NET Core 10 + EF Core + SQL Server
 
-Same API surface as the original NestJS version. Same SQLite database, same auto-seed on startup.
+### Database
+- SQL Server via Windows auth: `Server=.;Database=LessonPlanner;Trusted_Connection=True;TrustServerCertificate=True`
+- Dev database: `LessonPlanner_Dev` (in `appsettings.Development.json`)
+- `EnsureCreated()` on startup (no migrations). `--seed` flag drops + recreates.
 
-### Commands
-```bash
-cd backend/LessonPlanner.Api
-dotnet run          # dev server on port 5253
-dotnet build        # compile
-dotnet test         # (no tests yet)
-```
+### Auth — OTUH2 OIDC (CRITICAL)
+- **Production**: JWT Bearer validated against OTUH2 Authority (`https://api.nehzat128.ir/oauth`)
+- **Development**: `MockAuthHandler` when `UseMockAuth: true` in `appsettings.Development.json`
+- **Login flow is redirect-based** — see [OTUH2_AUTH.md](OTUH2_AUTH.md) for the exact flow, client IDs, and scopes. `auth.guard` redirects to OTUH2's hosted `/auth/login`; tokens return to `/auth/callback`.
+- Token type MUST be `at+jwt` (gateway rejects typed JWT)
+- Claims mapping: `sub` → username, `userId` → user ID, `role` (NOT `ClaimTypes.Role`)
+- `OidcSyncMiddleware` auto-creates a local `User` row on first authenticated request
+- `AuthController` has only `SignUp` — sign-in is entirely delegated to OTUH2
 
-### Startup (automatic)
-- SQLite DB `lesson-planner.db` created with `EnsureCreated()` (tables recreated each startup)
-- Default admin user: `test` / `password` (userType: `admin`)
-- Sample data auto-seeded: 3 students + linked users, 2 courses, 36 daily assignments per course, attachments for day 1, sample submissions
-- CORS is wide open (`AllowAnyOrigin`)
-- Static files served from `public/` directory
+### User entity quirks
+- `OidcSubject` field replaces the old `PasswordHash` — users have no local password
+- Table names use `Nehzat_` prefix: `Nehzat_users`, `Nehzat_courses`, etc.
 
-### Key differences from NestJS version
-- Uses `[FromForm]` for auth signin (to support both JSON and multipart like the original `FileInterceptor` pattern)
-- File uploads use `IFormFile` parameters instead of Multer
-- `Guid.NewGuid():N` (32 hex chars) for random filenames instead of 32-char random hex
-- Same API routes, same entity names, same behavior for all endpoints
-- BCrypt.Net-Next 4.0.3 for password hashing
+### Service-to-service (OTUH2)
+- `IOtuh2AuthClient` (Refit) for user provisioning, role management, registration
+- Configured via `Otuh2Client` section (BaseUrl, ClientId, ClientSecret, ApiKey)
+- `Otuh2RoleSeeder` runs non-blocking on startup to ensure Nehzat roles exist in OTUH2
 
-### Project structure
-```
-backend/
-└── LessonPlanner.Api/
-    ├── Models/          # EF Core entities (same 7 tables)
-    ├── Data/            # AppDbContext
-    ├── DTOs/            # Request/response records
-    ├── Services/        # Service interfaces + implementations
-    ├── Controllers/     # 5 controllers (auth, student, course, admin, seeder)
-    └── Seeders/         # Sample data seeder
-```
+### Clean Architecture layers
+- `Domain` → `Application` → `Infrastructure` → `API` (dependency flows inward)
+- Entity classes in `Domain.Entities`, DTOs in `Application.DTOs`, services in `Infrastructure.Services`
+- `AdminController.cs` is large — split by domain if you need to touch it
 
-### Architecture notes
-- Circular UserService ↔ StudentService resolved with interface-based DI (no `forwardRef` needed)
-- `SensitiveDataLogging` enabled for dev (matches NestJS `logging: true`)
-- No auth middleware (matches the no-op `AuthGuard` in NestJS)
-
-### Test accounts
-| Type    | Username         | Password     |
-|---------|------------------|--------------|
-| student | ali.ahmadi       | password123  |
-| student | fateme.mohammadi | password123  |
-| student | mohammad.rezaei  | password123  |
-| admin   | test             | password     |
+### Guardrails
+- All controllers require `[Authorize]` except `AuthController`
+- CORS: `localhost:4200`, `localhost:4201`, `localhost:3000`
+- File uploads: max 10MB, extension allowlist, magic byte validation
+- Never return `ex.Message` to the client
 
 ---
 
-## @frontend/ (Angular 21 standalone + Capacitor)
+## Frontend — Angular 21 standalone + Capacitor
 
-### Commands
-```bash
-npm start             # ng serve on port 4200
-npm run build         # production build to dist/frontend/browser
-npm run build:capacitor  # build with capacitor baseHref
-npm test              # Vitest unit tests
-npx cap sync android  # sync Capacitor Android
-npx cap open android  # open in Android Studio
+### Auth flow
+- **Redirect-based OIDC** via EhrazHoviat (OTUH2) — `auth.guard` sends the browser to OTUH2's hosted `/auth/login`; tokens return to `/auth/callback`. See [OTUH2_AUTH.md](OTUH2_AUTH.md).
+- `OTUH2_API` injection token → `HttpOtuh2Api` is still used for the signup/registration path (`/api/register`) and service-to-service calls.
+- **Access + ID tokens** → `sessionStorage` (lost on tab close)
+- **Refresh token** → `localStorage` (persists)
+- 401 responses trigger auto-logout
+- `hasRole()` in `AuthService` is case-insensitive — always use it, never compare roles manually
+
+### API URL resolution
+1. `/config.json` (runtime, from `public/config.json`)
+2. Falls back to `environment.ts` → `apiUrl`
+3. Same cascade for `otuh2Url`
+
+### Styling (agents always get this wrong)
+- CSS custom properties are prefixed `--lp-*` — NEVER use bare `--gold`, `--primary`, `--danger`
+
+### Guards
+- `authGuard` supports `returnUrl` query param
+- `adminGuard` uses `hasRole()` internally
+- `roleGuard('role')` for fine-grained route protection
+
+### Routes (lazy-loaded)
+`auth`, `dashboard`, `admin`, `coach`, `parent`, `branch-manager`, `evaluator`, `headquarters`
+
+### Tech notes
+- Standalone components, `ChangeDetectionStrategy.OnPush` on admin/dashboard
+- Tests: Vitest with `jsdom` (not Karma/Jasmine) — run with `ng test`
+- Build output: `dist/frontend/browser`
+- Mobile: Capacitor 8, Android only, app ID `com.nsafari.lessonplanner`
+
+---
+
+## Test accounts
+
+| Type | Username | Password |
+|------|----------|----------|
+| manager | test | password |
+| student | ali.ahmadi | password123 |
+| student | fateme.mohammadi | password123 |
+| student | mohammad.rezaei | password123 |
+
+With `MockAuthHandler` enabled, any username/password works — the handler always returns manager claims.
+
+---
+
+## Known landmines
+
+- **No process manager**: dev servers die when the session ends and must be restarted
+- **`AdminController.cs`**: was ~1K+ lines, now split into 8 domain sub-controllers (`AdminBranches*`, `AdminCourses*`, `AdminCoaches*`, `AdminBranchManagers*`, `AdminParents*`, `AdminEvaluators*`, `AdminStudents*`, `AdminStatistics*`)
+- **CSV columns**: `Parent.StudentIds` was a comma-separated CSV column — already migrated to `ParentStudent` junction table (`Nehzat_parent_students`).
+- **One default branch**: multi-branch workflows are only partially implemented
+- **`EnsureCreated()`**: no migration history; schema changes require manual DB drops or `--seed`
+- **Backend csproj**: had `Microsoft.EntityFrameworkCore.Sqlite` — replaced with `SqlServer`. If you see Sqlite package added back, remove it.
+
+---
+
+## Version Archive System
+
+`docs/PROJECT_INVENTORY.md` auto-archives each tagged release with Persian commit grouping and section-level version labels.
+
+### How it works
+- **Pre-push hook** (`.git/hooks/pre-push`) triggers `scripts/archive-version.ps1` on every `git push`
+- Script detects **new tags** since the last archived version, groups commits by type (feature/fix/refactor/etc.) in Persian, computes file change stats, and updates section-level version labels via git diff path analysis
+- **Never blocks push** — silent no-op when no new tags exist
+
+### Install (one-time, per machine)
+```powershell
+.\scripts\install-hooks.ps1
 ```
 
-### Project structure
-- Standalone components, `app.ts` class-based (not `AppComponent`)
-- `app.config.ts` bootstraps with `provideRouter`, `provideHttpClient` (functional interceptor), `APP_INITIALIZER`
-- Lazy-loaded feature routes: `auth` (login, register), `dashboard` (student), `admin` (dashboard, users, courses, assignments)
-- Guards: `authGuard` (checks localStorage token), `adminGuard` (checks userType)
+### Manual run
+```powershell
+.\scripts\archive-version.ps1              # archive new tags
+.\scripts\archive-version.ps1 -WhatIf      # preview without writing
+```
 
-### API layer (interface-based DI)
-- `LESSON_PLANNER_API` injection token switches between `HttpLessonPlannerApi` (real HTTP) and `MockLessonPlannerApi` (in-memory)
-- Selected via `environment.useMockApi` in `lesson-planner-api.token.ts`
-- `HttpLessonPlannerApi` — `HttpClient`-based implementation
-- `MockLessonPlannerApi` — in-memory store + `delay(300)`, supports full CRUD
+### Key files
+| File | Purpose |
+|------|---------|
+| `docs/PROJECT_INVENTORY.md` | The inventory document (15 sections, versioned labels) |
+| `scripts/archive-version.ps1` | Archive engine (Persian grouping, stats, section labels) |
+| `scripts/hooks/pre-push` | Trackable hook source (copied to `.git/hooks/` by installer) |
+| `scripts/install-hooks.ps1` | One-command hook installer (PS 5.1 compatible) |
 
-### Config loader
-- `config.loader.ts` fetches `config.json` at app bootstrap via `APP_INITIALIZER`
-- Sets `window.__apiBase` dynamically — no hardcoded localhost
-- Falls back gracefully if `config.json` is missing
+### Limitations
+- Commits are translated by **prefix only** (`feat:` → `ویژگی`); full sentence translation requires AI (ask "تحلیل کن" for a polished Persian version)
 
-### Services
-- `AuthService` — login/register/logout, localStorage-based session (`token`, `current-user`)
-- `LessonPlannerApi` interface — full CRUD matching backend endpoints
+---
 
-### Key quirks
-- Auth is localStorage-based: stores `dummy-token` and `CurrentUser` JSON (no real JWT)
-- `AuthService.signin()` posts to `api.signin()` then stores `'dummy-token'`
-- `AuthService.register()` posts to `api.signup()`
-- Functional interceptor (`auth.interceptor.ts`) attaches `Authorization: Bearer <token>` header
+## Quranic Analysis — منبع تحلیل قرآنی
 
-### Styling
-- Custom SCSS with CSS custom properties (`--lp-*`) — no Bootstrap dependency
-- Vazirmatn Persian font via `font-family` in `styles.scss`
-- RTL layout (`direction: rtl` on shell containers)
-- Responsive via CSS Grid + auto-fit
+### منبع معتبر (اجباری)
+برای هرگونه تحلیل لغوی، صرفی، نحوی، یا آماری قرآن کریم، **حتماً** از [Quranic Arabic Corpus](https://corpus.quran.com/) استفاده کنید.
 
-### Mobile support
-- Capacitor 8 with Android support (`@capacitor/android`)
-- `capacitor.config.ts`: app ID `com.nsafari.lessonplanner`, webDir `dist/frontend/browser`
+**دلیل**: تحلیل‌های rule-based ساده (مثل regex برای تشخیص فعل/اسم) خطاهای زیادی دارند. مثال‌های خطای تحلیل قبلی:
+- `نوح`، `نساء`، `نذیر`، `نفس` → اشتباهی "فعل" طبقه‌بندی شدند
+- نرمال‌سازی تهاجمی همزه‌ها باعث ادغام کلمات مختلف شد
 
-### Testing
-- **Vitest** with `jsdom` (not Karma/Jasmine)
-- Test runner: `ng test` via `@angular/build:unit-test` (Vitest)
+### نحوه استفاده
+1. **Word-by-Word**: `https://corpus.quran.com/wordbyword.jsp?chapter={surah}&verse={ayah}`
+2. **POS Tags**: هر کلمه دارای برچسب دقیق است:
+   - `N` = Noun (اسم)
+   - `V` = Verb (فعل)
+   - `P` = Preposition (حرف جر)
+   - `CONJ` = Conjunction (حرف عطف)
+   - `SUB` = Subordinating conjunction (حرف مصدري)
+   - `ADJ` = Adjective (صفت)
+   - `PN` = Proper noun (اسم علم)
+   - `PRON` = Pronoun (ضمیر)
+   - `VOC` = Vocative (نداء)
+   - `ACC` = Accusative particle (حرف نصب)
+   - `EMPH` = Emphasis (حرف تأکید)
+   - `IMPV` = Imperative (حرف أمر)
 
-### TypeScript config
-- Frontend: strict mode on, target ES2022
-- Backend: nullable enabled, `ImplicitUsings` enabled
+### فایل‌های تحلیل قرآنی
+| File | Purpose |
+|------|---------|
+| `docs/quran-analysis/01-text-4-surahs.md` | متن کامل ۴ سوره (رسم‌الخط عثمانی) |
+| `docs/quran-analysis/analyze.py` | اسکریپت تحلیل (نیاز به بازنویسی با Quranic Arabic Corpus) |
+| `docs/quran-analysis/analysis-results.json` | نتایج خام تحلیل |
+
+### ۴ سوره اصلی حلقه‌ها
+- نوح (۷۱) | حشر (۵۹) | فتح (۴۸) | حجرات (۴۹)

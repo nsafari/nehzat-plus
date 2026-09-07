@@ -1,0 +1,204 @@
+/* ============================================
+   Admin Shell — Responsive
+   Mobile: < 640px | Tablet: 640–1023px | Desktop: ≥ 1024px
+   ============================================ */
+
+.admin-shell {
+  direction: rtl;
+  min-height: 100vh;
+  background: var(--lp-bg, #f8f9fa);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Header ---- */
+.shell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--lp-space-md, 12px) var(--lp-space-xl, 32px);
+  background: var(--lp-surface, #fff);
+  border-bottom: 1px solid var(--lp-border, #e5e7eb);
+  gap: var(--lp-space-md, 16px);
+  flex-wrap: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.shell-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-space-md, 12px);
+  flex-shrink: 0;
+}
+
+.shell-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.shell-logo.hidden {
+  display: none;
+}
+
+.shell-brand h1 {
+  margin: 0;
+  font-size: var(--lp-text-lg, 18px);
+  color: var(--lp-text, #1f2937);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shell-brand .muted {
+  margin: 0;
+  color: var(--lp-muted, #6b7280);
+  font-size: var(--lp-text-xs, 12px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shell-nav {
+  display: flex;
+  gap: var(--lp-space-xs, 4px);
+  flex-wrap: wrap;
+  flex-shrink: 1;
+}
+
+.nav-link {
+  color: var(--lp-muted, #6b7280);
+  text-decoration: none;
+  font-size: var(--lp-text-sm, 14px);
+  padding: var(--lp-space-xs, 4px) var(--lp-space-md, 16px);
+  border-radius: var(--lp-radius-lg, 8px);
+  transition: background 0.15s, color 0.15s;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background: var(--lp-bg, #f8f9fa);
+  color: var(--lp-text, #1f2937);
+}
+
+.nav-link-active {
+  color: var(--lp-primary, #2563eb);
+  font-weight: 700;
+  background: var(--lp-bg, #f8f9fa);
+}
+
+.menu-trigger {
+  background: var(--lp-primary, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: var(--lp-radius-lg, 8px);
+  padding: var(--lp-space-xs, 4px) var(--lp-space-md, 16px);
+  cursor: pointer;
+  font-size: var(--lp-text-sm, 14px);
+  flex-shrink: 0;
+}
+
+.menu-trigger:hover {
+  opacity: 0.9;
+}
+
+/* ---- Content ---- */
+.shell-content {
+  flex: 1;
+  padding: var(--lp-space-xl, 24px);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Mobile (< 640px) */
+@media (max-width: 639px) {
+  .shell-header {
+    flex-wrap: wrap;
+    padding: var(--lp-space-sm, 8px) var(--lp-space-md, 16px);
+    gap: var(--lp-space-sm, 8px);
+  }
+
+  .shell-brand h1 {
+    font-size: var(--lp-text-base, 16px);
+  }
+
+  .shell-brand .muted {
+    display: none;
+  }
+
+  .shell-nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: var(--lp-space-xs, 4px);
+    margin-top: var(--lp-space-xs, 4px);
+    scrollbar-width: thin;
+  }
+
+  .nav-link {
+    padding: var(--lp-space-xs, 4px) var(--lp-space-sm, 12px);
+    font-size: var(--lp-text-xs, 12px);
+  }
+
+  .menu-trigger {
+    padding: var(--lp-space-xs, 4px) var(--lp-space-sm, 12px);
+    font-size: var(--lp-text-xs, 12px);
+  }
+
+  .shell-content {
+    padding: var(--lp-space-md, 16px);
+  }
+}
+
+/* Tablet (640px – 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .shell-header {
+    padding: var(--lp-space-md, 12px) var(--lp-space-lg, 24px);
+  }
+
+  .shell-brand h1 {
+    font-size: var(--lp-text-lg, 18px);
+  }
+
+  .shell-brand .muted {
+    display: none;
+  }
+
+  .shell-nav {
+    flex-wrap: wrap;
+    gap: var(--lp-space-xs, 4px);
+  }
+
+  .nav-link {
+    padding: var(--lp-space-xs, 4px) var(--lp-space-sm, 12px);
+    font-size: var(--lp-text-sm, 14px);
+  }
+
+  .shell-content {
+    padding: var(--lp-space-lg, 24px);
+  }
+}
+
+/* Desktop (≥ 1024px) — default rules apply */
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

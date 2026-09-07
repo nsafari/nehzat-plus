@@ -1,0 +1,82 @@
+<main class="activity-page">
+  <header class="page-header">
+    <div class="header-content">
+      <a class="back-link" routerLink="/dashboard">بازگشت</a>
+      <h1>🏃 فعالیت بدنی روزانه</h1>
+    </div>
+    <div class="header-actions">
+      @if (streak > 0) {
+        <div class="streak-badge">
+          <span class="streak-icon">&#x1F525;</span>
+          <span class="streak-count">{{ streak }} روز متوالی</span>
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (loading) {
+    <div class="loading-state">
+      <p class="muted">در حال بارگذاری...</p>
+    </div>
+  } @else {
+    <div class="content-area">
+      <section class="card form-card">
+        <h2>ثبت فعالیت امروز</h2>
+        <p class="card-desc">فعالیت‌های بدنی امروز خود را ثبت کنید</p>
+
+        <form (ngSubmit)="onSubmit()" class="activity-form">
+          <label class="field">
+            <span>دقیقه فعالیت بدنی</span>
+            <input type="number" [(ngModel)]="activityMinutes" name="activityMinutes"
+                   min="0" placeholder="۰" />
+          </label>
+
+          <label class="field">
+            <span>تعداد قدم</span>
+            <input type="number" [(ngModel)]="steps" name="steps"
+                   min="0" placeholder="۰" />
+          </label>
+
+          <label class="field">
+            <span>ساعت خواب</span>
+            <input type="number" [(ngModel)]="sleepHours" name="sleepHours"
+                   min="0" max="24" step="0.5" placeholder="۰" />
+          </label>
+
+          <label class="field">
+            <span>یادداشت</span>
+            <textarea [(ngModel)]="notes" name="notes" rows="3"
+                      placeholder="توضیحات اختیاری..."></textarea>
+          </label>
+
+          <button type="submit" class="save-btn" [disabled]="saving">
+            {{ saving ? 'در حال ذخیره...' : 'ذخیره فعالیت' }}
+          </button>
+        </form>
+      </section>
+
+      <section class="card week-card">
+        <h2>هفته گذشته</h2>
+        @if (weekDays.length > 0 && weekDays.some(d => d.logged)) {
+          <div class="week-strip">
+            @for (day of weekDays; track day.dateStr) {
+              <div class="day-col" [class.logged]="day.logged">
+                <div class="bar-container">
+                  <div class="bar" [style.height.%]="getBarHeight(day.minutes)"></div>
+                </div>
+                <span class="day-label">{{ day.label }}</span>
+                @if (day.logged) {
+                  <span class="check-icon">✓</span>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p class="muted">هنوز فعالیتی ثبت نشده است؛ از فرم بالا شروع کن!</p>
+          </div>
+        }
+      </section>
+    </div>
+  }
+</main>
